@@ -2,7 +2,7 @@ This program was created for demonstration and partial automation of Komodo Gate
 
 Python3 required for execution: `sudo apt-get install python3.6`
 
-Also `pip install python-bitcoinrpc`
+Also `pip3 install python-bitcoinrpc`
 
 Before execution be sure than daemon for needed AC up.
 
