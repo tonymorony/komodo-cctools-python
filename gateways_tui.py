@@ -19,6 +19,7 @@ header = "\
 menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Create token": tuilib.token_create_tui},
+    {"Create oracle": tuilib.oracle_create_tui},
     {"Exit": exit}
 ]
 
