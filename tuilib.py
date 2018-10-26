@@ -20,6 +20,7 @@ def rpc_connection_tui():
     rpc_user = input("Input your rpc user: ")
     rpc_password = input("Input your rpc password: ")
     rpc_port = input("Input your rpc port: ")
+
     rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
 
     return rpc_connection
@@ -126,3 +127,66 @@ def oracle_create_tui(rpc_connection):
                 print(colorize("Entry added to oracles_list file!\n", "green"))
                 input("Press [Enter] to continue...")
                 break
+
+def oracle_register_tui(rpc_connection):
+
+    while True:
+        try:
+            oracle_id = input("Input txid of oracle you want to register to: ")
+            data_fee = input("Set publisher datafee (in satoshis): ")
+        except KeyboardInterrupt:
+            break
+        try:
+            oracle_register_hex = rpclib.oracles_register(rpc_connection, oracle_id, data_fee)
+        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError):
+            print("Connection error!")
+            input("Press [Enter] to continue...")
+            break
+        if oracle_register_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "pink"))
+            print(oracle_register_hex)
+            print("\n")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                oracle_register_txid = rpclib.sendrawtransaction(rpc_connection, oracle_register_hex['hex'])
+            except KeyError:
+                print(oracle_register_hex)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                print(colorize("Oracle registration transaction broadcasted: " + oracle_register_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+
+def oracle_register_utxogen(rpc_connection):
+
+    while True:
+        try:
+            oracle_id = input("Input oracle ID you want to subscribe to: ")
+            publisher_id = input("Input oracle publisher id you want to subscribe to: ")
+            data_fee = input("Input subscribtion fee (in COINS!): ")
+            utxo_num = int(input("Input how many transactions you want to broadcast: "))
+        except KeyboardInterrupt:
+            break
+        try:
+            while utxo_num > 0:
+                oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee)
+                if oracle_subscription_hex['result'] == "error":
+                    print(colorize("\nSomething went wrong!\n", "pink"))
+                    print(oracle_subscription_hex)
+                    print("\n")
+                    input("Press [Enter] to continue...")
+                    break
+                else:
+                    oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
+                    print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
+                    utxo_num = utxo_num - 1
+            input("Press [Enter] to continue...")
+            break
+        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError):
+            print("Connection error!")
+            input("Press [Enter] to continue...")
+            break

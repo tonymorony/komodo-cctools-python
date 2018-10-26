@@ -6,17 +6,18 @@ import http
 def rpc_connect(rpc_user, rpc_password, port):
     try:
         rpc_connection = AuthServiceProxy("http://%s:%s@127.0.0.1:%d"%(rpc_user, rpc_password, port))
-    except (http.client.CannotSendRequest, http.client.RemoteDisconnected, ConnectionRefusedError):
-        return("Connection error! Probably no daemon on selected port.")
+    except (http.client.CannotSendRequest, http.client.RemoteDisconnected, ConnectionRefusedError, OSError):
+        raise Exception("Connection error! Probably no daemon on selected port.")
     return rpc_connection
 
 
 # Non CC calls
 def getinfo(rpc_connection):
+
     try:
         getinfo = rpc_connection.getinfo()
-    except (http.client.RemoteDisconnected, ConnectionRefusedError):
-        return("Connection error!")
+    except (http.client.RemoteDisconnected, ConnectionRefusedError, OSError):
+        raise Exception("Connection error!")
     return getinfo
 
 

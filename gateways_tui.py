@@ -20,6 +20,8 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Create token": tuilib.token_create_tui},
     {"Create oracle": tuilib.oracle_create_tui},
+    {"Register as publisher for oracle": tuilib.oracle_register_tui},
+    {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_register_utxogen},
     {"Exit": exit}
 ]
 
@@ -45,7 +47,14 @@ if __name__ == "__main__":
     while True:
         try:
             rpc_connection = tuilib.rpc_connection_tui()
-            break
         except ValueError:
             print("Not correct details!")
+        try:
+            print("\n\n\n")
+            tuilib.getinfo_tui(rpc_connection)
+            print("\n\n\n")
+            break
+        # TODO: have to handle as adequate people do
+        except Exception:
+            print(tuilib.colorize("Cant connect to RPC! Please re-check credentials.", "pink"))
     main()
