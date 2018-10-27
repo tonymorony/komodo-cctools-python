@@ -19,7 +19,7 @@ def colorize(string, color):
 
 
 def rpc_connection_tui():
-
+    #TODO: possible to save multiply entries from successfull sessions and ask user to choose then
     while True:
         restore_choice = input("Do you want to use connection details from previous session? [y/n]: ")
         if restore_choice == "y":
