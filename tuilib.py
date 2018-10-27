@@ -1,5 +1,7 @@
 import rpclib
 import http
+import json
+
 
 #TODO: make funcions savetxidtofile/printtixidsfromfile, inputhandler, move exceptions from here to rpclib
 def colorize(string, color):
@@ -18,12 +20,33 @@ def colorize(string, color):
 
 def rpc_connection_tui():
 
-    rpc_user = input("Input your rpc user: ")
-    rpc_password = input("Input your rpc password: ")
-    rpc_port = input("Input your rpc port: ")
-
-    rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
-
+    while True:
+        restore_choice = input("Do you want to use connection details from previous session? [y/n]: ")
+        if restore_choice == "y":
+            try:
+                with open("connection.json", "r") as file:
+                    connection_json = json.load(file)
+                    rpc_user = connection_json["rpc_user"]
+                    rpc_password = connection_json["rpc_password"]
+                    rpc_port = connection_json["rpc_port"]
+                    rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+            except FileNotFoundError:
+                print(colorize("You do not have cached connection details. Please select n for connection setup", "red"))
+            break
+        elif restore_choice == "n":
+            rpc_user = input("Input your rpc user: ")
+            rpc_password = input("Input your rpc password: ")
+            rpc_port = input("Input your rpc port: ")
+            connection_details = {"rpc_user": rpc_user,
+                                  "rpc_password": rpc_password,
+                                  "rpc_port": rpc_port}
+            connection_json = json.dumps(connection_details)
+            with open("connection.json", "w+") as file:
+                file.write(connection_json)
+            rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+            break
+        else:
+            print(colorize("Please input y or n", "red"))
     return rpc_connection
 
 
