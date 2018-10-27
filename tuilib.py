@@ -1,13 +1,14 @@
 import rpclib
 import http
 
-
+#TODO: make funcions savetxidtofile/printtixidsfromfile, inputhandler, move exceptions from here to rpclib
 def colorize(string, color):
 
     colors = {
         'blue': '\033[94m',
-        'pink': '\033[95m',
+        'magenta': '\033[95m',
         'green': '\033[92m',
+        'red': '\033[91m'
     }
     if color not in colors:
         return string
@@ -36,7 +37,7 @@ def getinfo_tui(rpc_connection):
     else:
         print("Error!\n")
         print(info_raw)
-        input("Press [Enter] to continue...")
+        input("\nPress [Enter] to continue...")
 
 
 def token_create_tui(rpc_connection):
@@ -53,7 +54,7 @@ def token_create_tui(rpc_connection):
                 token_hex = rpclib.token_create(rpc_connection, name,
                                                 supply, description)
             except (http.client.RemoteDisconnected,
-                    http.client.CannotSendRequest, ConnectionRefusedError):
+                    http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
                 print("Connection error!")
                 input("Press [Enter] to continue...")
                 break
@@ -101,7 +102,7 @@ def oracle_create_tui(rpc_connection):
         else:
             try:
                 oracle_hex = rpclib.oracles_create(rpc_connection, name, description, oracle_data_type)
-            except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError):
+            except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
                 print("Connection error!")
                 input("Press [Enter] to continue...")
                 break
@@ -129,7 +130,18 @@ def oracle_create_tui(rpc_connection):
                 break
 
 def oracle_register_tui(rpc_connection):
-
+    #TODO: have an idea since blackjoker new RPC call
+    #grab all list and printout only or which owner match with node pubkey
+    try:
+        print(colorize("Oracles created from this instance by TUI: \n", "blue"))
+        with open("oracles_list", "r") as file:
+            for oracle in file:
+                print(oracle)
+        print(colorize('_' * 65, "blue"))
+        print("\n")
+    except FileNotFoundError:
+        print("Seems like a no oracles created from this instance yet\n")
+        pass
     while True:
         try:
             oracle_id = input("Input txid of oracle you want to register to: ")
@@ -138,7 +150,7 @@ def oracle_register_tui(rpc_connection):
             break
         try:
             oracle_register_hex = rpclib.oracles_register(rpc_connection, oracle_id, data_fee)
-        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError):
+        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
             print("Connection error!")
             input("Press [Enter] to continue...")
             break
@@ -161,32 +173,119 @@ def oracle_register_tui(rpc_connection):
                 input("Press [Enter] to continue...")
                 break
 
-def oracle_register_utxogen(rpc_connection):
-
+def oracle_subscription_utxogen(rpc_connection):
+    #TODO: have an idea since blackjoker new RPC call
+    #grab all list and printout only or which owner match with node pubkey
+    try:
+        print(colorize("Oracles created from this instance by TUI: \n", "blue"))
+        with open("oracles_list", "r") as file:
+            for oracle in file:
+                print(oracle)
+        print(colorize('_' * 65, "blue"))
+        print("\n")
+    except FileNotFoundError:
+        print("Seems like a no oracles created from this instance yet\n")
+        pass
     while True:
         try:
             oracle_id = input("Input oracle ID you want to subscribe to: ")
+            #printout to fast copypaste publisher id
+            oracle_info = rpclib.oracles_info(rpc_connection, oracle_id)
+            publishers = 0
+            print(colorize("\nPublishers registered for a selected oracle: \n", "blue"))
+            try:
+                for entry in oracle_info["registered"]:
+                    publisher = entry["publisher"]
+                    print(publisher + "\n")
+                    publishers = publishers + 1
+                print("Total publishers:{}".format(publishers))
+            except (KeyError, ConnectionResetError):
+                print(colorize("Please re-check your input. Oracle txid seems not valid.", "red"))
+                pass
+            print(colorize('_' * 65, "blue"))
+            print("\n")
+            if publishers == 0:
+                print(colorize("This oracle have no publishers to subscribe.\nPlease register as an oracle publisher first!", "red"))
+                input("Press [Enter] to continue...")
+                break
             publisher_id = input("Input oracle publisher id you want to subscribe to: ")
-            data_fee = input("Input subscribtion fee (in COINS!): ")
+            data_fee = input("Input subscription fee (in COINS!): ")
             utxo_num = int(input("Input how many transactions you want to broadcast: "))
         except KeyboardInterrupt:
             break
         try:
             while utxo_num > 0:
                 oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee)
-                if oracle_subscription_hex['result'] == "error":
-                    print(colorize("\nSomething went wrong!\n", "pink"))
-                    print(oracle_subscription_hex)
-                    print("\n")
-                    input("Press [Enter] to continue...")
-                    break
-                else:
-                    oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
-                    print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
-                    utxo_num = utxo_num - 1
+                oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
+                print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
+                utxo_num = utxo_num - 1
             input("Press [Enter] to continue...")
             break
-        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError):
+        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
             print("Connection error!")
             input("Press [Enter] to continue...")
             break
+
+def token_converter_tui(rpc_connection):
+    #TODO: have an idea since blackjoker new RPC call
+    #grab all list and printout only or which owner match with node pubkey
+    try:
+        print(colorize("Tokens created from this instance by TUI: \n", "blue"))
+        with open("tokens_list", "r") as file:
+            for oracle in file:
+                print(oracle)
+        print(colorize('_' * 65, "blue"))
+        print("\n")
+    except FileNotFoundError:
+        print("Seems like a no oracles created from this instance yet\n")
+        pass
+    while True:
+        try:
+            evalcode = "241"
+            token_id = input("Input id of token which you want to convert: ")
+            # informative printouts
+            token_info = rpclib.token_info(rpc_connection, token_id)
+            token_balance = rpclib.token_balance(rpc_connection, token_id)
+            try:
+                print(colorize("\n{} token supply: {}\n".format(token_id, token_info["supply"]), "blue"))
+                print("Your pubkey balance for this token: {}\n".format(token_balance["balance"]))
+            except (KeyError, ConnectionResetError):
+                print(colorize("Please re-check your input", "red"))
+                input("Press [Enter] to continue...")
+                break
+            print(colorize('_' * 65, "blue"))
+            print("\n")
+            pubkey = input("Input pubkey to which you want to convert (for initial conversion use \
+03ea9c062b9652d8eff34879b504eda0717895d27597aaeb60347d65eed96ccb40): ")
+            #TODO: have to print here pubkey with which started chain daemon
+            supply = str(input("Input supply which you want to convert (for initial conversion set all token supply): "))
+        except KeyboardInterrupt:
+            break
+        try:
+            token_convert_hex = rpclib.token_convert(rpc_connection, evalcode, token_id, pubkey, supply)
+        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
+            print("Connection error!")
+            input("Press [Enter] to continue...")
+            break
+        if token_convert_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "pink"))
+            print(token_convert_hex)
+            print("\n")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                token_convert_txid = rpclib.sendrawtransaction(rpc_connection, token_convert_hex['hex'])
+            except KeyError:
+                print(token_convert_hex)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                print(colorize("Token convertion transaction broadcasted: " + token_convert_txid, "green"))
+                file = open("token_convert_list", "a")
+                file.writelines(token_convert_txid + "\n")
+                file.close()
+                print(colorize("Entry added to token_convert_list file!\n", "green"))
+                input("Press [Enter] to continue...")
+                break

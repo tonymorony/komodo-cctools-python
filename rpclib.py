@@ -13,7 +13,6 @@ def rpc_connect(rpc_user, rpc_password, port):
 
 # Non CC calls
 def getinfo(rpc_connection):
-
     try:
         getinfo = rpc_connection.getinfo()
     except (http.client.RemoteDisconnected, ConnectionRefusedError, OSError):
@@ -31,6 +30,14 @@ def token_create(rpc_connection, name, supply, description):
     token_hex = rpc_connection.tokencreate(name, supply, description)
     return token_hex
 
+def token_info(rpc_connection, token_id):
+    token_info = rpc_connection.tokeninfo(token_id)
+    return token_info
+
+#TODO: have to add option with pubkey input
+def token_balance(rpc_connection, token_id):
+    token_balance = rpc_connection.tokenbalance(token_id)
+    return token_balance
 
 def token_list(rpc_connection):
     token_list = rpc_connection.tokenlist()
@@ -38,7 +45,10 @@ def token_list(rpc_connection):
 
 
 def token_convert(rpc_connection, evalcode, token_id, pubkey, supply):
-    token_convert_hex = rpc_connection(evalcode, token_id, pubkey, supply)
+    try:
+        token_convert_hex = rpc_connection.tokenconvert(evalcode, token_id, pubkey, supply)
+    except JSONRPCException as e:
+        return e
     return token_convert_hex
 
 
@@ -56,6 +66,10 @@ def oracles_register(rpc_connection, oracle_id, data_fee):
 def oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee):
     oracles_subscribe_hex = rpc_connection.oraclessubscribe(oracle_id, publisher_id, data_fee)
     return oracles_subscribe_hex
+
+def oracles_info(rpc_connection, oracle_id):
+    oracles_info = rpc_connection.oraclesinfo(oracle_id)
+    return oracles_info
 
 
 # Gateways CC calls

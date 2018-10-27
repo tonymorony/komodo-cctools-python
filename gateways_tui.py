@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import tuilib
+import rpclib
 import os
 import readline
+import time
 
 
 header = "\
@@ -21,7 +23,8 @@ menuItems = [
     {"Create token": tuilib.token_create_tui},
     {"Create oracle": tuilib.oracle_create_tui},
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
-    {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_register_utxogen},
+    {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
+    {"Token converter": tuilib.token_converter_tui},
     {"Exit": exit}
 ]
 
@@ -41,20 +44,26 @@ def main():
             list(menuItems[int(choice)].values())[0](rpc_connection)
         except (ValueError, IndexError):
             pass
+        # getting this error sometimes randomly from rpc lib, i guess there is some timeout
+        # trying to catch it
+        except (ConnectionResetError, BrokenPipeError):
+            break
 
 
 if __name__ == "__main__":
     while True:
         try:
+            print(tuilib.colorize("Welcome to the GatewaysCC TUI!\nPlease provide RPC connection details for initialization", "blue"))
             rpc_connection = tuilib.rpc_connection_tui()
-        except ValueError:
-            print("Not correct details!")
-        try:
-            print("\n\n\n")
-            tuilib.getinfo_tui(rpc_connection)
-            print("\n\n\n")
-            break
-        # TODO: have to handle as adequate people do
+            rpclib.getinfo(rpc_connection)
         except Exception:
             print(tuilib.colorize("Cant connect to RPC! Please re-check credentials.", "pink"))
+        else:
+            print(tuilib.colorize("Succesfully connected!\n", "green"))
+            with (open("logo.txt", "r")) as logo:
+                for line in logo:
+                    print(line, end='')
+                    time.sleep(0.04)
+                print("\n")
+            break
     main()
