@@ -228,7 +228,8 @@ def oracle_subscription_utxogen(rpc_connection):
             print(colorize('_' * 65, "blue"))
             print("\n")
             if publishers == 0:
-                print(colorize("This oracle have no publishers to subscribe.\nPlease register as an oracle publisher first!", "red"))
+                print(colorize("This oracle have no publishers to subscribe.\n"
+                               "Please register as an oracle publisher first and/or wait since registration transaciton mined!", "red"))
                 input("Press [Enter] to continue...")
                 break
             publisher_id = input("Input oracle publisher id you want to subscribe to: ")
@@ -370,14 +371,15 @@ def gateways_bind_tui(rpc_connection):
                     print("Maximal amount of pubkeys should be more or equal than minimal. Please try again.")
             pubkeys = []
             for i in range(int(M)):
-                pubkeys.append(input("Input pubkey {}: ".format(N)))
-                pubkeys = ', '.join(pubkeys)
+                pubkeys.append(input("Input pubkey {}: ".format(i+1)))
+            #pubkeys = ', '.join(pubkeys)
+            args = [rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N]
+            args = args + pubkeys
         except KeyboardInterrupt:
             break
     # broadcasting block
         try:
-            gateways_bind_hex = rpclib.gateways_bind(rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N,
-                                                 pubkeys)
+            gateways_bind_hex = rpclib.gateways_bind(*args)
         except Exception as e:
             print(e)
             input("Press [Enter] to continue...")

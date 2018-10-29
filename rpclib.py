@@ -73,9 +73,10 @@ def oracles_info(rpc_connection, oracle_id):
 
 
 # Gateways CC calls
-def gateways_bind(rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N, pubkeys):
-    gateways_bind_hex = rpc_connection.gatewaysbind(token_id, oracle_id, coin_name,\
-                                                    token_supply, M, N, pubkeys)
+# Arguments changing dynamically depends of M N, so supposed to wrap it this way
+# token_id, oracle_id, coin_name, token_supply, M, N + pubkeys for each N
+def gateways_bind(rpc_connection, *args):
+    gateways_bind_hex = rpc_connection.gatewaysbind(*args)
     return gateways_bind_hex
 
 
