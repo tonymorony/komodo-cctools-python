@@ -25,6 +25,7 @@ menuItems = [
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
     {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Token converter": tuilib.token_converter_tui},
+    {"Bind Gateway": tuilib.gateways_bind_tui},
     {"Exit": exit}
 ]
 
