@@ -5,7 +5,7 @@ import rpclib
 import os
 import readline
 import time
-
+import http
 
 header = "\
  _____       _                               _____  _____ \n\
@@ -47,9 +47,9 @@ def main():
             pass
         # getting this error sometimes randomly from rpc lib, i guess there is some timeout
         # trying to catch it
-        except (ConnectionResetError, BrokenPipeError):
-            print("Disconnected!")
-            break
+        except (ConnectionResetError, BrokenPipeError, http.client.RemoteDisconnected,
+                    http.client.CannotSendRequest, ConnectionRefusedError):
+            print("Disconnected! Please try your call again.")
 
 
 if __name__ == "__main__":
