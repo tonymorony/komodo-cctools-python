@@ -252,6 +252,16 @@ def oracle_subscription_utxogen(rpc_connection):
 def token_converter_tui(rpc_connection):
     #TODO: have an idea since blackjoker new RPC call
     #grab all list and printout only or which owner match with node pubkey
+    try:
+        print(colorize("Tokens created from this instance by TUI: \n", "blue"))
+        with open("tokens_list", "r") as file:
+            for oracle in file:
+                print(oracle)
+        print(colorize('_' * 65, "blue"))
+        print("\n")
+    except FileNotFoundError:
+        print("Seems like a no oracles created from this instance yet\n")
+        pass
     while True:
         try:
             evalcode = "241"

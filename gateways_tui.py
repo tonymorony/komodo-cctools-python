@@ -48,6 +48,7 @@ def main():
         # getting this error sometimes randomly from rpc lib, i guess there is some timeout
         # trying to catch it
         except (ConnectionResetError, BrokenPipeError):
+            print("Disconnected!")
             break
 
 
