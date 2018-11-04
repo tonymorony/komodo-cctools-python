@@ -49,7 +49,9 @@ def main():
         # trying to catch it
         except (ConnectionResetError, BrokenPipeError, http.client.RemoteDisconnected,
                     http.client.CannotSendRequest, ConnectionRefusedError):
+            rpclib.getinfo(rpc_connection)
             print("Disconnected! Please try your call again.")
+            input("Press Enter to continue")
 
 
 if __name__ == "__main__":

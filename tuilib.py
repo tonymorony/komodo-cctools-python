@@ -370,7 +370,7 @@ def gateways_bind_tui(rpc_connection):
                 else:
                     print("Maximal amount of pubkeys should be more or equal than minimal. Please try again.")
             pubkeys = []
-            for i in range(int(M)):
+            for i in range(int(N)):
                 pubkeys.append(input("Input pubkey {}: ".format(i+1)))
             #pubkeys = ', '.join(pubkeys)
             args = [rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N]
