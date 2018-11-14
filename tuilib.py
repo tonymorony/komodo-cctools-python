@@ -18,36 +18,45 @@ def colorize(string, color):
         return colors[color] + string + '\033[0m'
 
 
-def rpc_connection_tui():
+def rpc_connection_tui(reconnect):
     #TODO: possible to save multiply entries from successfull sessions and ask user to choose then
-    while True:
-        restore_choice = input("Do you want to use connection details from previous session? [y/n]: ")
-        if restore_choice == "y":
-            try:
-                with open("connection.json", "r") as file:
-                    connection_json = json.load(file)
-                    rpc_user = connection_json["rpc_user"]
-                    rpc_password = connection_json["rpc_password"]
-                    rpc_port = connection_json["rpc_port"]
-                    rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
-            except FileNotFoundError:
-                print(colorize("You do not have cached connection details. Please select n for connection setup", "red"))
-            break
-        elif restore_choice == "n":
-            rpc_user = input("Input your rpc user: ")
-            rpc_password = input("Input your rpc password: ")
-            rpc_port = input("Input your rpc port: ")
-            connection_details = {"rpc_user": rpc_user,
-                                  "rpc_password": rpc_password,
-                                  "rpc_port": rpc_port}
-            connection_json = json.dumps(connection_details)
-            with open("connection.json", "w+") as file:
-                file.write(connection_json)
+    if reconnect:
+        with open("connection.json", "r") as file:
+            connection_json = json.load(file)
+            rpc_user = connection_json["rpc_user"]
+            rpc_password = connection_json["rpc_password"]
+            rpc_port = connection_json["rpc_port"]
             rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
-            break
-        else:
-            print(colorize("Please input y or n", "red"))
-    return rpc_connection
+        return rpc_connection
+    else:
+        while True:
+            restore_choice = input("Do you want to use connection details from previous session? [y/n]: ")
+            if restore_choice == "y":
+                try:
+                    with open("connection.json", "r") as file:
+                        connection_json = json.load(file)
+                        rpc_user = connection_json["rpc_user"]
+                        rpc_password = connection_json["rpc_password"]
+                        rpc_port = connection_json["rpc_port"]
+                        rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+                except FileNotFoundError:
+                    print(colorize("You do not have cached connection details. Please select n for connection setup", "red"))
+                break
+            elif restore_choice == "n":
+                rpc_user = input("Input your rpc user: ")
+                rpc_password = input("Input your rpc password: ")
+                rpc_port = input("Input your rpc port: ")
+                connection_details = {"rpc_user": rpc_user,
+                                      "rpc_password": rpc_password,
+                                      "rpc_port": rpc_port}
+                connection_json = json.dumps(connection_details)
+                with open("connection.json", "w+") as file:
+                    file.write(connection_json)
+                rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+                break
+            else:
+                print(colorize("Please input y or n", "red"))
+        return rpc_connection
 
 
 def getinfo_tui(rpc_connection):
@@ -73,14 +82,7 @@ def token_create_tui(rpc_connection):
         except KeyboardInterrupt:
             break
         else:
-            try:
-                token_hex = rpclib.token_create(rpc_connection, name,
-                                                supply, description)
-            except (http.client.RemoteDisconnected,
-                    http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
-                print("Connection error!")
-                input("Press [Enter] to continue...")
-                break
+            token_hex = rpclib.token_create(rpc_connection, name, supply, description)
         if token_hex['result'] == "error":
             print(colorize("\nSomething went wrong!\n", "pink"))
             print(token_hex)
@@ -123,12 +125,7 @@ def oracle_create_tui(rpc_connection):
         except KeyboardInterrupt:
             break
         else:
-            try:
-                oracle_hex = rpclib.oracles_create(rpc_connection, name, description, oracle_data_type)
-            except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
-                print("Connection error!")
-                input("Press [Enter] to continue...")
-                break
+            oracle_hex = rpclib.oracles_create(rpc_connection, name, description, oracle_data_type)
         if oracle_hex['result'] == "error":
             print(colorize("\nSomething went wrong!\n", "pink"))
             print(oracle_hex)
@@ -171,12 +168,7 @@ def oracle_register_tui(rpc_connection):
             data_fee = input("Set publisher datafee (in satoshis): ")
         except KeyboardInterrupt:
             break
-        try:
-            oracle_register_hex = rpclib.oracles_register(rpc_connection, oracle_id, data_fee)
-        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
-            print("Connection error!")
-            input("Press [Enter] to continue...")
-            break
+        oracle_register_hex = rpclib.oracles_register(rpc_connection, oracle_id, data_fee)
         if oracle_register_hex['result'] == "error":
             print(colorize("\nSomething went wrong!\n", "pink"))
             print(oracle_register_hex)
@@ -237,18 +229,13 @@ def oracle_subscription_utxogen(rpc_connection):
             utxo_num = int(input("Input how many transactions you want to broadcast: "))
         except KeyboardInterrupt:
             break
-        try:
-            while utxo_num > 0:
-                oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee)
-                oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
-                print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
-                utxo_num = utxo_num - 1
-            input("Press [Enter] to continue...")
-            break
-        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
-            print("Connection error!")
-            input("Press [Enter] to continue...")
-            break
+        while utxo_num > 0:
+            oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee)
+            oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
+            print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
+            utxo_num = utxo_num - 1
+        input("Press [Enter] to continue...")
+        break
 
 def token_converter_tui(rpc_connection):
     #TODO: have an idea since blackjoker new RPC call
@@ -285,12 +272,7 @@ def token_converter_tui(rpc_connection):
             supply = str(input("Input supply which you want to convert (for initial conversion set all token supply): "))
         except KeyboardInterrupt:
             break
-        try:
-            token_convert_hex = rpclib.token_convert(rpc_connection, evalcode, token_id, pubkey, supply)
-        except (http.client.RemoteDisconnected, http.client.CannotSendRequest, ConnectionRefusedError, ConnectionResetError):
-            print("Connection error!")
-            input("Press [Enter] to continue...")
-            break
+        token_convert_hex = rpclib.token_convert(rpc_connection, evalcode, token_id, pubkey, supply)
         if token_convert_hex['result'] == "error":
             print(colorize("\nSomething went wrong!\n", "pink"))
             print(token_convert_hex)
@@ -348,6 +330,15 @@ def gateways_bind_tui(rpc_connection):
                     break
                 except KeyError:
                     print(colorize("Not valid tokenid", "red"))
+                token_info = rpclib.token_info(rpc_connection, token_id)
+                token_balance = rpclib.token_balance(rpc_connection, token_id)
+                try:
+                    print(colorize("\n{} token supply: {}\n".format(token_id, token_info["supply"]), "blue"))
+                    print("Your pubkey balance for this token: {}\n".format(token_balance["balance"]))
+                except (KeyError, ConnectionResetError):
+                    print(colorize("Please re-check your input", "red"))
+                    input("Press [Enter] to continue...")
+                    break
             token_supply = input("Input supply of binding token: ")
             while True:
                 try:

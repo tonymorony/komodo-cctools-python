@@ -42,23 +42,21 @@ def main():
             if int(choice) < 0:
                 raise ValueError
             # Call the matching function
-            list(menuItems[int(choice)].values())[0](rpc_connection)
+            try:
+                list(menuItems[int(choice)].values())[0](rpc_connection)
+            except (ConnectionResetError, BrokenPipeError, http.client.RemoteDisconnected,
+                    http.client.CannotSendRequest, ConnectionRefusedError):
+                print("Connection error!")
+                input("Press [Enter] to continue...")
         except (ValueError, IndexError):
             pass
-        # getting this error sometimes randomly from rpc lib, i guess there is some timeout
-        # trying to catch it
-        except (ConnectionResetError, BrokenPipeError, http.client.RemoteDisconnected,
-                    http.client.CannotSendRequest, ConnectionRefusedError):
-            rpclib.getinfo(rpc_connection)
-            print("Disconnected! Please try your call again.")
-            input("Press Enter to continue")
 
 
 if __name__ == "__main__":
     while True:
         try:
             print(tuilib.colorize("Welcome to the GatewaysCC TUI!\nPlease provide RPC connection details for initialization", "blue"))
-            rpc_connection = tuilib.rpc_connection_tui()
+            rpc_connection = tuilib.rpc_connection_tui(reconnect=False)
             rpclib.getinfo(rpc_connection)
         except Exception:
             print(tuilib.colorize("Cant connect to RPC! Please re-check credentials.", "pink"))

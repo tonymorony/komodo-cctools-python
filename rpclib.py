@@ -1,11 +1,12 @@
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 import http
+from slickrpc import Proxy
 
 
 # RPC connection
 def rpc_connect(rpc_user, rpc_password, port):
     try:
-        rpc_connection = AuthServiceProxy("http://%s:%s@127.0.0.1:%d"%(rpc_user, rpc_password, port), timeout=120)
+        rpc_connection = Proxy("http://%s:%s@127.0.0.1:%d"%(rpc_user, rpc_password, port))
     except (http.client.CannotSendRequest, http.client.RemoteDisconnected, ConnectionRefusedError, OSError):
         raise Exception("Connection error! Probably no daemon on selected port.")
     return rpc_connection
