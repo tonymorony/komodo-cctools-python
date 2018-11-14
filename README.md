@@ -1,6 +1,5 @@
 This program was created for demonstration and partial automation of Komodo GatewaysCC stack testing. (AssetsCC, OraclesCC, GatewaysCC, oraclesfeed dAPP)
 
-<<<<<<< HEAD
 Python3 required for execution:
 *  `sudo apt-get install python3.6`
 pip packages needed:

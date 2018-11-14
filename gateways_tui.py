@@ -56,7 +56,7 @@ if __name__ == "__main__":
     while True:
         try:
             print(tuilib.colorize("Welcome to the GatewaysCC TUI!\nPlease provide RPC connection details for initialization", "blue"))
-            rpc_connection = tuilib.rpc_connection_tui(reconnect=False)
+            rpc_connection = tuilib.rpc_connection_tui()
             rpclib.getinfo(rpc_connection)
         except Exception:
             print(tuilib.colorize("Cant connect to RPC! Please re-check credentials.", "pink"))
