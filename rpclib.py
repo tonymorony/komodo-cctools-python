@@ -1,4 +1,3 @@
-from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 import http
 from slickrpc import Proxy
 
