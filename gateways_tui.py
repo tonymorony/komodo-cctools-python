@@ -42,12 +42,10 @@ def main():
             if int(choice) < 0:
                 raise ValueError
             # Call the matching function
-            try:
+            if list(menuItems[int(choice)].keys())[0] == "Exit":
+                list(menuItems[int(choice)].values())[0]()
+            else:
                 list(menuItems[int(choice)].values())[0](rpc_connection)
-            except (ConnectionResetError, BrokenPipeError, http.client.RemoteDisconnected,
-                    http.client.CannotSendRequest, ConnectionRefusedError):
-                print("Connection error!")
-                input("Press [Enter] to continue...")
         except (ValueError, IndexError):
             pass
 

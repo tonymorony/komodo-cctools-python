@@ -289,95 +289,87 @@ def token_converter_tui(rpc_connection):
 
 
 def gateways_bind_tui(rpc_connection):
-    # print list of oracles and tokens to make input easier
-    try:
-        print(colorize("Tokens created from this instance by TUI: \n", "blue"))
-        with open("tokens_list", "r") as file:
-            for oracle in file:
-                print(oracle)
-        print(colorize('_' * 65, "blue"))
-        print("\n")
-    except FileNotFoundError:
-        print("Seems like a no oracles created from this instance yet\n")
-        pass
-    try:
-        print(colorize("Oracles created from this instance by TUI: \n", "blue"))
-        with open("oracles_list", "r") as file:
-            for oracle in file:
-                print(oracle)
-        print(colorize('_' * 65, "blue"))
-        print("\n")
-    except FileNotFoundError:
-        print("Seems like a no oracles created from this instance yet\n")
-        pass
-
-    # keyboard input block with ctrl+c handling
+    # main loop with keyboard interrupt handling
     while True:
         try:
             while True:
                 try:
-                    token_id = input("Input id of token you want to use in gw bind: ")
-                    token_name = rpclib.token_info(rpc_connection, token_id)["name"]
-                    break
-                except KeyError:
-                    print(colorize("Not valid tokenid", "red"))
-                token_info = rpclib.token_info(rpc_connection, token_id)
-                token_balance = rpclib.token_balance(rpc_connection, token_id)
+                    print(colorize("Tokens created from this instance by TUI: \n", "blue"))
+                    with open("tokens_list", "r") as file:
+                        for oracle in file:
+                            print(oracle)
+                    print(colorize('_' * 65, "blue"))
+                    print("\n")
+                except FileNotFoundError:
+                    print("Seems like a no oracles created from this instance yet\n")
+                    pass
+                token_id = input("Input id of token you want to use in gw bind: ")
                 try:
-                    print(colorize("\n{} token supply: {}\n".format(token_id, token_info["supply"]), "blue"))
-                    print("Your pubkey balance for this token: {}\n".format(token_balance["balance"]))
-                except (KeyError, ConnectionResetError):
-                    print(colorize("Please re-check your input", "red"))
+                    token_name = rpclib.token_info(rpc_connection, token_id)["name"]
+                except KeyError:
+                    print(colorize("Not valid tokenid. Please try again.", "red"))
+                    input("Press [Enter] to continue...")
+                token_info = rpclib.token_info(rpc_connection, token_id)
+                print(colorize("\n{} token total supply: {}\n".format(token_id, token_info["supply"]), "blue"))
+                token_supply = input("Input supply for token binding: ")
+                try:
+                    print(colorize("\nOracles created from this instance by TUI: \n", "blue"))
+                    with open("oracles_list", "r") as file:
+                        for oracle in file:
+                            print(oracle)
+                    print(colorize('_' * 65, "blue"))
+                    print("\n")
+                except FileNotFoundError:
+                    print("Seems like a no oracles created from this instance yet\n")
+                    pass
+                oracle_id = input("Input id of oracle you want to use in gw bind: ")
+                try:
+                    oracle_name = rpclib.oracles_info(rpc_connection, oracle_id)["name"]
+                except KeyError:
+                    print(colorize("Not valid oracleid. Please try again.", "red"))
+                    input("Press [Enter] to continue...")
+                while True:
+                    coin_name = input("Input external coin ticker (binded oracle and token need to have same name!): ")
+                    if token_name == oracle_name and token_name == coin_name:
+                        break
+                    else:
+                        print(colorize("Token name, oracle name and external coin ticker should match!", "red"))
+                while True:
+                    M = input("Input minimal amount of pubkeys needed for transaction confirmation (1 for non-multisig gw): ")
+                    N = input("Input maximal amount of pubkeys needed for transaction confirmation (1 for non-multisig gw): ")
+                    if (int(N) >= int(M)):
+                        break
+                    else:
+                        print("Maximal amount of pubkeys should be more or equal than minimal. Please try again.")
+                pubkeys = []
+                for i in range(int(N)):
+                    pubkeys.append(input("Input pubkey {}: ".format(i+1)))
+                #pubkeys = ', '.join(pubkeys)
+                args = [rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N]
+                args = args + pubkeys
+                # broadcasting block
+                try:
+                    gateways_bind_hex = rpclib.gateways_bind(*args)
+                except Exception as e:
+                    print(e)
                     input("Press [Enter] to continue...")
                     break
-            token_supply = input("Input supply of binding token: ")
-            while True:
                 try:
-                    oracle_id = input("Input id of oracle you want to use in gw bind: ")
-                    oracle_name = rpclib.oracles_info(rpc_connection, oracle_id)["name"]
-                    break
-                except KeyError:
-                    print(colorize("Not valid oracleid", "red"))
-            while True:
-                coin_name = input("Input external coin ticker (binded oracle and token need to have same name!): ")
-                if token_name == oracle_name and token_name == coin_name:
+                    gateways_bind_txid = rpclib.sendrawtransaction(rpc_connection, gateways_bind_hex["hex"])
+                except Exception as e:
+                    print(e)
+                    print(gateways_bind_hex)
+                    input("Press [Enter] to continue...")
                     break
                 else:
-                    print(colorize("Token name, oracle name and external coin ticker should match!", "red"))
-            while True:
-                M = input("Input minimal amount of pubkeys needed for transaction confirmation (1 for non-multisig gw): ")
-                N = input("Input maximal amount of pubkeys needed for transaction confirmation (1 for non-multisig gw): ")
-                if (int(N) >= int(M)):
+                    print(colorize("Gateway bind transaction broadcasted: " + gateways_bind_txid, "green"))
+                    file = open("gateways_list", "a")
+                    file.writelines(gateways_bind_txid + "\n")
+                    file.close()
+                    print(colorize("Entry added to gateways_list file!\n", "green"))
+                    input("Press [Enter] to continue...")
                     break
-                else:
-                    print("Maximal amount of pubkeys should be more or equal than minimal. Please try again.")
-            pubkeys = []
-            for i in range(int(N)):
-                pubkeys.append(input("Input pubkey {}: ".format(i+1)))
-            #pubkeys = ', '.join(pubkeys)
-            args = [rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N]
-            args = args + pubkeys
+            break
         except KeyboardInterrupt:
             break
-    # broadcasting block
-        try:
-            gateways_bind_hex = rpclib.gateways_bind(*args)
-        except Exception as e:
-            print(e)
-            input("Press [Enter] to continue...")
-            break
-        try:
-            gateways_bind_txid = rpclib.sendrawtransaction(rpc_connection, gateways_bind_hex["hex"])
-        except Exception as e:
-            print(e)
-            print(gateways_bind_hex)
-            input("Press [Enter] to continue...")
-            break
-        else:
-            print(colorize("Gateway bind transaction broadcasted: " + gateways_bind_txid, "green"))
-            file = open("gateways_list", "a")
-            file.writelines(gateways_bind_txid + "\n")
-            file.close()
-            print(colorize("Entry added to gateways_list file!\n", "green"))
-            input("Press [Enter] to continue...")
-            break
+
