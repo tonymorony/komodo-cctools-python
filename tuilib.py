@@ -221,8 +221,14 @@ def oracle_subscription_utxogen(rpc_connection):
         except KeyboardInterrupt:
             break
         while utxo_num > 0:
-            oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee)
-            oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
+            while True:
+                oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee)
+                oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
+                mempool = rpclib.get_rawmempool(rpc_connection)
+                if oracle_subscription_txid in mempool:
+                    break
+                else:
+                    pass
             print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
             utxo_num = utxo_num - 1
         input("Press [Enter] to continue...")

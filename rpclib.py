@@ -45,12 +45,12 @@ def token_list(rpc_connection):
 
 
 def token_convert(rpc_connection, evalcode, token_id, pubkey, supply):
-    try:
-        token_convert_hex = rpc_connection.tokenconvert(evalcode, token_id, pubkey, supply)
-    except JSONRPCException as e:
-        return e
+    token_convert_hex = rpc_connection.tokenconvert(evalcode, token_id, pubkey, supply)
     return token_convert_hex
 
+def get_rawmempool(rpc_connection):
+    mempool = rpc_connection.getrawmempool()
+    return mempool
 
 # Oracle CC calls
 def oracles_create(rpc_connection, name, description, data_type):
