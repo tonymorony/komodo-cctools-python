@@ -18,7 +18,7 @@ menuItems = [
     {"Check connection to KMD": tuilib.getinfo_tui},
     {"Connect to KMD daemon": tuilib.rpc_kmd_connection_tui},
     {"Token converter": tuilib.token_converter_tui},
-    #{"Send KMD gateway deposit transaction": send_kmd_gw},
+    {"Send KMD gateway deposit transaction": tuilib.gateways_send_kmd},
     #{"Execute gateways deposit": gateways_deposit_gw},
     #{"Execute gateways claim": gateways_claim_gw},
     #{"Execute gateways withdrawal": gateways_witdrawal_gw},
@@ -48,7 +48,15 @@ def main():
                         list(menuItems[int(choice)].values())[0](rpc_connection_kmd)
                         break
                     except Exception as e:
-                        print(e)
+                        print("Please connect to KMD daemon first!")
+                        input("Press [Enter] to continue...")
+                        break
+            elif list(menuItems[int(choice)].keys())[0] == "Send KMD gateway deposit transaction":
+                while True:
+                    try:
+                        list(menuItems[int(choice)].values())[0](rpc_connection_kmd)
+                        break
+                    except Exception as e:
                         print("Please connect to KMD daemon first!")
                         input("Press [Enter] to continue...")
                         break
@@ -68,7 +76,7 @@ if __name__ == "__main__":
             print(tuilib.colorize("Cant connect to RPC! Please re-check credentials.", "pink"))
         else:
             print(tuilib.colorize("Succesfully connected!\n", "green"))
-            with (open("logo.txt", "r")) as logo:
+            with (open("lib/logo.txt", "r")) as logo:
                 for line in logo:
                     print(line, end='')
                     time.sleep(0.04)

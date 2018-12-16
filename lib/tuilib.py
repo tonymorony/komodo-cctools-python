@@ -1,8 +1,9 @@
 from lib import rpclib
 import json
+import time
 
 
-#TODO: make funcions savetxidtofile/printtixidsfromfile, inputhandler, move exceptions from here to rpclib
+# TODO: make funcions savetxidtofile/printtixidsfromfile, inputhandler, move exceptions from here to rpclib
 def colorize(string, color):
 
     colors = {
@@ -18,7 +19,7 @@ def colorize(string, color):
 
 
 def rpc_connection_tui():
-    #TODO: possible to save multiply entries from successfull sessions and ask user to choose then
+    # TODO: possible to save multiply entries from successfull sessions and ask user to choose then
     while True:
         restore_choice = input("Do you want to use connection details from previous session? [y/n]: ")
         if restore_choice == "y":
@@ -178,9 +179,10 @@ def oracle_register_tui(rpc_connection):
                 input("Press [Enter] to continue...")
                 break
 
+
 def oracle_subscription_utxogen(rpc_connection):
-    #TODO: have an idea since blackjoker new RPC call
-    #grab all list and printout only or which owner match with node pubkey
+    # TODO: have an idea since blackjoker new RPC call
+    # grab all list and printout only or which owner match with node pubkey
     try:
         print(colorize("Oracles created from this instance by TUI: \n", "blue"))
         with open("oracles_list", "r") as file:
@@ -264,7 +266,7 @@ def token_converter_tui(rpc_connection):
             print("\n")
             pubkey = input("Input pubkey to which you want to convert (for initial conversion use \
 03ea9c062b9652d8eff34879b504eda0717895d27597aaeb60347d65eed96ccb40): ")
-            #TODO: have to print here pubkey with which started chain daemon
+            # TODO: have to print here pubkey with which started chain daemon
             supply = str(input("Input supply which you want to convert (for initial conversion set all token supply): "))
         except KeyboardInterrupt:
             break
@@ -381,6 +383,7 @@ def gateways_bind_tui(rpc_connection):
 # temporary :trollface: custom connection function solution
 # to have connection to KMD daemon and cache it in separate file
 
+
 def rpc_kmd_connection_tui():
     while True:
         restore_choice = input("Do you want to use KMD daemon connection details from previous session? [y/n]: ")
@@ -420,23 +423,33 @@ def z_sendmany_twoaddresses(rpc_connection, sendaddress, recepient1, amount1, re
     operation_id = rpc_connection.z_sendmany(sendaddress,sending_block)
     return operation_id
 
-# # TODO: have to connect KMD daemon on some stage!
-# def gateways_send_kmd(rpc_connection):
-#     print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "pink"))
-#     print("Your addresses with balances: ")
-#     print(rpc_connection.listaddressgroupings())
-#     sendaddress = input("Input address from which you transfer KMD: ")
-#     recepient1 = input("Input address which belongs to pubkey which will receive tokens: ")
-#     amount1 = 0.0001
-#     recepient2 = input("Input gateway deposit address: ")
-#     file = open("deposits_list", "a")
-#     #have to show here deposit addresses for gateways created by user
-#     amount2 = input("Input how many KMD you want to deposit on this gateway: ")
-#     operation = z_sendmany_twoaddresses(sendaddress, recepient1, amount1, recepient2, amount2)
-#     print("Operation proceed! " + str(operation) + " Let's wait 30 seconds to get txid")
-#     # trying to avoid pending status of operation
-#     time.sleep(30)
-#     file.writelines(operationstatus_to_txid(operation) + "\n")
-#     file.close()
-#     print(colorize("KMD Transaction ID: " + str(operationstatus_to_txid(operation)) + " Entry added to deposits_list file", "green"))
-#     input("Press [Enter] to continue...")
+
+def operationstatus_to_txid(rpc_connection, zstatus):
+    sending_block = "[\"{}\"]".format(zstatus)
+    operation_json = rpc_connection.z_getoperationstatus(sending_block)
+    txid = dict(operation_json["result"].items())["txid"]
+    return txid
+
+
+# TODO: have to connect KMD daemon on some stage!
+def gateways_send_kmd(rpc_connection):
+     print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "pink"))
+     print("Your addresses with balances: ")
+     list_address_groupings = rpc_connection.listaddressgroupings()
+     for address in list_address_groupings:
+         print(str(address) + "\n")
+     sendaddress = input("Input address from which you transfer KMD: ")
+     recepient1 = input("Input address which belongs to pubkey which will receive tokens: ")
+     amount1 = 0.0001
+     recepient2 = input("Input gateway deposit address: ")
+     file = open("deposits_list", "a")
+     #have to show here deposit addresses for gateways created by user
+     amount2 = input("Input how many KMD you want to deposit on this gateway: ")
+     operation = z_sendmany_twoaddresses(rpc_connection, sendaddress, recepient1, amount1, recepient2, amount2)
+     print("Operation proceed! " + str(operation) + " Let's wait 30 seconds to get txid")
+     # trying to avoid pending status of operation
+     time.sleep(30)
+     file.writelines(operationstatus_to_txid(rpc_connection, operation) + "\n")
+     file.close()
+     print(colorize("KMD Transaction ID: " + str(operationstatus_to_txid(operation)) + " Entry added to deposits_list file", "green"))
+     input("Press [Enter] to continue...")
