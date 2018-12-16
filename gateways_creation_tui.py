@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-import tuilib
-import rpclib
+from lib import rpclib, tuilib
 import os
-import readline
 import time
 
 header = "\

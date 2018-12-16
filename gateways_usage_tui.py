@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import tuilib, rpclib
+from lib import rpclib, tuilib
 import os, time
 
 header = "\

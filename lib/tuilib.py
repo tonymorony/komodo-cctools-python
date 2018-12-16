@@ -1,7 +1,5 @@
-import rpclib
-import http
+from lib import rpclib
 import json
-import time
 
 
 #TODO: make funcions savetxidtofile/printtixidsfromfile, inputhandler, move exceptions from here to rpclib
@@ -415,6 +413,12 @@ def rpc_kmd_connection_tui():
     return rpc_connection_kmd
 
 
+def z_sendmany_twoaddresses(rpc_connection, sendaddress, recepient1, amount1, recepient2, amount2):
+    #json_sendaddress = "\"{}\"".format(sendaddress)
+    sending_block = "[{{\"address\":\"{}\",\"amount\":{}}},{{\"address\":\"{}\",\"amount\":{}}}]".format(recepient1, amount1, recepient2, amount2)
+    print(sending_block)
+    operation_id = rpc_connection.z_sendmany(sendaddress,sending_block)
+    return operation_id
 
 # # TODO: have to connect KMD daemon on some stage!
 # def gateways_send_kmd(rpc_connection):
