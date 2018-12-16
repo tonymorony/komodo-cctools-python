@@ -5,7 +5,6 @@ import rpclib
 import os
 import readline
 import time
-import http
 
 header = "\
  _____       _                               _____  _____ \n\
@@ -53,7 +52,8 @@ def main():
 if __name__ == "__main__":
     while True:
         try:
-            print(tuilib.colorize("Welcome to the GatewaysCC TUI!\nPlease provide RPC connection details for initialization", "blue"))
+            print(tuilib.colorize("Welcome to the GatewaysCC TUI!\n"
+                                  "Please provide asset chain RPC connection details for initialization", "blue"))
             rpc_connection = tuilib.rpc_connection_tui()
             rpclib.getinfo(rpc_connection)
         except Exception:

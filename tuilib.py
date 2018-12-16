@@ -1,6 +1,7 @@
 import rpclib
 import http
 import json
+import time
 
 
 #TODO: make funcions savetxidtofile/printtixidsfromfile, inputhandler, move exceptions from here to rpclib
@@ -379,3 +380,59 @@ def gateways_bind_tui(rpc_connection):
         except KeyboardInterrupt:
             break
 
+# temporary :trollface: custom connection function solution
+# to have connection to KMD daemon and cache it in separate file
+
+def rpc_kmd_connection_tui():
+    while True:
+        restore_choice = input("Do you want to use KMD daemon connection details from previous session? [y/n]: ")
+        if restore_choice == "y":
+            try:
+                with open("connection_kmd.json", "r") as file:
+                    connection_json = json.load(file)
+                    rpc_user = connection_json["rpc_user"]
+                    rpc_password = connection_json["rpc_password"]
+                    rpc_port = connection_json["rpc_port"]
+                    rpc_connection_kmd = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+            except FileNotFoundError:
+                print(colorize("You do not have cached KMD daemon connection details. Please select n for connection setup", "red"))
+            break
+        elif restore_choice == "n":
+            rpc_user = input("Input your rpc user: ")
+            rpc_password = input("Input your rpc password: ")
+            rpc_port = input("Input your rpc port: ")
+            connection_details = {"rpc_user": rpc_user,
+                                  "rpc_password": rpc_password,
+                                  "rpc_port": rpc_port}
+            connection_json = json.dumps(connection_details)
+            with open("connection_kmd.json", "w+") as file:
+                file.write(connection_json)
+            rpc_connection_kmd = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+            break
+        else:
+            print(colorize("Please input y or n", "red"))
+    print(rpc_connection_kmd)
+    return rpc_connection_kmd
+
+
+
+# # TODO: have to connect KMD daemon on some stage!
+# def gateways_send_kmd(rpc_connection):
+#     print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "pink"))
+#     print("Your addresses with balances: ")
+#     print(rpc_connection.listaddressgroupings())
+#     sendaddress = input("Input address from which you transfer KMD: ")
+#     recepient1 = input("Input address which belongs to pubkey which will receive tokens: ")
+#     amount1 = 0.0001
+#     recepient2 = input("Input gateway deposit address: ")
+#     file = open("deposits_list", "a")
+#     #have to show here deposit addresses for gateways created by user
+#     amount2 = input("Input how many KMD you want to deposit on this gateway: ")
+#     operation = z_sendmany_twoaddresses(sendaddress, recepient1, amount1, recepient2, amount2)
+#     print("Operation proceed! " + str(operation) + " Let's wait 30 seconds to get txid")
+#     # trying to avoid pending status of operation
+#     time.sleep(30)
+#     file.writelines(operationstatus_to_txid(operation) + "\n")
+#     file.close()
+#     print(colorize("KMD Transaction ID: " + str(operationstatus_to_txid(operation)) + " Entry added to deposits_list file", "green"))
+#     input("Press [Enter] to continue...")
