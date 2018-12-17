@@ -1,9 +1,9 @@
 from lib import rpclib
 import json
 import time
+import readline
 
 
-# TODO: make funcions savetxidtofile/printtixidsfromfile, inputhandler, move exceptions from here to rpclib
 def colorize(string, color):
 
     colors = {
@@ -140,6 +140,7 @@ def oracle_create_tui(rpc_connection):
                 input("Press [Enter] to continue...")
                 break
 
+
 def oracle_register_tui(rpc_connection):
     #TODO: have an idea since blackjoker new RPC call
     #grab all list and printout only or which owner match with node pubkey
@@ -234,6 +235,7 @@ def oracle_subscription_utxogen(rpc_connection):
             utxo_num = utxo_num - 1
         input("Press [Enter] to continue...")
         break
+
 
 def token_converter_tui(rpc_connection):
     #TODO: have an idea since blackjoker new RPC call
@@ -395,9 +397,20 @@ def rpc_kmd_connection_tui():
                     rpc_password = connection_json["rpc_password"]
                     rpc_port = connection_json["rpc_port"]
                     rpc_connection_kmd = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+                    try:
+                        print(rpc_connection_kmd.getinfo())
+                        print(colorize("Successfully connected!\n", "green"))
+                        input("Press [Enter] to continue...")
+                        break
+                    except Exception as e:
+                        print(e)
+                        print(colorize("NOT CONNECTED!\n", "red"))
+                        input("Press [Enter] to continue...")
+                        break
             except FileNotFoundError:
-                print(colorize("You do not have cached KMD daemon connection details. Please select n for connection setup", "red"))
-            break
+                print(colorize("You do not have cached KMD daemon connection details."
+                               " Please select n for connection setup", "red"))
+                input("Press [Enter] to continue...")
         elif restore_choice == "n":
             rpc_user = input("Input your rpc user: ")
             rpc_password = input("Input your rpc password: ")
@@ -409,10 +422,18 @@ def rpc_kmd_connection_tui():
             with open("connection_kmd.json", "w+") as file:
                 file.write(connection_json)
             rpc_connection_kmd = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
-            break
+            try:
+                print(rpc_connection_kmd.getinfo())
+                print(colorize("Successfully connected!\n", "green"))
+                input("Press [Enter] to continue...")
+                break
+            except Exception as e:
+                print(e)
+                print(colorize("NOT CONNECTED!\n", "red"))
+                input("Press [Enter] to continue...")
+                break
         else:
             print(colorize("Please input y or n", "red"))
-    print(rpc_connection_kmd)
     return rpc_connection_kmd
 
 
