@@ -438,17 +438,19 @@ def rpc_kmd_connection_tui():
 
 
 def z_sendmany_twoaddresses(rpc_connection, sendaddress, recepient1, amount1, recepient2, amount2):
-    #json_sendaddress = "\"{}\"".format(sendaddress)
-    sending_block = "[{{\"address\":\"{}\",\"amount\":{}}},{{\"address\":\"{}\",\"amount\":{}}}]".format(recepient1, amount1, recepient2, amount2)
-    print(sending_block)
+    str_sending_block = "[{{\"address\":\"{}\",\"amount\":{}}},{{\"address\":\"{}\",\"amount\":{}}}]".format(recepient1, amount1, recepient2, amount2)
+    sending_block = json.loads(str_sending_block)
     operation_id = rpc_connection.z_sendmany(sendaddress,sending_block)
     return operation_id
 
 
 def operationstatus_to_txid(rpc_connection, zstatus):
-    sending_block = "[\"{}\"]".format(zstatus)
+    str_sending_block = "[\"{}\"]".format(zstatus)
+    sending_block = json.loads(str_sending_block)
     operation_json = rpc_connection.z_getoperationstatus(sending_block)
-    txid = dict(operation_json["result"].items())["txid"]
+    operation_dump = json.dumps(operation_json)
+    operation_dict = json.loads(operation_dump)[0]
+    txid = operation_dict['result']['txid']
     return txid
 
 
@@ -467,10 +469,11 @@ def gateways_send_kmd(rpc_connection):
      #have to show here deposit addresses for gateways created by user
      amount2 = input("Input how many KMD you want to deposit on this gateway: ")
      operation = z_sendmany_twoaddresses(rpc_connection, sendaddress, recepient1, amount1, recepient2, amount2)
-     print("Operation proceed! " + str(operation) + " Let's wait 30 seconds to get txid")
+     print("Operation proceed! " + str(operation) + " Let's wait 2 seconds to get txid")
      # trying to avoid pending status of operation
-     time.sleep(30)
-     file.writelines(operationstatus_to_txid(rpc_connection, operation) + "\n")
+     time.sleep(2)
+     txid = operationstatus_to_txid(rpc_connection, operation)
+     file.writelines(txid + "\n")
      file.close()
-     print(colorize("KMD Transaction ID: " + str(operationstatus_to_txid(operation)) + " Entry added to deposits_list file", "green"))
+     print(colorize("KMD Transaction ID: " + str(txid) + " Entry added to deposits_list file", "green"))
      input("Press [Enter] to continue...")

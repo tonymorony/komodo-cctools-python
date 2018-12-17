@@ -57,6 +57,7 @@ def main():
                         list(menuItems[int(choice)].values())[0](rpc_connection_kmd)
                         break
                     except Exception as e:
+                        print(e)
                         print("Please connect to KMD daemon first!")
                         input("Press [Enter] to continue...")
                         break
