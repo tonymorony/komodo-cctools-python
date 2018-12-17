@@ -454,8 +454,8 @@ def operationstatus_to_txid(rpc_connection, zstatus):
     return txid
 
 
-# TODO: have to connect KMD daemon on some stage!
 def gateways_send_kmd(rpc_connection):
+     # TODO: have to handle CTRL+C on text input
      print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "pink"))
      print("Your addresses with balances: ")
      list_address_groupings = rpc_connection.listaddressgroupings()
@@ -477,3 +477,50 @@ def gateways_send_kmd(rpc_connection):
      file.close()
      print(colorize("KMD Transaction ID: " + str(txid) + " Entry added to deposits_list file", "green"))
      input("Press [Enter] to continue...")
+
+
+def gateways_deposit_tui(rpc_connection):
+    while True:
+        bind_txid = input("Input your gateway bind txid: ")
+        coin_name = input("Input your external coin ticker (e.g. KMD): ")
+        coin_txid = input("Input your deposit txid: ")
+        dest_pub = input("Input pubkey which claim deposit: ")
+        amount = input("Input amount of your deposit: ")
+        height = rpc_connection.getrawtransaction(coin_txid, 1)["height"]
+        deposit_hex = rpc_connection.getrawtransaction(coin_txid, 1)["hex"]
+        claim_vout = "0"
+        proof_sending_block = "[\"{}\"]".format(coin_txid)
+        proof = rpc_connection.gettxoutproof(json.loads(proof_sending_block))
+        deposit_hex = rpclib.gateways_deposit(rpc_connection, bind_txid, height, coin_name, \
+                         coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
+        deposit_txid = rpclib.sendrawtransaction(rpc_connection, deposit_hex["hex"])
+        print(deposit_txid)
+        input("Press [Enter] to continue...")
+        break
+
+
+def gateways_claim_tui(rpc_connection):
+    while True:
+        bind_txid = input("Input your gateway bind txid: ")
+        coin_name = input("Input your external coin ticker (e.g. KMD): ")
+        deposit_txid = input("Input your gatewaysdeposit txid: ")
+        dest_pub = input("Input pubkey which claim deposit: ")
+        amount = input("Input amount of your deposit: ")
+        claim_hex = rpclib.gateways_claim(rpc_connection, bind_txid, coin_name, deposit_txid, dest_pub, amount)
+        claim_txid = rpclib.sendrawtransaction(rpc_connection, claim_hex["hex"])
+        print(claim_txid)
+        input("Press [Enter] to continue...")
+        break
+
+
+def gateways_withdrawal_tui(rpc_connection):
+    while True:
+        bind_txid = input("Input your gateway bind txid: ")
+        coin_name = input("Input your external coin ticker (e.g. KMD): ")
+        withdraw_pub = input("Input pubkey to which you want to withdraw: ")
+        amount = input("Input amount of withdrawal: ")
+        withdraw_hex = rpclib.gateways_withdraw(rpc_connection, bind_txid, coin_name, withdraw_pub, amount)
+        withdraw_txid = rpclib.sendrawtransaction(withdraw_hex["hex"])
+        print(withdraw_txid)
+        input("Press [Enter] to continue...")
+        break

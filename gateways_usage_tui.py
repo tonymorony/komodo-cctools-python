@@ -19,9 +19,9 @@ menuItems = [
     {"Connect to KMD daemon": tuilib.rpc_kmd_connection_tui},
     {"Token converter": tuilib.token_converter_tui},
     {"Send KMD gateway deposit transaction": tuilib.gateways_send_kmd},
-    #{"Execute gateways deposit": gateways_deposit_gw},
-    #{"Execute gateways claim": gateways_claim_gw},
-    #{"Execute gateways withdrawal": gateways_witdrawal_gw},
+    {"Execute gateways deposit": tuilib.gateways_deposit_tui},
+    {"Execute gateways claim": tuilib.gateways_claim_tui},
+    {"Execute gateways withdrawal": tuilib.gateways_withdrawal_tui},
     {"Exit": exit}
 ]
 
