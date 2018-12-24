@@ -479,22 +479,23 @@ def gateways_send_kmd(rpc_connection):
      input("Press [Enter] to continue...")
 
 
-def gateways_deposit_tui(rpc_connection):
+def gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo):
     while True:
         bind_txid = input("Input your gateway bind txid: ")
         coin_name = input("Input your external coin ticker (e.g. KMD): ")
         coin_txid = input("Input your deposit txid: ")
         dest_pub = input("Input pubkey which claim deposit: ")
         amount = input("Input amount of your deposit: ")
-        height = rpc_connection.getrawtransaction(coin_txid, 1)["height"]
-        deposit_hex = rpc_connection.getrawtransaction(coin_txid, 1)["hex"]
+        height = rpc_connection_komodo.getrawtransaction(coin_txid, 1)["height"]
+        deposit_hex = rpc_connection_komodo.getrawtransaction(coin_txid, 1)["hex"]
         claim_vout = "0"
         proof_sending_block = "[\"{}\"]".format(coin_txid)
-        proof = rpc_connection.gettxoutproof(json.loads(proof_sending_block))
-        deposit_hex = rpclib.gateways_deposit(rpc_connection, bind_txid, height, coin_name, \
+        proof = rpc_connection_komodo.gettxoutproof(json.loads(proof_sending_block))
+        # !!! height needs to be converted to string, omegalul
+        deposit_hex = rpclib.gateways_deposit(rpc_connection_assetchain, bind_txid, str(height), coin_name, \
                          coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
-        deposit_txid = rpclib.sendrawtransaction(rpc_connection, deposit_hex["hex"])
-        print(deposit_txid)
+        deposit_txid = rpclib.sendrawtransaction(rpc_connection_assetchain, deposit_hex["hex"])
+        print("Done! Gateways deposit txid is: " + deposit_txid + " Please not forget to claim your deposit!")
         input("Press [Enter] to continue...")
         break
 
@@ -507,10 +508,17 @@ def gateways_claim_tui(rpc_connection):
         dest_pub = input("Input pubkey which claim deposit: ")
         amount = input("Input amount of your deposit: ")
         claim_hex = rpclib.gateways_claim(rpc_connection, bind_txid, coin_name, deposit_txid, dest_pub, amount)
-        claim_txid = rpclib.sendrawtransaction(rpc_connection, claim_hex["hex"])
-        print(claim_txid)
-        input("Press [Enter] to continue...")
-        break
+        try:
+            claim_txid = rpclib.sendrawtransaction(rpc_connection, claim_hex["hex"])
+        except Exception as e:
+            print(e)
+            print(claim_hex)
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print("Succesfully claimed! Claim transaction id: " + claim_txid)
+            input("Press [Enter] to continue...")
+            break
 
 
 def gateways_withdrawal_tui(rpc_connection):
