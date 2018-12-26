@@ -93,5 +93,5 @@ def gateways_claim(rpc_connection, gateway_id, coin_name, deposit_txid, dest_pub
 
 
 def gateways_withdraw(rpc_connection, gateway_id, coin_name, withdraw_pub, amount):
-    gateways_withdraw_hex = rpc_connection(gateway_id, coin_name, withdraw_pub, amount)
+    gateways_withdraw_hex = rpc_connection.gatewayswithdraw(gateway_id, coin_name, withdraw_pub, amount)
     return gateways_withdraw_hex

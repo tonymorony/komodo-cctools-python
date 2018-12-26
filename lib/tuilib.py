@@ -528,7 +528,7 @@ def gateways_withdrawal_tui(rpc_connection):
         withdraw_pub = input("Input pubkey to which you want to withdraw: ")
         amount = input("Input amount of withdrawal: ")
         withdraw_hex = rpclib.gateways_withdraw(rpc_connection, bind_txid, coin_name, withdraw_pub, amount)
-        withdraw_txid = rpclib.sendrawtransaction(withdraw_hex["hex"])
+        withdraw_txid = rpclib.sendrawtransaction(rpc_connection, withdraw_hex["hex"])
         print(withdraw_txid)
         input("Press [Enter] to continue...")
         break
