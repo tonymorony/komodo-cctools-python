@@ -1,3 +1,7 @@
+# GatewaysCC Terminal User Interface
+
+![alt text](https://i.imgur.com/c8DPfpp.png)
+
 This program was created for demonstration and partial automation of Komodo GatewaysCC stack testing. (AssetsCC, OraclesCC, GatewaysCC, oraclesfeed dAPP)
 
 Python3 required for execution:
