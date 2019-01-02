@@ -532,3 +532,25 @@ def gateways_withdrawal_tui(rpc_connection):
         print(withdraw_txid)
         input("Press [Enter] to continue...")
         break
+
+
+def print_mempool(rpc_connection):
+    while True:
+        mempool = rpclib.get_rawmempool(rpc_connection)
+        tx_counter = 0
+        print(colorize("Transactions in mempool: \n", "magenta"))
+        for transaction in mempool:
+            print(transaction + "\n")
+            tx_counter = tx_counter + 1
+        print("Total: " + str(tx_counter) + " transactions\n")
+        print("R + Enter to refresh list. E + Enter to exit menu." + "\n")
+        is_refresh = input("Choose your destiny: ")
+        if is_refresh == "R":
+            print("\n")
+            pass
+        elif is_refresh == "E":
+            print("\n")
+            break
+        else:
+            print("\nPlease choose R or E\n")
+

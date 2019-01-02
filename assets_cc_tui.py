@@ -4,26 +4,24 @@ from lib import rpclib, tuilib
 import os
 import time
 
+
 header = "\
- _____       _                               _____  _____ \n\
-|  __ \     | |                             /  __ \/  __ \\\n\
-| |  \/ __ _| |_ _____      ____ _ _   _ ___| /  \/| /  \/\n\
-| | __ / _` | __/ _ \ \ /\ / / _` | | | / __| |    | |    \n\
-| |_\ \ (_| | ||  __/\ V  V / (_| | |_| \__ \ \__/\| \__/\\\n\
- \____/\__,_|\__\___| \_/\_/ \__,_|\__, |___/\____/ \____/\n\
-                                    __/ |                 \n\
-                                   |___/                  \n"
+  ___                   _         _____ \n\
+ / _ \                 | |       /  __ \\\n\
+/ /_\ \ ___  ___   ___ | |_  ___ | /  \/\n\
+|  _  |/ __|/ __| / _ \| __|/ __|| |    \n\
+| | | |\__ \\\__ \|  __/| |_ \__ \| \__/\\\n\
+\_| |_/|___/|___/ \___| \__||___/ \____/\n"
 
 
 menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
+    # print tokens list
+    # check tokens balances (printing all non zero balances)
+    # transfer tokens (pre-print tokens balances)
     {"Create token": tuilib.token_create_tui},
-    {"Create oracle": tuilib.oracle_create_tui},
-    {"Register as publisher for oracle": tuilib.oracle_register_tui},
-    {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
-    {"Token converter": tuilib.token_converter_tui},
-    {"Bind Gateway": tuilib.gateways_bind_tui},
+    # trading zone - pre-print token orders - possible to open order or fill existing one
     {"Exit": exit}
 ]
 

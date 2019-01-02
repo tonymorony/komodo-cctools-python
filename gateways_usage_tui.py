@@ -15,6 +15,7 @@ header = "\
 
 menuItems = [
     {"Check connection to assetchain": tuilib.getinfo_tui},
+    {"Check assetchain mempool": tuilib.print_mempool},
     {"Check connection to KMD": tuilib.getinfo_tui},
     {"Connect to KMD daemon": tuilib.rpc_kmd_connection_tui},
     {"Token converter": tuilib.token_converter_tui},
