@@ -4,24 +4,22 @@ from lib import rpclib, tuilib
 import os
 import time
 
-
 header = "\
-  ___                   _         _____ \n\
- / _ \                 | |       /  __ \\\n\
-/ /_\ \ ___  ___   ___ | |_  ___ | /  \/\n\
-|  _  |/ __|/ __| / _ \| __|/ __|| |    \n\
-| | | |\__ \\\__ \|  __/| |_ \__ \| \__/\\\n\
-\_| |_/|___/|___/ \___| \__||___/ \____/\n"
-
+ _____                     _             _____  _____ \n\
+|  _  |                   | |           /  __ \/  __ \\\n\
+| | | | _ __   __ _   ___ | |  ___  ___ | /  \/| /  \/\n\
+| | | || '__| / _` | / __|| | / _ \/ __|| |    | |\n\
+\ \_/ /| |   | (_| || (__ | ||  __/\__ \| \__/\| \__/\\\n\
+ \___/ |_|    \__,_| \___||_| \___||___/ \____/ \____/\n"
 
 menuItems = [
+    # TODO: Have to implement here native oracle file uploader / reader, should be dope
+    # TODO: data publisher / converter for different types
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
-    {"Print tokens list": tuilib.print_tokens_list},
-    {"Check my tokens balances" : tuilib.print_tokens_balances},
-    # transfer tokens (pre-print tokens balances)
-    {"Create token": tuilib.token_create_tui},
-    # trading zone - pre-print token orders - possible to open order or fill existing one
+    {"Create oracle": tuilib.oracle_create_tui},
+    {"Register as publisher for oracle": tuilib.oracle_register_tui},
+    {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Exit": exit}
 ]
 

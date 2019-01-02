@@ -554,3 +554,12 @@ def print_mempool(rpc_connection):
         else:
             print("\nPlease choose R or E\n")
 
+
+def print_tokens_list(rpc_connection):
+    # TODO: have to print it with tokeninfo to have sense
+    pass
+
+
+def print_tokens_balances(rpc_connection):
+    # TODO: checking tokenbalance for each token from tokenlist and reflect non zero ones
+    pass
