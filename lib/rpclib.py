@@ -67,9 +67,15 @@ def oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee):
     oracles_subscribe_hex = rpc_connection.oraclessubscribe(oracle_id, publisher_id, data_fee)
     return oracles_subscribe_hex
 
+
 def oracles_info(rpc_connection, oracle_id):
     oracles_info = rpc_connection.oraclesinfo(oracle_id)
     return oracles_info
+
+
+def oracles_data(rpc_connection, oracle_id, hex_string):
+    oracles_data = rpc_connection.oraclesdata(oracle_id, hex_string)
+    return oracles_data
 
 
 # Gateways CC calls
