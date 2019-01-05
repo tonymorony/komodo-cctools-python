@@ -580,7 +580,6 @@ def hexdump(filename, chunk_size=1<<15):
     return data
 
 
-# planning to work with D type oracles
 def convert_file_oracle_d(rpc_connection):
     while True:
         path = input("Input path to file you want to upload to oracle: ")
@@ -611,8 +610,7 @@ def convert_file_oracle_d(rpc_connection):
                 oracle_register_hex = rpclib.oracles_register(rpc_connection, new_oracle_txid, "10000")
                 oracle_register_txid = rpclib.sendrawtransaction(rpc_connection, oracle_register_hex["hex"])
                 time.sleep(0.5)
-                # TODO: 1 IS TO0 MUCH!
-                oracle_subscribe_hex = rpclib.oracles_subscribe(rpc_connection, new_oracle_txid, rpclib.getinfo(rpc_connection)["pubkey"], "1")
+                oracle_subscribe_hex = rpclib.oracles_subscribe(rpc_connection, new_oracle_txid, rpclib.getinfo(rpc_connection)["pubkey"], "0.001")
                 oracle_subscribe_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscribe_hex["hex"])
                 time.sleep(0.5)
                 while True:
@@ -620,7 +618,133 @@ def convert_file_oracle_d(rpc_connection):
                     if oracle_subscribe_txid in mempool:
                         print("Waiting for oracle subscribtion tx to be mined" + "\n")
                         time.sleep(6)
+                        pass
+                    else:
+                        break
+                oracles_data_hex = rpclib.oracles_data(rpc_connection, new_oracle_txid, data_for_oracle)
+                try:
+                    oracle_data_txid = rpclib.sendrawtransaction(rpc_connection, oracles_data_hex["hex"])
+                except Exception as e:
+                    print(oracles_data_hex)
+                    print(e)
+                print("Oracle created: " + str(new_oracle_txid))
+                print("Data published: " + str(oracle_data_txid))
+                input("Press [Enter] to continue...")
+                break
+
+
+def convert_file_oracle_D(rpc_connection):
+    while True:
+        path = input("Input path to file you want to upload to oracle: ")
+        try:
+            hex_data = (hexdump(path, 1))[2:]
+        except Exception as e:
+            print(e)
+            print("Seems something goes wrong (I guess you've specified wrong path)!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            length = round(len(hex_data) / 2)
+            if length > 800000:
+                print("Too big file size to upload for this version of program. Maximum size is 800KB.")
+                input("Press [Enter] to continue...")
+                break
+            if length > 8000:
+                # if file is more than 8000 bytes - slicing it to <= 8000 bytes chunks (16000 symbols = 8000 bytes)
+                data = [hex_data[i:i + 16000] for i in range(0, len(hex_data), 16000)]
+                chunks_amount = len(data)
+                # TODO: have to create oracle but subscribe this time chunks amount times to send whole file in same block
+                # TODO: 2 - on some point file will not fit block - have to find this point
+                # TODO: 3 way how I want to implement it first will keep whole file in RAM - have to implement some way to stream chunks to oracle before whole file readed
+                # Maybe just check size first by something like a du ?
+                print("Length: " + str(length) + " bytes.\n Chunks amount: " + str(chunks_amount))
+                new_oracle_hex = rpclib.oracles_create(rpc_connection, "tonyconvert", path, "D")
+                new_oracle_txid = rpclib.sendrawtransaction(rpc_connection, new_oracle_hex["hex"])
+                time.sleep(0.5)
+                oracle_register_hex = rpclib.oracles_register(rpc_connection, new_oracle_txid, "10000")
+                oracle_register_txid = rpclib.sendrawtransaction(rpc_connection, oracle_register_hex["hex"])
+                # subscribe chunks_amount + 1 times, but lets limit our broadcasting 100 tx per block (800KB/block)
+                if chunks_amount > 100:
+                    utxo_num = 101
+                else:
+                    utxo_num = chunks_amount
+                while utxo_num > 0:
+                    while True:
+                        oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, new_oracle_txid, rpclib.getinfo(rpc_connection)["pubkey"], "0.001")
+                        oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection,
+                                                                             oracle_subscription_hex['hex'])
                         mempool = rpclib.get_rawmempool(rpc_connection)
+                        if oracle_subscription_txid in mempool:
+                            break
+                        else:
+                            pass
+                    print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
+                    utxo_num = utxo_num - 1
+                # waiting for last broadcasted subscribtion transaction to be mined to be sure that money are on oracle balance
+                while True:
+                    mempool = rpclib.get_rawmempool(rpc_connection)
+                    if oracle_subscription_txid in mempool:
+                        print("Waiting for oracle subscribtion tx to be mined" + "\n")
+                        time.sleep(6)
+                        pass
+                    else:
+                        break
+                print("Oracle preparation is finished. Oracle txid: " + new_oracle_txid)
+                # can publish data now
+                counter = 0
+                for chunk in data:
+                    hex_length_bigendian = format(round(len(chunk) / 2), '#06x')[2:]
+                    # swap to get little endian length
+                    a = hex_length_bigendian[2:]
+                    b = hex_length_bigendian[:2]
+                    hex_length = a + b
+                    data_for_oracle = str(hex_length) + chunk
+                    counter = counter + 1
+                    # print("Chunk number: " + str(counter) + "\n")
+                    # print(data_for_oracle)
+                    try:
+                        oracles_data_hex = rpclib.oracles_data(rpc_connection, new_oracle_txid, data_for_oracle)
+                    except Exception as e:
+                        print(data_for_oracle)
+                        print(e)
+                        input("Press [Enter] to continue...")
+                        break
+                    while True:
+                        mempool = rpclib.get_rawmempool(rpc_connection)
+                        oracle_data_txid = rpclib.sendrawtransaction(rpc_connection, oracles_data_hex["hex"])
+                        if oracle_data_txid in mempool:
+                            break
+                        else:
+                            pass
+                print("Last baton: " + oracle_data_txid)
+                input("Press [Enter] to continue...")
+                break
+            # if file suits single oraclesdata just broadcasting it straight without any slicing
+            else:
+                hex_length_bigendian = format(length, '#06x')[2:]
+                # swap to get little endian length
+                a = hex_length_bigendian[2:]
+                b = hex_length_bigendian[:2]
+                hex_length = a + b
+                data_for_oracle = str(hex_length) + hex_data
+                print("File hex representation: \n")
+                print(data_for_oracle + "\n")
+                print("Length: " + str(length) + " bytes")
+                print("File converted!")
+                new_oracle_hex = rpclib.oracles_create(rpc_connection, "tonyconvert", path, "D")
+                new_oracle_txid = rpclib.sendrawtransaction(rpc_connection, new_oracle_hex["hex"])
+                time.sleep(0.5)
+                oracle_register_hex = rpclib.oracles_register(rpc_connection, new_oracle_txid, "10000")
+                oracle_register_txid = rpclib.sendrawtransaction(rpc_connection, oracle_register_hex["hex"])
+                time.sleep(0.5)
+                oracle_subscribe_hex = rpclib.oracles_subscribe(rpc_connection, new_oracle_txid, rpclib.getinfo(rpc_connection)["pubkey"], "0.001")
+                oracle_subscribe_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscribe_hex["hex"])
+                time.sleep(0.5)
+                while True:
+                    mempool = rpclib.get_rawmempool(rpc_connection)
+                    if oracle_subscribe_txid in mempool:
+                        print("Waiting for oracle subscribtion tx to be mined" + "\n")
+                        time.sleep(6)
                         pass
                     else:
                         break

@@ -25,14 +25,30 @@ def sendrawtransaction(rpc_connection, hex):
     return tx_id
 
 
+def gettransaction(rpc_connection, tx_id):
+    transaction_info = rpc_connection.gettransaction(tx_id)
+    return transaction_info
+
+
+def getrawtransaction(rpc_connection, tx_id):
+    rawtransaction = rpc_connection.getrawtransaction(tx_id)
+    return rawtransaction
+
+
+def getbalance(rpc_connection):
+    balance = rpc_connection.getbalance()
+    return balance
+
 # Token CC calls
 def token_create(rpc_connection, name, supply, description):
     token_hex = rpc_connection.tokencreate(name, supply, description)
     return token_hex
 
+
 def token_info(rpc_connection, token_id):
     token_info = rpc_connection.tokeninfo(token_id)
     return token_info
+
 
 #TODO: have to add option with pubkey input
 def token_balance(rpc_connection, token_id):
