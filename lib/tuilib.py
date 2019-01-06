@@ -656,6 +656,7 @@ def convert_file_oracle_D(rpc_connection):
                 # TODO: have to create oracle but subscribe this time chunks amount times to send whole file in same block
                 # TODO: 2 - on some point file will not fit block - have to find this point
                 # TODO: 3 way how I want to implement it first will keep whole file in RAM - have to implement some way to stream chunks to oracle before whole file readed
+                # TODO: have to "optimise" registration fee
                 # Maybe just check size first by something like a du ?
                 print("Length: " + str(length) + " bytes.\n Chunks amount: " + str(chunks_amount))
                 new_oracle_hex = rpclib.oracles_create(rpc_connection, "tonyconvert_" + str(chunks_amount), path, "D")
@@ -713,6 +714,7 @@ def convert_file_oracle_D(rpc_connection):
                     while True:
                         mempool = rpclib.get_rawmempool(rpc_connection)
                         oracle_data_txid = rpclib.sendrawtransaction(rpc_connection, oracles_data_hex["hex"])
+                        time.sleep(0.1)
                         if oracle_data_txid in mempool:
                             break
                         else:
