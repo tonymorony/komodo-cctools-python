@@ -658,7 +658,7 @@ def convert_file_oracle_D(rpc_connection):
                 # TODO: 3 way how I want to implement it first will keep whole file in RAM - have to implement some way to stream chunks to oracle before whole file readed
                 # Maybe just check size first by something like a du ?
                 print("Length: " + str(length) + " bytes.\n Chunks amount: " + str(chunks_amount))
-                new_oracle_hex = rpclib.oracles_create(rpc_connection, "tonyconvert", path, "D")
+                new_oracle_hex = rpclib.oracles_create(rpc_connection, "tonyconvert_" + str(chunks_amount), path, "D")
                 new_oracle_txid = rpclib.sendrawtransaction(rpc_connection, new_oracle_hex["hex"])
                 time.sleep(0.5)
                 oracle_register_hex = rpclib.oracles_register(rpc_connection, new_oracle_txid, "10000")
@@ -731,7 +731,7 @@ def convert_file_oracle_D(rpc_connection):
                 print(data_for_oracle + "\n")
                 print("Length: " + str(length) + " bytes")
                 print("File converted!")
-                new_oracle_hex = rpclib.oracles_create(rpc_connection, "tonyconvert", path, "D")
+                new_oracle_hex = rpclib.oracles_create(rpc_connection, "tonyconvert_" + "1", path, "D")
                 new_oracle_txid = rpclib.sendrawtransaction(rpc_connection, new_oracle_hex["hex"])
                 time.sleep(0.5)
                 oracle_register_hex = rpclib.oracles_register(rpc_connection, new_oracle_txid, "10000")
@@ -754,7 +754,36 @@ def convert_file_oracle_D(rpc_connection):
                 except Exception as e:
                     print(oracles_data_hex)
                     print(e)
-                print("Oracle created: " + str(new_oracle_txid))
-                print("Data published: " + str(oracle_data_txid))
-                input("Press [Enter] to continue...")
-                break
+                    input("Press [Enter] to continue...")
+                    break
+                else:
+                    print("Oracle created: " + str(new_oracle_txid))
+                    print("Data published: " + str(oracle_data_txid))
+                    input("Press [Enter] to continue...")
+                    break
+
+
+def get_files_list(rpc_connection):
+
+    start_time = time.time()
+    oracles_list = rpclib.oracles_list(rpc_connection)
+    files_list = []
+    for oracle_txid in oracles_list:
+        oraclesinfo_result = rpclib.oracles_info(rpc_connection, oracle_txid)
+        description = oraclesinfo_result['description']
+        name = oraclesinfo_result['name']
+        if name[0:12] == 'tonyconvert_':
+            new_file = '[' + name + ': ' + description + ']: ' + oracle_txid
+            files_list.append(new_file)
+    print("--- %s seconds ---" % (time.time() - start_time))
+    return files_list
+
+
+def display_files_list(rpc_connection):
+    print("Scanning oracles. Please wait...")
+    list_to_display = get_files_list(rpc_connection)
+    while True:
+        for file in list_to_display:
+            print(file + "\n")
+        input("Press [Enter] to continue...")
+        break

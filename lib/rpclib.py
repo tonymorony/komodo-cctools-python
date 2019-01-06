@@ -94,6 +94,16 @@ def oracles_data(rpc_connection, oracle_id, hex_string):
     return oracles_data
 
 
+def oracles_list(rpc_connection):
+    oracles_list = rpc_connection.oracleslist()
+    return oracles_list
+
+
+def oracles_samples(rpc_connection, oracletxid, batonutxo, num):
+    oracles_sample = rpc_connection.oraclessamples(oracletxid, batonutxo, num)
+    return oracles_sample
+
+
 # Gateways CC calls
 # Arguments changing dynamically depends of M N, so supposed to wrap it this way
 # token_id, oracle_id, coin_name, token_supply, M, N + pubkeys for each N

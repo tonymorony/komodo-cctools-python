@@ -21,6 +21,7 @@ menuItems = [
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
     {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Upload file to oracle": tuilib.convert_file_oracle_D},
+    {"Display list of files uploaded to this AC": tuilib.display_files_list},
     {"Exit": exit}
 ]
 
