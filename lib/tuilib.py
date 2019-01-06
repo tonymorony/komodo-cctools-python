@@ -645,10 +645,10 @@ def convert_file_oracle_D(rpc_connection):
             break
         else:
             length = round(len(hex_data) / 2)
-            if length > 800000:
-                print("Too big file size to upload for this version of program. Maximum size is 800KB.")
-                input("Press [Enter] to continue...")
-                break
+            # if length > 800000:
+            #     print("Too big file size to upload for this version of program. Maximum size is 800KB.")
+            #     input("Press [Enter] to continue...")
+            #     break
             if length > 8000:
                 # if file is more than 8000 bytes - slicing it to <= 8000 bytes chunks (16000 symbols = 8000 bytes)
                 data = [hex_data[i:i + 16000] for i in range(0, len(hex_data), 16000)]
@@ -709,6 +709,7 @@ def convert_file_oracle_D(rpc_connection):
                         print(e)
                         input("Press [Enter] to continue...")
                         break
+                    # on broadcasting ensuring that previous one reached mempool before blast next one
                     while True:
                         mempool = rpclib.get_rawmempool(rpc_connection)
                         oracle_data_txid = rpclib.sendrawtransaction(rpc_connection, oracles_data_hex["hex"])
@@ -716,6 +717,19 @@ def convert_file_oracle_D(rpc_connection):
                             break
                         else:
                             pass
+                    # blasting not more than 100 at once (so maximum capacity per block can be changed here)
+                    # but keep in mind that registration UTXOs amount needs to be changed too !
+                    if counter % 100 == 0:
+                        while True:
+                            mempool = rpclib.get_rawmempool(rpc_connection)
+                            if oracle_data_txid in mempool:
+                                print("Waiting for previous data chunks to be mined before send new ones" + "\n")
+                                print("Sent " + str(counter) + " chunks from " + str(chunks_amount))
+                                time.sleep(6)
+                                pass
+                            else:
+                                break
+
                 print("Last baton: " + oracle_data_txid)
                 input("Press [Enter] to continue...")
                 break
