@@ -820,7 +820,7 @@ def files_downloader(rpc_connection):
             # downloading process here
             chunks_amount = int(name[12:])
             data = rpclib.oracles_samples(rpc_connection, oracle_id, latest_baton_txid, str(chunks_amount))["samples"]
-            for chunk in data:
+            for chunk in reversed(data):
                 with open(output_path, 'ab+') as file:
                     file.write(unhexlify(chunk[0]))
             print("I hope that file saved to " + output_path + "\n")
