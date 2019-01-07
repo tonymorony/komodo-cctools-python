@@ -821,9 +821,9 @@ def files_downloader(rpc_connection):
             chunks_amount = int(name[12:])
             data = rpclib.oracles_samples(rpc_connection, oracle_id, latest_baton_txid, str(chunks_amount))["samples"]
             #data_ordered_as_before = data.reverse()
-            for chunk in data:
+            for chunk in data[0]:
                 with open(output_path, 'wb+') as file:
-                    pickle.dump(chunk, file)
+                    file.write(unhexlify(chunk))
             print("I hope that file saved to " + output_path + "\n")
             input("Press [Enter] to continue...")
             break
