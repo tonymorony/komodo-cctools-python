@@ -714,14 +714,14 @@ def convert_file_oracle_D(rpc_connection):
                     while True:
                         mempool = rpclib.get_rawmempool(rpc_connection)
                         oracle_data_txid = rpclib.sendrawtransaction(rpc_connection, oracles_data_hex["hex"])
-                        time.sleep(0.1)
+                        #time.sleep(0.1)
                         if oracle_data_txid in mempool:
                             break
                         else:
                             pass
                     # blasting not more than 100 at once (so maximum capacity per block can be changed here)
                     # but keep in mind that registration UTXOs amount needs to be changed too !
-                    if counter % 100 == 0:
+                    if counter % 100 == 0 and chunks_amount > 100:
                         while True:
                             mempool = rpclib.get_rawmempool(rpc_connection)
                             if oracle_data_txid in mempool:
