@@ -4,7 +4,9 @@ import time
 import readline
 import re
 import sys
+import pickle
 from binascii import hexlify
+from binascii import unhexlify
 from functools import partial
 
 
@@ -637,7 +639,7 @@ def convert_file_oracle_D(rpc_connection):
     while True:
         path = input("Input path to file you want to upload to oracle: ")
         try:
-            hex_data = (hexdump(path, 1))[2:]
+            hex_data = (hexdump(path, 1))
         except Exception as e:
             print(e)
             print("Seems something goes wrong (I guess you've specified wrong path)!")
@@ -803,3 +805,30 @@ def display_files_list(rpc_connection):
             print(file + "\n")
         input("Press [Enter] to continue...")
         break
+
+
+def files_downloader(rpc_connection):
+    while True:
+        display_files_list(rpc_connection)
+        print("\n")
+        oracle_id = input("Input oracle ID you want to download file from: ")
+        output_path = input("Input output path for downloaded file (name included) e.g. /home/test.txt: ")
+        oracle_info = rpclib.oracles_info(rpc_connection, oracle_id)
+        name = oracle_info['name']
+        latest_baton_txid = oracle_info['registered'][0]['batontxid']
+        if name[0:12] == 'tonyconvert_':
+            # downloading process here
+            chunks_amount = int(name[12:])
+            data = rpclib.oracles_samples(rpc_connection, oracle_id, latest_baton_txid, str(chunks_amount))["samples"]
+            #data_ordered_as_before = data.reverse()
+            for chunk in data:
+                with open(output_path, 'wb+') as file:
+                    pickle.dump(chunk, file)
+            print("I hope that file saved to " + output_path + "\n")
+            input("Press [Enter] to continue...")
+            break
+
+        else:
+            print("I cant recognize file inside this oracle. I'm very sorry, boss.")
+            input("Press [Enter] to continue...")
+            break
