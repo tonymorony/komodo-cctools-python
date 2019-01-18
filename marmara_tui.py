@@ -47,7 +47,7 @@ def main():
 if __name__ == "__main__":
     while True:
         try:
-            print(tuilib.colorize("Welcome to the GatewaysCC TUI!\n"
+            print(tuilib.colorize("Welcome to the MarmaraCC TUI!\n"
                                   "Please provide asset chain RPC connection details for initialization", "blue"))
             rpc_connection = tuilib.rpc_connection_tui()
             rpclib.getinfo(rpc_connection)
