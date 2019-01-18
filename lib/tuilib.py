@@ -831,3 +831,21 @@ def files_downloader(rpc_connection):
             print("I cant recognize file inside this oracle. I'm very sorry, boss.")
             input("Press [Enter] to continue...")
             break
+
+
+def marmara_receive_tui(rpc_connection):
+    while True:
+        issuer_pubkey = input("Input pubkey of person from whom you want to receive MARMARA: ")
+        issuance_sum = input("Input sum of MARMARA you want to receive: ")
+        blocks_valid = input("Input amount of blocks for cheque matures: ")
+        try:
+            marmara_receive_txinfo = rpc_connection.marmarareceive(issuer_pubkey, int(issuance_sum), int(blocks_valid))
+            marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["hex"])
+            print("Marmara receive txid broadcasted: " + marmara_receive_txid)
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(e)
+            print("Something went wrong. Please check your input")
+
+
