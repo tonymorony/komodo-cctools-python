@@ -835,23 +835,47 @@ def files_downloader(rpc_connection):
 
 def marmara_receive_tui(rpc_connection):
     while True:
-        issuer_pubkey = input("Input pubkey of person from whom you want to receive MARMARA: ")
-        issuance_sum = input("Input sum of MARMARA you want to receive: ")
+        issuer_pubkey = input("Input pubkey of person who do you want to receive MARMARA from: ")
+        issuance_sum = input("Input amount of MARMARA you want to receive: ")
         blocks_valid = input("Input amount of blocks for cheque matures: ")
         try:
             marmara_receive_txinfo = rpc_connection.marmarareceive(issuer_pubkey, issuance_sum, "MARMARA", blocks_valid)
             marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["rawtx"])
             print("Marmara receive txid broadcasted: " + marmara_receive_txid + "\n")
-            print(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True))
-            print("\n")
+            print(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True) + "\n")
             with open("receive_txids.txt", 'a+') as file:
                 file.write(marmara_receive_txid + "\n")
                 file.write(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True) + "\n")
-            print("Entry is saved to  receive_txids.txt file.")
+            print("Transaction id is saved to  receive_txids.txt file.")
             input("Press [Enter] to continue...")
             break
         except Exception as e:
+            print(marmara_receive_txinfo)
             print(e)
             print("Something went wrong. Please check your input")
+
+
+def marmara_issue_tui(rpc_connection):
+    while True:
+        receiver_pubkey = input("Input pubkey of person who do you want to issue MARMARA: ")
+        issuance_sum = input("Input amount of MARMARA you want to issue: ")
+        maturing_block = input("Input number of block on which issuance mature: ")
+        approval_txid = input("Input receiving request transaction id: ")
+        try:
+            marmara_issue_txinfo = rpc_connection.marmaraissue(receiver_pubkey, issuance_sum, "MARMARA", maturing_block, approval_txid)
+            marmara_issue_txid = rpc_connection.sendrawtransaction(marmara_issue_txinfo["hex"])
+            print("Marmara issuance txid broadcasted: " + marmara_issue_txid + "\n")
+            print(json.dumps(marmara_issue_txinfo, indent=4, sort_keys=True) + "\n")
+            with open("issue_txids.txt", "a+") as file:
+                file.write(marmara_issue_txid + "\n")
+                file.write(json.dumps(marmara_issue_txinfo, indent=4, sort_keys=True) + "\n")
+            print("Transaction id is saved to  issue_txids.txt file.")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_issue_txinfo)
+            print(e)
+            print("Something went wrong. Please check your input")
+
 
 
