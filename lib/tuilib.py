@@ -5,6 +5,7 @@ import readline
 import re
 import sys
 import pickle
+import pprint
 from binascii import hexlify
 from binascii import unhexlify
 from functools import partial
@@ -839,9 +840,14 @@ def marmara_receive_tui(rpc_connection):
         issuance_sum = input("Input sum of MARMARA you want to receive: ")
         blocks_valid = input("Input amount of blocks for cheque matures: ")
         try:
-            marmara_receive_txinfo = rpc_connection.marmarareceive(issuer_pubkey, int(issuance_sum), "MARMARA", int(blocks_valid))
-            marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["hex"])
-            print("Marmara receive txid broadcasted: " + marmara_receive_txid)
+            marmara_receive_txinfo = rpc_connection.marmarareceive(issuer_pubkey, issuance_sum, "MARMARA", blocks_valid)
+            marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["rawtx"])
+            print("Marmara receive txid broadcasted: " + marmara_receive_txid + "\n")
+            pprint.pprint(marmara_receive_txinfo)
+            print("\n")
+            with open("receive_txids.txt", 'a+') as file:
+                file.write(marmara_receive_txid + "\n")
+            print("Entry is saved to  receive_txids.txt file.")
             input("Press [Enter] to continue...")
             break
         except Exception as e:
