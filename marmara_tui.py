@@ -15,6 +15,7 @@ ___  ___                                       _____ _   _ _____ \n\
 
 
 menuItems = [
+    {"Request MARMARA cheque": tuilib.marmara_receive_tui},
     {"Exit": exit}
 ]
 
