@@ -863,7 +863,7 @@ def marmara_issue_tui(rpc_connection):
         approval_txid = input("Input receiving request transaction id: ")
         try:
             marmara_issue_txinfo = rpc_connection.marmaraissue(receiver_pubkey, issuance_sum, "MARMARA", maturing_block, approval_txid)
-            marmara_issue_txid = rpc_connection.sendrawtransaction(marmara_issue_txinfo["hex"])
+            marmara_issue_txid = rpc_connection.sendrawtransaction(marmara_issue_txinfo["rawtx"])
             print("Marmara issuance txid broadcasted: " + marmara_issue_txid + "\n")
             print(json.dumps(marmara_issue_txinfo, indent=4, sort_keys=True) + "\n")
             with open("issue_txids.txt", "a+") as file:

@@ -15,7 +15,10 @@ ___  ___                                       _____ _   _ _____ \n\
 
 
 menuItems = [
+    {"Check current connection": tuilib.getinfo_tui},
+    {"Check mempool": tuilib.print_mempool},
     {"Request MARMARA cheque": tuilib.marmara_receive_tui},
+    {"Issue MARMARA cheque": tuilib.marmara_issue_tui},
     {"Exit": exit}
 ]
 
