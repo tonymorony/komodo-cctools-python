@@ -5,7 +5,6 @@ import readline
 import re
 import sys
 import pickle
-import pprint
 from binascii import hexlify
 from binascii import unhexlify
 from functools import partial
@@ -843,10 +842,11 @@ def marmara_receive_tui(rpc_connection):
             marmara_receive_txinfo = rpc_connection.marmarareceive(issuer_pubkey, issuance_sum, "MARMARA", blocks_valid)
             marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["rawtx"])
             print("Marmara receive txid broadcasted: " + marmara_receive_txid + "\n")
-            pprint.pprint(marmara_receive_txinfo)
+            print(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True))
             print("\n")
             with open("receive_txids.txt", 'a+') as file:
                 file.write(marmara_receive_txid + "\n")
+                file.write(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True) + "\n")
             print("Entry is saved to  receive_txids.txt file.")
             input("Press [Enter] to continue...")
             break
