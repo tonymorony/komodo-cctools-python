@@ -47,10 +47,11 @@ def main():
 # TODO: need to parse config and hardcode it to MTST2
 if __name__ == "__main__":
     while True:
+        chain = input("Input assetchain name (-ac_name= value) you want to work with: ")
         try:
             print(tuilib.colorize("Welcome to the MarmaraCC TUI!\n"
                                   "Please provide asset chain RPC connection details for initialization", "blue"))
-            rpc_connection = tuilib.rpc_connection_tui()
+            rpc_connection = tuilib.def_credentials(chain)
             rpclib.getinfo(rpc_connection)
         except Exception:
             print(tuilib.colorize("Cant connect to RPC! Please re-check credentials.", "pink"))
