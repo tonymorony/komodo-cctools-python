@@ -10,7 +10,7 @@ ___  ___                                       _____ _   _ _____ \n\
 |  \/  |                                      |_   _| | | |_   _|\n\
 | .  . | __ _ _ __ _ __ ___   __ _ _ __ __ _    | | | | | | | |\n\
 | |\/| |/ _` | '__| '_ ` _ \ / _` | '__/ _` |   | | | | | | | |\n\
-| |  | | (_| | |  | | | | | | (_| | | | (_| |   | | | |_| |_| |\n\
+| |  | | (_| | |  | | | | | | (_| | | | (_| |   | | | |_| |_| |_\n\
 \_|  |_/\__,_|_|  |_| |_| |_|\__,_|_|  \__,_|   \_/  \___/ \___/\n"
 
 
@@ -19,6 +19,7 @@ menuItems = [
     {"Check mempool": tuilib.print_mempool},
     {"Request MARMARA cheque": tuilib.marmara_receive_tui},
     {"Issue MARMARA cheque": tuilib.marmara_issue_tui},
+    {"Check credit loop status": tuilib.marmara_creditloop_tui},
     {"Exit": exit}
 ]
 

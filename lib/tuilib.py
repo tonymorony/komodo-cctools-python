@@ -878,4 +878,19 @@ def marmara_issue_tui(rpc_connection):
             print("Something went wrong. Please check your input")
 
 
+def marmara_creditloop_tui(rpc_connection):
+    while True:
+        loop_txid = input("Input transaction ID of credit loop you want to get info about: ")
+        try:
+            marmara_creditloop_info = rpc_connection.marmaracreditloop(loop_txid)
+            print(json.dumps(marmara_creditloop_info, indent=4, sort_keys=True) + "\n")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_creditloop_info)
+            print(e)
+            print("Something went wrong. Please check your input")
+
+
+
 
