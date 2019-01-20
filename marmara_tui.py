@@ -44,7 +44,6 @@ def main():
             pass
 
 
-# TODO: need to parse config and hardcode it to MTST2
 if __name__ == "__main__":
     while True:
         chain = input("Input assetchain name (-ac_name= value) you want to work with: ")
