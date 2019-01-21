@@ -968,3 +968,23 @@ def marmara_lock_tui(rpc_connection):
             print("Something went wrong. Please check your input")
             input("Press [Enter] to continue...")
             break
+
+
+def marmara_info_tui(rpc_connection):
+    while True:
+        firstheight = int(input("Input first height (default 0): ")) or 0
+        lastheight = int(input("Input last height (default current (0) ): ")) or 0
+        minamount = int(input("Input min amount (default 0): ")) or 0
+        maxamount = int(input("Input max amount (default 0): ")) or 0
+        issuerpk = input("Optional: input issuer public key ") or None
+        try:
+            marmara_info = rpc_connection.marmarainfo(firstheight, lastheight, minamount, maxamount, issuerpk)
+            print(json.dumps(marmara_info, indent=4, sort_keys=True) + "\n")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_info)
+            print(e)
+            print("Something went wrong. Please check your input")
+            input("Press [Enter] to continue...")
+            break
