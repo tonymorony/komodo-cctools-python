@@ -972,13 +972,16 @@ def marmara_lock_tui(rpc_connection):
 
 def marmara_info_tui(rpc_connection):
     while True:
-        firstheight = int(input("Input first height (default 0): ")) or 0
-        lastheight = int(input("Input last height (default current (0) ): ")) or 0
-        minamount = int(input("Input min amount (default 0): ")) or 0
-        maxamount = int(input("Input max amount (default 0): ")) or 0
-        issuerpk = input("Optional: input issuer public key ") or None
+        firstheight = input("Input first height (default 0): ")
+        lastheight = input("Input last height (default current (0) ): ")
+        minamount = input("Input min amount (default 0): ")
+        maxamount = input("Input max amount (default 0): ")
+        issuerpk = input("Optional. Input issuer public key: ")
         try:
-            marmara_info = rpc_connection.marmarainfo(firstheight, lastheight, minamount, maxamount, issuerpk)
+            if issuerpk:
+                marmara_info = rpc_connection.marmarainfo(firstheight, lastheight, minamount, maxamount, "MARMARA", issuerpk)
+            else:
+                marmara_info = rpc_connection.marmarainfo(firstheight, lastheight, minamount, maxamount)
             print(json.dumps(marmara_info, indent=4, sort_keys=True) + "\n")
             input("Press [Enter] to continue...")
             break
