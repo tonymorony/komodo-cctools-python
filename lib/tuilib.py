@@ -60,6 +60,39 @@ def rpc_connection_tui():
     return rpc_connection
 
 
+def def_credentials(chain):
+    rpcport ='';
+    operating_system = platform.system()
+    if operating_system == 'Darwin':
+        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
+    elif operating_system == 'Linux':
+        ac_dir = os.environ['HOME'] + '/.komodo'
+    elif operating_system == 'Win64':
+        ac_dir = "dont have windows machine now to test"
+    if chain == 'KMD':
+        coin_config_file = str(ac_dir + '/komodo.conf')
+    else:
+        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
+    with open(coin_config_file, 'r') as f:
+        for line in f:
+            l = line.rstrip()
+            if re.search('rpcuser', l):
+                rpcuser = l.replace('rpcuser=', '')
+            elif re.search('rpcpassword', l):
+                rpcpassword = l.replace('rpcpassword=', '')
+            elif re.search('rpcport', l):
+                rpcport = l.replace('rpcport=', '')
+    if len(rpcport) == 0:
+        if chain == 'KMD':
+            rpcport = 7771
+        else:
+            print("rpcport not in conf file, exiting")
+            print("check "+coin_config_file)
+            exit(1)
+
+    return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
+
+
 def getinfo_tui(rpc_connection):
 
     info_raw = rpclib.getinfo(rpc_connection)
@@ -849,7 +882,7 @@ def marmara_receive_tui(rpc_connection):
             with open("receive_txids.txt", 'a+') as file:
                 file.write(marmara_receive_txid + "\n")
                 file.write(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True) + "\n")
-            print("Transaction id is saved to  receive_txids.txt file.")
+            print("Transaction id is saved to receive_txids.txt file.")
             input("Press [Enter] to continue...")
             break
         except Exception as e:
@@ -872,7 +905,7 @@ def marmara_issue_tui(rpc_connection):
             with open("issue_txids.txt", "a+") as file:
                 file.write(marmara_issue_txid + "\n")
                 file.write(json.dumps(marmara_issue_txinfo, indent=4, sort_keys=True) + "\n")
-            print("Transaction id is saved to  issue_txids.txt file.")
+            print("Transaction id is saved to issue_txids.txt file.")
             input("Press [Enter] to continue...")
             break
         except Exception as e:
@@ -895,37 +928,23 @@ def marmara_creditloop_tui(rpc_connection):
             print("Something went wrong. Please check your input")
 
 
-def def_credentials(chain):
-    rpcport ='';
-    operating_system = platform.system()
-    if operating_system == 'Darwin':
-        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
-    elif operating_system == 'Linux':
-        ac_dir = os.environ['HOME'] + '/.komodo'
-    elif operating_system == 'Win64':
-        ac_dir = "dont have windows machine now to test"
-    if chain == 'KMD':
-        coin_config_file = str(ac_dir + '/komodo.conf')
-    else:
-        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
-    with open(coin_config_file, 'r') as f:
-        for line in f:
-            l = line.rstrip()
-            if re.search('rpcuser', l):
-                rpcuser = l.replace('rpcuser=', '')
-            elif re.search('rpcpassword', l):
-                rpcpassword = l.replace('rpcpassword=', '')
-            elif re.search('rpcport', l):
-                rpcport = l.replace('rpcport=', '')
-    if len(rpcport) == 0:
-        if chain == 'KMD':
-            rpcport = 7771
-        else:
-            print("rpcport not in conf file, exiting")
-            print("check "+coin_config_file)
-            exit(1)
-
-    return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
+def marmara_settlement_tui(rpc_connection):
+    while True:
+        loop_txid = input("Input transaction ID of credit loop to make settlement: ")
+        try:
+            marmara_settlement_info = rpc_connection.marmarasettlement(loop_txid)
+            marmara_settlement_txid = rpc_connection.sendrawtransaction(marmara_settlement_info)
+            print("Loop " + loop_txid + " succesfully settled!\nSettlement txid: " + marmara_settlement_txid)
+            with open("settlement_txids.txt", "a+") as file:
+                file.write(marmara_settlement_txid + "\n")
+                file.write(json.dumps(marmara_settlement_info, indent=4, sort_keys=True) + "\n")
+            print("Transaction id is saved to settlement_txids.txt file.")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_settlement_info)
+            print(e)
+            print("Something went wrong. Please check your input")
 
 
 
