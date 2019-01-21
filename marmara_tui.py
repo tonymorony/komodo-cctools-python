@@ -17,6 +17,7 @@ ___  ___                                       _____ _   _ _____ \n\
 menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
+    {"Lock funds for MARMARA": tuilib.marmara_lock_tui},
     {"Request MARMARA cheque": tuilib.marmara_receive_tui},
     {"Issue MARMARA cheque": tuilib.marmara_issue_tui},
     {"Check credit loop status": tuilib.marmara_creditloop_tui},

@@ -947,3 +947,24 @@ def marmara_settlement_tui(rpc_connection):
             print("Something went wrong. Please check your input")
             input("Press [Enter] to continue...")
             break
+
+
+def marmara_lock_tui(rpc_connection):
+    while True:
+        amount = input("Input amount of coins you want to lock for settlement and staking: ")
+        unlock_height = input("Input height on which coins should be unlocked: ")
+        try:
+            marmara_lock_info = rpc_connection.marmaralock(int(amount), int(unlock_height))
+            marmara_lock_txid = rpc_connection.sendrawtransaction(marmara_lock_info["rawtx"])
+            with open("lock_txids.txt", "a+") as file:
+                file.write(marmara_lock_txid + "\n")
+                file.write(json.dumps(marmara_lock_info, indent=4, sort_keys=True) + "\n")
+            print("Transaction id is saved to lock_txids.txt file.")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_lock_info)
+            print(e)
+            print("Something went wrong. Please check your input")
+            input("Press [Enter] to continue...")
+            break
