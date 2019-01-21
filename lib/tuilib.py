@@ -933,7 +933,7 @@ def marmara_settlement_tui(rpc_connection):
         loop_txid = input("Input transaction ID of credit loop to make settlement: ")
         try:
             marmara_settlement_info = rpc_connection.marmarasettlement(loop_txid)
-            marmara_settlement_txid = rpc_connection.sendrawtransaction(marmara_settlement_info)
+            marmara_settlement_txid = rpc_connection.sendrawtransaction(marmara_settlement_info["rawtx"])
             print("Loop " + loop_txid + " succesfully settled!\nSettlement txid: " + marmara_settlement_txid)
             with open("settlement_txids.txt", "a+") as file:
                 file.write(marmara_settlement_txid + "\n")
@@ -945,7 +945,5 @@ def marmara_settlement_tui(rpc_connection):
             print(marmara_settlement_info)
             print(e)
             print("Something went wrong. Please check your input")
-
-
-
-
+            input("Press [Enter] to continue...")
+            break
