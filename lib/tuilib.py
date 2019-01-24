@@ -876,7 +876,7 @@ def marmara_receive_tui(rpc_connection):
         blocks_valid = input("Input amount of blocks for cheque matures: ")
         try:
             marmara_receive_txinfo = rpc_connection.marmarareceive(issuer_pubkey, issuance_sum, "MARMARA", blocks_valid)
-            marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["rawtx"])
+            marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["hex"])
             print("Marmara receive txid broadcasted: " + marmara_receive_txid + "\n")
             print(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True) + "\n")
             with open("receive_txids.txt", 'a+') as file:
@@ -899,7 +899,7 @@ def marmara_issue_tui(rpc_connection):
         approval_txid = input("Input receiving request transaction id: ")
         try:
             marmara_issue_txinfo = rpc_connection.marmaraissue(receiver_pubkey, issuance_sum, "MARMARA", maturing_block, approval_txid)
-            marmara_issue_txid = rpc_connection.sendrawtransaction(marmara_issue_txinfo["rawtx"])
+            marmara_issue_txid = rpc_connection.sendrawtransaction(marmara_issue_txinfo["hex"])
             print("Marmara issuance txid broadcasted: " + marmara_issue_txid + "\n")
             print(json.dumps(marmara_issue_txinfo, indent=4, sort_keys=True) + "\n")
             with open("issue_txids.txt", "a+") as file:
@@ -933,7 +933,7 @@ def marmara_settlement_tui(rpc_connection):
         loop_txid = input("Input transaction ID of credit loop to make settlement: ")
         try:
             marmara_settlement_info = rpc_connection.marmarasettlement(loop_txid)
-            marmara_settlement_txid = rpc_connection.sendrawtransaction(marmara_settlement_info["rawtx"])
+            marmara_settlement_txid = rpc_connection.sendrawtransaction(marmara_settlement_info["hex"])
             print("Loop " + loop_txid + " succesfully settled!\nSettlement txid: " + marmara_settlement_txid)
             with open("settlement_txids.txt", "a+") as file:
                 file.write(marmara_settlement_txid + "\n")
@@ -955,7 +955,7 @@ def marmara_lock_tui(rpc_connection):
         unlock_height = input("Input height on which coins should be unlocked: ")
         try:
             marmara_lock_info = rpc_connection.marmaralock(int(amount), int(unlock_height))
-            marmara_lock_txid = rpc_connection.sendrawtransaction(marmara_lock_info["rawtx"])
+            marmara_lock_txid = rpc_connection.sendrawtransaction(marmara_lock_info["hex"])
             with open("lock_txids.txt", "a+") as file:
                 file.write(marmara_lock_txid + "\n")
                 file.write(json.dumps(marmara_lock_info, indent=4, sort_keys=True) + "\n")
