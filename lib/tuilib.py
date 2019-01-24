@@ -5,6 +5,9 @@ import readline
 import re
 import sys
 import pickle
+import platform
+import os
+from slickrpc import Proxy
 from binascii import hexlify
 from binascii import unhexlify
 from functools import partial
@@ -55,6 +58,39 @@ def rpc_connection_tui():
         else:
             print(colorize("Please input y or n", "red"))
     return rpc_connection
+
+
+def def_credentials(chain):
+    rpcport ='';
+    operating_system = platform.system()
+    if operating_system == 'Darwin':
+        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
+    elif operating_system == 'Linux':
+        ac_dir = os.environ['HOME'] + '/.komodo'
+    elif operating_system == 'Win64':
+        ac_dir = "dont have windows machine now to test"
+    if chain == 'KMD':
+        coin_config_file = str(ac_dir + '/komodo.conf')
+    else:
+        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
+    with open(coin_config_file, 'r') as f:
+        for line in f:
+            l = line.rstrip()
+            if re.search('rpcuser', l):
+                rpcuser = l.replace('rpcuser=', '')
+            elif re.search('rpcpassword', l):
+                rpcpassword = l.replace('rpcpassword=', '')
+            elif re.search('rpcport', l):
+                rpcport = l.replace('rpcport=', '')
+    if len(rpcport) == 0:
+        if chain == 'KMD':
+            rpcport = 7771
+        else:
+            print("rpcport not in conf file, exiting")
+            print("check "+coin_config_file)
+            exit(1)
+
+    return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
 
 
 def getinfo_tui(rpc_connection):
@@ -829,5 +865,137 @@ def files_downloader(rpc_connection):
 
         else:
             print("I cant recognize file inside this oracle. I'm very sorry, boss.")
+            input("Press [Enter] to continue...")
+            break
+
+
+def marmara_receive_tui(rpc_connection):
+    while True:
+        issuer_pubkey = input("Input pubkey of person who do you want to receive MARMARA from: ")
+        issuance_sum = input("Input amount of MARMARA you want to receive: ")
+        blocks_valid = input("Input amount of blocks for cheque matures: ")
+        try:
+            marmara_receive_txinfo = rpc_connection.marmarareceive(issuer_pubkey, issuance_sum, "MARMARA", blocks_valid)
+            marmara_receive_txid = rpc_connection.sendrawtransaction(marmara_receive_txinfo["hex"])
+            print("Marmara receive txid broadcasted: " + marmara_receive_txid + "\n")
+            print(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True) + "\n")
+            with open("receive_txids.txt", 'a+') as file:
+                file.write(marmara_receive_txid + "\n")
+                file.write(json.dumps(marmara_receive_txinfo, indent=4, sort_keys=True) + "\n")
+            print("Transaction id is saved to receive_txids.txt file.")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_receive_txinfo)
+            print(e)
+            print("Something went wrong. Please check your input")
+
+
+def marmara_issue_tui(rpc_connection):
+    while True:
+        receiver_pubkey = input("Input pubkey of person who do you want to issue MARMARA: ")
+        issuance_sum = input("Input amount of MARMARA you want to issue: ")
+        maturing_block = input("Input number of block on which issuance mature: ")
+        approval_txid = input("Input receiving request transaction id: ")
+        try:
+            marmara_issue_txinfo = rpc_connection.marmaraissue(receiver_pubkey, issuance_sum, "MARMARA", maturing_block, approval_txid)
+            marmara_issue_txid = rpc_connection.sendrawtransaction(marmara_issue_txinfo["hex"])
+            print("Marmara issuance txid broadcasted: " + marmara_issue_txid + "\n")
+            print(json.dumps(marmara_issue_txinfo, indent=4, sort_keys=True) + "\n")
+            with open("issue_txids.txt", "a+") as file:
+                file.write(marmara_issue_txid + "\n")
+                file.write(json.dumps(marmara_issue_txinfo, indent=4, sort_keys=True) + "\n")
+            print("Transaction id is saved to issue_txids.txt file.")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_issue_txinfo)
+            print(e)
+            print("Something went wrong. Please check your input")
+
+
+def marmara_creditloop_tui(rpc_connection):
+    while True:
+        loop_txid = input("Input transaction ID of credit loop you want to get info about: ")
+        try:
+            marmara_creditloop_info = rpc_connection.marmaracreditloop(loop_txid)
+            print(json.dumps(marmara_creditloop_info, indent=4, sort_keys=True) + "\n")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_creditloop_info)
+            print(e)
+            print("Something went wrong. Please check your input")
+
+
+def marmara_settlement_tui(rpc_connection):
+    while True:
+        loop_txid = input("Input transaction ID of credit loop to make settlement: ")
+        try:
+            marmara_settlement_info = rpc_connection.marmarasettlement(loop_txid)
+            marmara_settlement_txid = rpc_connection.sendrawtransaction(marmara_settlement_info["hex"])
+            print("Loop " + loop_txid + " succesfully settled!\nSettlement txid: " + marmara_settlement_txid)
+            with open("settlement_txids.txt", "a+") as file:
+                file.write(marmara_settlement_txid + "\n")
+                file.write(json.dumps(marmara_settlement_info, indent=4, sort_keys=True) + "\n")
+            print("Transaction id is saved to settlement_txids.txt file.")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_settlement_info)
+            print(e)
+            print("Something went wrong. Please check your input")
+            input("Press [Enter] to continue...")
+            break
+
+
+def marmara_lock_tui(rpc_connection):
+    while True:
+        amount = input("Input amount of coins you want to lock for settlement and staking: ")
+        unlock_height = input("Input height on which coins should be unlocked: ")
+        try:
+            marmara_lock_info = rpc_connection.marmaralock(int(amount), int(unlock_height))
+            marmara_lock_txid = rpc_connection.sendrawtransaction(marmara_lock_info["hex"])
+            with open("lock_txids.txt", "a+") as file:
+                file.write(marmara_lock_txid + "\n")
+                file.write(json.dumps(marmara_lock_info, indent=4, sort_keys=True) + "\n")
+            print("Transaction id is saved to lock_txids.txt file.")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_lock_info)
+            print(e)
+            print("Something went wrong. Please check your input")
+            input("Press [Enter] to continue...")
+            break
+
+
+def marmara_info_tui(rpc_connection):
+    while True:
+        firstheight = input("Input first height (default 0): ")
+        if not firstheight:
+            firstheight = "0"
+        lastheight = input("Input last height (default current (0) ): ")
+        if not lastheight:
+            lastheight = "0"
+        minamount = input("Input min amount (default 0): ")
+        if not minamount:
+            minamount = "0"
+        maxamount = input("Input max amount (default 0): ")
+        if not maxamount:
+            maxamount = "0"
+        issuerpk = input("Optional. Input issuer public key: ")
+        try:
+            if issuerpk:
+                marmara_info = rpc_connection.marmarainfo(firstheight, lastheight, minamount, maxamount, "MARMARA", issuerpk)
+            else:
+                marmara_info = rpc_connection.marmarainfo(firstheight, lastheight, minamount, maxamount)
+            print(json.dumps(marmara_info, indent=4, sort_keys=True) + "\n")
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(marmara_info)
+            print(e)
+            print("Something went wrong. Please check your input")
             input("Press [Enter] to continue...")
             break
