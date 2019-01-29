@@ -1190,3 +1190,29 @@ def display_aws_certs_list(rpc_connection):
             print(file + "\n")
         input("Press [Enter] to continue...")
         break
+
+
+def aws_cert_oracle_downloader(rpc_connection):
+    while True:
+        display_aws_certs_list(rpc_connection)
+        print("\n")
+        oracle_id = input("Input oracle ID you want to download certification file from: ")
+        output_path = input("Input output path for downloaded file (name included) e.g. /home/test.txt: ")
+        oracle_info = rpclib.oracles_info(rpc_connection, oracle_id)
+        name = oracle_info['name']
+        latest_baton_txid = oracle_info['registered'][0]['batontxid']
+        if name[0:12] == 'awscert_':
+            # downloading process here
+            chunks_amount = int(name[8:])
+            data = rpclib.oracles_samples(rpc_connection, oracle_id, latest_baton_txid, str(chunks_amount))["samples"]
+            for chunk in reversed(data):
+                with open(output_path, 'ab+') as file:
+                    file.write(unhexlify(chunk[0]))
+            print("File saved to " + output_path + "\n")
+            input("Press [Enter] to continue...")
+            break
+
+        else:
+            print("I cant recognize file inside this oracle. I'm very sorry, boss.")
+            input("Press [Enter] to continue...")
+            break
