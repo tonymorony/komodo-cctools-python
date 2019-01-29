@@ -963,7 +963,6 @@ def marmara_lock_tui(rpc_connection):
             input("Press [Enter] to continue...")
             break
         except Exception as e:
-            print(marmara_lock_info)
             print(e)
             print("Something went wrong. Please check your input")
             input("Press [Enter] to continue...")
