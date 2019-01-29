@@ -23,6 +23,9 @@ menuItems = [
     {"Upload file to oracle": tuilib.convert_file_oracle_D},
     {"Display list of files uploaded to this AC": tuilib.display_files_list},
     {"Download files from oracle": tuilib.files_downloader},
+    {"Upload AWS Certification data": tuilib.aws_cert_oracle_uploader},
+    {"Display list of AWS Certificates uploaded to this AC": tuilib.display_aws_certs_list},
+    {"Download AWS Certificates from chain": tuilib.aws_cert_oracle_downloader},
     {"Exit": exit}
 ]
 

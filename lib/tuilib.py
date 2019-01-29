@@ -999,3 +999,194 @@ def marmara_info_tui(rpc_connection):
             print("Something went wrong. Please check your input")
             input("Press [Enter] to continue...")
             break
+
+
+def aws_cert_oracle_uploader(rpc_connection):
+    while True:
+        path = input("Input path to certification PDF file you want to upload to oracle: ")
+        while True:
+            cert_name = input("Input your name (e.g. John Smith): ")
+            speciality = input("Input speciality (e.g. AWS Certified Solutions Architect - Associate):  ")
+            date_from = input("Input issue date: ")
+            date_to = input("Input expiration date: ")
+            validation_num = input("Input certificate validation number: ")
+            cert_description = "{ \"name\": " + cert_name + " , \"speciality\": " + speciality + " , \"issue_date\": " + date_from + " , \"expiration_date\": " + date_to + " , \"validation_number\": " + validation_num + " }"
+            print("Information you want to save: ")
+            print("Path to PDF certificate:" + path + "\n")
+            print("Certificate description: " + cert_description + "\n")
+            if_save = input("Input y if you want to save this data and n if you want to change it [y/n]:")
+            if if_save == "y":
+                "Saving data"
+                break
+            elif if_save == "n":
+                pass
+            else:
+                "Saving"
+        try:
+            hex_data = (hexdump(path, 1))
+        except Exception as e:
+            print(e)
+            print("Seems something goes wrong (I guess you've specified wrong path)!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            length = round(len(hex_data) / 2)
+            # if length > 800000:
+            #     print("Too big file size to upload for this version of program. Maximum size is 800KB.")
+            #     input("Press [Enter] to continue...")
+            #     break
+            if length > 8000:
+                # if file is more than 8000 bytes - slicing it to <= 8000 bytes chunks (16000 symbols = 8000 bytes)
+                data = [hex_data[i:i + 16000] for i in range(0, len(hex_data), 16000)]
+                chunks_amount = len(data)
+                # TODO: have to create oracle but subscribe this time chunks amount times to send whole file in same block
+                # TODO: 2 - on some point file will not fit block - have to find this point
+                # TODO: 3 way how I want to implement it first will keep whole file in RAM - have to implement some way to stream chunks to oracle before whole file readed
+                # TODO: have to "optimise" registration fee
+                # Maybe just check size first by something like a du ?
+                print("Length: " + str(length) + " bytes.\n Chunks amount: " + str(chunks_amount))
+                new_oracle_hex = rpclib.oracles_create(rpc_connection, "awscert_" + str(chunks_amount), cert_description, "D")
+                new_oracle_txid = rpclib.sendrawtransaction(rpc_connection, new_oracle_hex["hex"])
+                time.sleep(0.5)
+                oracle_register_hex = rpclib.oracles_register(rpc_connection, new_oracle_txid, "10000")
+                oracle_register_txid = rpclib.sendrawtransaction(rpc_connection, oracle_register_hex["hex"])
+                # subscribe chunks_amount + 1 times, but lets limit our broadcasting 100 tx per block (800KB/block)
+                if chunks_amount > 100:
+                    utxo_num = 101
+                else:
+                    utxo_num = chunks_amount
+                while utxo_num > 0:
+                    while True:
+                        oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, new_oracle_txid, rpclib.getinfo(rpc_connection)["pubkey"], "0.001")
+                        oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection,
+                                                                             oracle_subscription_hex['hex'])
+                        mempool = rpclib.get_rawmempool(rpc_connection)
+                        if oracle_subscription_txid in mempool:
+                            break
+                        else:
+                            pass
+                    print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
+                    utxo_num = utxo_num - 1
+                # waiting for last broadcasted subscribtion transaction to be mined to be sure that money are on oracle balance
+                while True:
+                    mempool = rpclib.get_rawmempool(rpc_connection)
+                    if oracle_subscription_txid in mempool:
+                        print("Waiting for oracle subscribtion tx to be mined" + "\n")
+                        time.sleep(6)
+                        pass
+                    else:
+                        break
+                print("Oracle preparation is finished. Oracle txid: " + new_oracle_txid)
+                # can publish data now
+                counter = 0
+                for chunk in data:
+                    hex_length_bigendian = format(round(len(chunk) / 2), '#06x')[2:]
+                    # swap to get little endian length
+                    a = hex_length_bigendian[2:]
+                    b = hex_length_bigendian[:2]
+                    hex_length = a + b
+                    data_for_oracle = str(hex_length) + chunk
+                    counter = counter + 1
+                    # print("Chunk number: " + str(counter) + "\n")
+                    # print(data_for_oracle)
+                    try:
+                        oracles_data_hex = rpclib.oracles_data(rpc_connection, new_oracle_txid, data_for_oracle)
+                    except Exception as e:
+                        print(data_for_oracle)
+                        print(e)
+                        input("Press [Enter] to continue...")
+                        break
+                    # on broadcasting ensuring that previous one reached mempool before blast next one
+                    while True:
+                        mempool = rpclib.get_rawmempool(rpc_connection)
+                        oracle_data_txid = rpclib.sendrawtransaction(rpc_connection, oracles_data_hex["hex"])
+                        #time.sleep(0.1)
+                        if oracle_data_txid in mempool:
+                            break
+                        else:
+                            pass
+                    # blasting not more than 100 at once (so maximum capacity per block can be changed here)
+                    # but keep in mind that registration UTXOs amount needs to be changed too !
+                    if counter % 100 == 0 and chunks_amount > 100:
+                        while True:
+                            mempool = rpclib.get_rawmempool(rpc_connection)
+                            if oracle_data_txid in mempool:
+                                print("Waiting for previous data chunks to be mined before send new ones" + "\n")
+                                print("Sent " + str(counter) + " chunks from " + str(chunks_amount))
+                                time.sleep(6)
+                                pass
+                            else:
+                                break
+
+                print("Last baton: " + oracle_data_txid)
+                input("Press [Enter] to continue...")
+                break
+            # if file suits single oraclesdata just broadcasting it straight without any slicing
+            else:
+                hex_length_bigendian = format(length, '#06x')[2:]
+                # swap to get little endian length
+                a = hex_length_bigendian[2:]
+                b = hex_length_bigendian[:2]
+                hex_length = a + b
+                data_for_oracle = str(hex_length) + hex_data
+                print("File hex representation: \n")
+                print(data_for_oracle + "\n")
+                print("Length: " + str(length) + " bytes")
+                print("File converted!")
+                new_oracle_hex = rpclib.oracles_create(rpc_connection, "awscert_" + "1", cert_description, "D")
+                new_oracle_txid = rpclib.sendrawtransaction(rpc_connection, new_oracle_hex["hex"])
+                time.sleep(0.5)
+                oracle_register_hex = rpclib.oracles_register(rpc_connection, new_oracle_txid, "10000")
+                oracle_register_txid = rpclib.sendrawtransaction(rpc_connection, oracle_register_hex["hex"])
+                time.sleep(0.5)
+                oracle_subscribe_hex = rpclib.oracles_subscribe(rpc_connection, new_oracle_txid, rpclib.getinfo(rpc_connection)["pubkey"], "0.001")
+                oracle_subscribe_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscribe_hex["hex"])
+                time.sleep(0.5)
+                while True:
+                    mempool = rpclib.get_rawmempool(rpc_connection)
+                    if oracle_subscribe_txid in mempool:
+                        print("Waiting for oracle subscribtion tx to be mined" + "\n")
+                        time.sleep(6)
+                        pass
+                    else:
+                        break
+                oracles_data_hex = rpclib.oracles_data(rpc_connection, new_oracle_txid, data_for_oracle)
+                try:
+                    oracle_data_txid = rpclib.sendrawtransaction(rpc_connection, oracles_data_hex["hex"])
+                except Exception as e:
+                    print(oracles_data_hex)
+                    print(e)
+                    input("Press [Enter] to continue...")
+                    break
+                else:
+                    print("Oracle created: " + str(new_oracle_txid))
+                    print("Data published: " + str(oracle_data_txid))
+                    input("Press [Enter] to continue...")
+                    break
+
+
+def get_certs_list(rpc_connection):
+
+    start_time = time.time()
+    oracles_list = rpclib.oracles_list(rpc_connection)
+    files_list = []
+    for oracle_txid in oracles_list:
+        oraclesinfo_result = rpclib.oracles_info(rpc_connection, oracle_txid)
+        description = oraclesinfo_result['description']
+        name = oraclesinfo_result['name']
+        if name[0:8] == 'awscert_':
+            new_file = '[' + name + ': ' + description + ']: ' + oracle_txid
+            files_list.append(new_file)
+    print("--- %s seconds ---" % (time.time() - start_time))
+    return files_list
+
+
+def display_aws_certs_list(rpc_connection):
+
+    print("Scanning oracles. Please wait...")
+    list_to_display = get_certs_list(rpc_connection)
+    while True:
+        for file in list_to_display:
+            print(file + "\n")
+        input("Press [Enter] to continue...")
+        break
