@@ -954,7 +954,7 @@ def marmara_lock_tui(rpc_connection):
         amount = input("Input amount of coins you want to lock for settlement and staking: ")
         unlock_height = input("Input height on which coins should be unlocked: ")
         try:
-            marmara_lock_info = rpc_connection.marmaralock(int(amount), int(unlock_height))
+            marmara_lock_info = rpc_connection.marmaralock(amount, unlock_height)
             marmara_lock_txid = rpc_connection.sendrawtransaction(marmara_lock_info["hex"])
             with open("lock_txids.txt", "a+") as file:
                 file.write(marmara_lock_txid + "\n")
