@@ -279,67 +279,6 @@ def oracle_subscription_utxogen(rpc_connection):
         input("Press [Enter] to continue...")
         break
 
-
-def token_converter_tui(rpc_connection):
-    #TODO: have an idea since blackjoker new RPC call
-    #grab all list and printout only or which owner match with node pubkey
-    try:
-        print(colorize("Tokens created from this instance by TUI: \n", "blue"))
-        with open("tokens_list", "r") as file:
-            for oracle in file:
-                print(oracle)
-        print(colorize('_' * 65, "blue"))
-        print("\n")
-    except FileNotFoundError:
-        print("Seems like a no oracles created from this instance yet\n")
-        pass
-    while True:
-        try:
-            evalcode = "241"
-            token_id = input("Input id of token which you want to convert: ")
-            # informative printouts
-            token_info = rpclib.token_info(rpc_connection, token_id)
-            token_balance = rpclib.token_balance(rpc_connection, token_id)
-            try:
-                print(colorize("\n{} token supply: {}\n".format(token_id, token_info["supply"]), "blue"))
-                print("Your pubkey balance for this token: {}\n".format(token_balance["balance"]))
-            except (KeyError, ConnectionResetError):
-                print(colorize("Please re-check your input", "red"))
-                input("Press [Enter] to continue...")
-                break
-            print(colorize('_' * 65, "blue"))
-            print("\n")
-            pubkey = input("Input pubkey to which you want to convert (for initial conversion use \
-03ea9c062b9652d8eff34879b504eda0717895d27597aaeb60347d65eed96ccb40): ")
-            # TODO: have to print here pubkey with which started chain daemon
-            supply = str(input("Input supply which you want to convert (for initial conversion set all token supply): "))
-        except KeyboardInterrupt:
-            break
-        token_convert_hex = rpclib.token_convert(rpc_connection, evalcode, token_id, pubkey, supply)
-        if token_convert_hex['result'] == "error":
-            print(colorize("\nSomething went wrong!\n", "pink"))
-            print(token_convert_hex)
-            print("\n")
-            input("Press [Enter] to continue...")
-            break
-        else:
-            try:
-                token_convert_txid = rpclib.sendrawtransaction(rpc_connection, token_convert_hex['hex'])
-            except KeyError:
-                print(token_convert_hex)
-                print("Error")
-                input("Press [Enter] to continue...")
-                break
-            else:
-                print(colorize("Token convertion transaction broadcasted: " + token_convert_txid, "green"))
-                file = open("token_convert_list", "a")
-                file.writelines(token_convert_txid + "\n")
-                file.close()
-                print(colorize("Entry added to token_convert_list file!\n", "green"))
-                input("Press [Enter] to continue...")
-                break
-
-
 def gateways_bind_tui(rpc_connection):
     # main loop with keyboard interrupt handling
     while True:
