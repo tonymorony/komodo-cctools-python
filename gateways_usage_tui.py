@@ -18,7 +18,6 @@ menuItems = [
     {"Check assetchain mempool": tuilib.print_mempool},
     {"Check connection to KMD": tuilib.getinfo_tui},
     {"Connect to KMD daemon": tuilib.rpc_kmd_connection_tui},
-    {"Token converter": tuilib.token_converter_tui},
     {"Send KMD gateway deposit transaction": tuilib.gateways_send_kmd},
     {"Execute gateways deposit": tuilib.gateways_deposit_tui},
     {"Execute gateways claim": tuilib.gateways_claim_tui},
