@@ -1008,15 +1008,18 @@ def rogue_newgame_multiplayer(rpc_connection):
             break
         else:
             print("Please re-check your input")
+            input("Press [Enter] to continue...")
     while True:
         buyin = input("Input game buyin (>0.001): ")
         if float(buyin) > 0.001:
             break
         else:
             print("Please re-check your input")
+            input("Press [Enter] to continue...")
     try:
         new_game_txid = rpc_connection.cclib("newgame", "17", '"[' + max_players + "," + buyin + ']"')["txid"]
         print("New multiplayer game succesfully created. txid: " + new_game_txid)
+        input("Press [Enter] to continue...")
     except Exception as e:
         print("Something went wrong.")
         print(e)
