@@ -1057,6 +1057,6 @@ def rogue_join_multiplayer_game(rpc_connection):
                 print(newgame_regisration)
                 print(e)
                 input("Press [Enter] to continue...")
-        except signal.SIGINT:
+        except KeyboardInterrupt:
             break
 
