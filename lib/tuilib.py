@@ -941,13 +941,13 @@ def marmara_info_tui(rpc_connection):
 
 
 def rogue_game_info(rpc_connection, game_txid):
-    game_info_arg = "'" + "[%22" + game_txid + "%22]" + "'"
+    game_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
     game_info = rpc_connection.cclib("gameinfo", "17", game_info_arg)
     return game_info
 
 
 def rogue_game_register(rpc_connection, game_txid):
-    registration_info_arg = "'" + "[%22" + game_txid + "%22]" + "'"
+    registration_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
     registration_info = rpc_connection.cclib("register", "17", registration_info_arg)
     return registration_info
 
