@@ -967,7 +967,7 @@ def print_multiplayer_games_list(rpc_connection):
         print("Multiplayer games availiable to join: ")
         for multiplayer_game in multiplayer_pending_list:
             print(multiplayer_game)
-        print("R + Enter to refresh list. E + Enter to exit menu." + "\n")
+        print("R + Enter to refresh list. E + Enter go to the game choice." + "\n")
         is_refresh = input("Choose your destiny: ")
         if is_refresh == "R":
             print("\n")
@@ -1024,3 +1024,19 @@ def rogue_newgame_multiplayer(rpc_connection):
         print("Something went wrong.")
         print(e)
         input("Press [Enter] to continue...")
+
+
+def rogue_join_multiplayer_game(rpc_connection):
+    print_multiplayer_games_list(rpc_connection)
+    game_txid = input("Input txid of game you want to join: ")
+    try:
+        newgame_regisration_txid = rogue_game_register(rpc_connection, game_txid)["txid"]
+        game_info = rogue_game_info(rpc_connection, game_txid)
+        print("Succesfully registered.")
+        print(game_info)
+        input("Press [Enter] to continue...")
+    except Exception as e:
+        print("Something went wrong.")
+        print(e)
+        input("Press [Enter] to continue...")
+
