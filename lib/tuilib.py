@@ -7,6 +7,7 @@ import sys
 import pickle
 import platform
 import os
+import subprocess
 from slickrpc import Proxy
 from binascii import hexlify
 from binascii import unhexlify
@@ -939,18 +940,34 @@ def marmara_info_tui(rpc_connection):
             break
 
 
+def rogue_game_info(rpc_connection, game_txid):
+    game_info_arg = "'" + "[%22" + game_txid + "%22]" + "'"
+    game_info = rpc_connection.cclib("gameinfo", "17", game_info_arg)
+    return game_info
+
+
+def rogue_game_register(rpc_connection, game_txid):
+    registration_info_arg = "'" + "[%22" + game_txid + "%22]" + "'"
+    registration_info = rpc_connection.cclib("gameinfo", "17", registration_info_arg)
+    return registration_info
+
+
 def rogue_newgame_singleplayer(rpc_connection):
     try:
-       new_game_txid = rpc_connection.cclib("newgame", "17", "[1]")["txid"]
-       print("New singleplayer training game succesfully created. txid: " + new_game_txid)
-       while True:
-           mempool = rpc_connection.getrawmempool()
-           if new_game_txid in mempool:
-               print("Waiting for game transaction to be mined")
-               time.sleep(2)
-           else:
-               break
-       input("Press [Enter] to continue...")
+        new_game_txid = rpc_connection.cclib("newgame", "17", "[1]")["txid"]
+        print("New singleplayer training game succesfully created. txid: " + new_game_txid)
+        while True:
+            mempool = rpc_connection.getrawmempool()
+            if new_game_txid in mempool:
+                print("Waiting for game transaction to be mined")
+                time.sleep(5)
+            else:
+                print("Game transaction is mined")
+                break
+        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+        game_info = rogue_game_info(rpc_connection, new_game_txid)
+        subprocess.call(["cc/rogue/rogue", game_info["seed"], game_info["gametxid"]])
+        input("Press [Enter] to continue...")
     except Exception as e:
         print("Something went wrong.")
         print(e)
