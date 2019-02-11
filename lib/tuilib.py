@@ -1042,14 +1042,15 @@ def rogue_join_multiplayer_game(rpc_connection):
     # TODO: optional player data txid (print players you have and ask if you want to choose one)
     game_txid = input("Input txid of game you want to join: ")
     try:
-        newgame_regisration_txid = rogue_game_register(rpc_connection, game_txid)["txid"]
+        newgame_regisration = rogue_game_register(rpc_connection, game_txid)
+        newgame_regisration_txid = newgame_regisration["txid"]
         game_info = rogue_game_info(rpc_connection, game_txid)
         print("Succesfully registered.")
         print(game_info)
         input("Press [Enter] to continue...")
     except Exception as e:
         print("Something went wrong.")
-        print(newgame_regisration_txid)
+        print(newgame_regisration)
         print(e)
         input("Press [Enter] to continue...")
 
