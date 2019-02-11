@@ -23,8 +23,8 @@ menuItems = [
     {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
     {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
     {"Start multiplayer game": "test"},
-    {"Exit the game (bailout)": "test"},
-    {"Claim ROGUE coins for game (highlander)": "test"},
+    {"Manually exit the game (bailout)": "test"},
+    {"Manually claim ROGUE coins for game (highlander)": "test"},
     {"Exit": exit}
 ]
 
