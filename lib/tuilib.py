@@ -969,9 +969,9 @@ def print_multiplayer_games_list(rpc_connection):
             game_info = rogue_game_info(rpc_connection, multiplayer_game)
             game_info_dict = {}
             game_info_dict["gametxid"] = game_info["gametxid"]
-            game_info_dict["numplayers"] = game_info_dict["numplayers"]
-            game_info_dict["maxplayers"] = game_info_dict["maxplayers"]
-            game_info_dict["buyin"] = game_info_dict["buyin"]
+            game_info_dict["numplayers"] = game_info["numplayers"]
+            game_info_dict["maxplayers"] = game_info["maxplayers"]
+            game_info_dict["buyin"] = game_info["buyin"]
             multiplayer_pending_info.append(game_info_dict)
         print("Multiplayer games availiable to join: ")
         for multiplayer_game in multiplayer_pending_info:
