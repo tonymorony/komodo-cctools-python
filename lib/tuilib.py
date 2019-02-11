@@ -995,10 +995,10 @@ def rogue_newgame_singleplayer(rpc_connection):
         while True:
             mempool = rpc_connection.getrawmempool()
             if new_game_txid in mempool:
-                print("Waiting for game transaction to be mined")
+                print(colorize("Waiting for game transaction to be mined", "blue"))
                 time.sleep(5)
             else:
-                print("Game transaction is mined")
+                print(colorize("Game transaction is mined", "green"))
                 break
         newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
@@ -1028,7 +1028,7 @@ def rogue_newgame_multiplayer(rpc_connection):
             input("Press [Enter] to continue...")
     try:
         new_game_txid = rpc_connection.cclib("newgame", "17", '"[' + max_players + "," + buyin + ']"')["txid"]
-        print("New multiplayer game succesfully created. txid: " + new_game_txid)
+        print(colorize("New multiplayer game succesfully created. txid: " + new_game_txid, "green"))
         input("Press [Enter] to continue...")
     except Exception as e:
         print("Something went wrong.")
@@ -1046,7 +1046,7 @@ def rogue_join_multiplayer_game(rpc_connection):
             newgame_regisration = rogue_game_register(rpc_connection, game_txid)
             newgame_regisration_txid = newgame_regisration["txid"]
             game_info = rogue_game_info(rpc_connection, game_txid)
-            print("Succesfully registered.")
+            print(colorize("Succesfully registered.", "green"))
             print(game_info)
             input("Press [Enter] to continue...")
             break
