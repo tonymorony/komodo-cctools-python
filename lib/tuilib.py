@@ -958,6 +958,18 @@ def rogue_pending(rpc_connection):
     return rogue_pending_list
 
 
+def rogue_bailout(rpc_connection, game_txid):
+    bailout_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+    bailout_info = rpc_connection.cclib("bailout", "17", bailout_info_arg)
+    return bailout_info
+
+
+def rogue_highlander(rpc_connection, game_txid):
+    highlander_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+    highlander_info = rpc_connection.cclib("highlander", "17", highlander_info_arg)
+    return highlander_info
+
+
 def print_multiplayer_games_list(rpc_connection):
     while True:
         pending_list = rogue_pending(rpc_connection)
@@ -977,7 +989,7 @@ def print_multiplayer_games_list(rpc_connection):
         print("Multiplayer games availiable to join: \n")
         for multiplayer_game in multiplayer_pending_info:
             print(multiplayer_game)
-        print(colorize("\nR + Enter to refresh list.\nE + Enter go to the game choice." + "\n", "blue"))
+        print(colorize("\nR + Enter - refresh list.\nE + Enter - to the game choice.\nCTRL + C - back to main menu", "blue"))
         is_refresh = input("Choose your destiny: ")
         if is_refresh == "R":
             print("\n")
@@ -1003,8 +1015,10 @@ def rogue_newgame_singleplayer(rpc_connection):
                 break
         newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
-        # TODO: have to save game info and date/time to file
         subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+        bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+        print(bailout_info)
+        print("\nGame is finished!\n")
         input("Press [Enter] to continue...")
     except Exception as e:
         print("Something went wrong.")
@@ -1040,7 +1054,6 @@ def rogue_newgame_multiplayer(rpc_connection):
 def rogue_join_multiplayer_game(rpc_connection):
     while True:
         try:
-            # TODO: make list informative (not just txids)
             print_multiplayer_games_list(rpc_connection)
             # TODO: optional player data txid (print players you have and ask if you want to choose one)
             game_txid = input("Input txid of game you want to join: ")
