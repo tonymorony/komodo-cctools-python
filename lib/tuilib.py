@@ -973,10 +973,10 @@ def print_multiplayer_games_list(rpc_connection):
             game_info_dict["maxplayers"] = game_info["maxplayers"]
             game_info_dict["buyin"] = game_info["buyin"]
             multiplayer_pending_info.append(game_info_dict)
-        print("Multiplayer games availiable to join: ")
+        print("Multiplayer games availiable to join: \n")
         for multiplayer_game in multiplayer_pending_info:
             print(multiplayer_game)
-        print(colorize("\nR + Enter to refresh list. E + Enter go to the game choice." + "\n"), "blue")
+        print(colorize("\nR + Enter to refresh list.\n E + Enter go to the game choice." + "\n", "blue"))
         is_refresh = input("Choose your destiny: ")
         if is_refresh == "R":
             print("\n")
