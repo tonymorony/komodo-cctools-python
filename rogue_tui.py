@@ -21,8 +21,10 @@ menuItems = [
     {"Check mempool": tuilib.print_mempool},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
-    {"Join multiplayer game": tuilib.rogue_join_multiplayer_game},
+    {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
     {"Start multiplayer game": "test"},
+    {"Exit the game (bailout)": "test"},
+    {"Claim ROGUE coins for game (highlander)": "test"},
     {"Exit": exit}
 ]
 

@@ -964,10 +964,19 @@ def print_multiplayer_games_list(rpc_connection):
         for game in pending_list["pending"]:
             if rogue_game_info(rpc_connection, game)["maxplayers"] > 1:
                 multiplayer_pending_list.append(game)
-        print("Multiplayer games availiable to join: ")
+        multiplayer_pending_info = []
         for multiplayer_game in multiplayer_pending_list:
+            game_info = rogue_game_info(rpc_connection, multiplayer_game)
+            game_info_dict = {}
+            game_info_dict["gametxid"] = game_info["gametxid"]
+            game_info_dict["numplayers"] = game_info_dict["numplayers"]
+            game_info_dict["maxplayers"] = game_info_dict["maxplayers"]
+            game_info_dict["buyin"] = game_info_dict["buyin"]
+            multiplayer_pending_info.append(game_info_dict)
+        print("Multiplayer games availiable to join: ")
+        for multiplayer_game in multiplayer_pending_info:
             print(multiplayer_game)
-        print("R + Enter to refresh list. E + Enter go to the game choice." + "\n")
+        print(colorize("\nR + Enter to refresh list. E + Enter go to the game choice." + "\n"), "blue")
         is_refresh = input("Choose your destiny: ")
         if is_refresh == "R":
             print("\n")
@@ -993,6 +1002,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                 break
         newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
+        # TODO: have to save game info and date/time to file
         subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
         input("Press [Enter] to continue...")
     except Exception as e:
@@ -1027,7 +1037,9 @@ def rogue_newgame_multiplayer(rpc_connection):
 
 
 def rogue_join_multiplayer_game(rpc_connection):
+    # TODO: make list informative (not just txids)
     print_multiplayer_games_list(rpc_connection)
+    # TODO: optional player data txid (print players you have and ask if you want to choose one)
     game_txid = input("Input txid of game you want to join: ")
     try:
         newgame_regisration_txid = rogue_game_register(rpc_connection, game_txid)["txid"]
