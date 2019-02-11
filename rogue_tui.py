@@ -20,6 +20,8 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
     {"Start singleplayer training game": tuilib.rogue_newgame_singleplayer},
+    {"Start multiplayer game":"test"},
+    {"Join multiplayer game": tuilib.print_multiplayer_games_list},
     {"Exit": exit}
 ]
 

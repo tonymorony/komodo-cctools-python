@@ -952,6 +952,11 @@ def rogue_game_register(rpc_connection, game_txid):
     return registration_info
 
 
+def rogue_pending(rpc_connection):
+    rogue_pending_list = rpc_connection.cclib("pending", "17")
+    return rogue_pending_list
+
+
 def rogue_newgame_singleplayer(rpc_connection):
     try:
         new_game_txid = rpc_connection.cclib("newgame", "17", "[1]")["txid"]
@@ -972,3 +977,15 @@ def rogue_newgame_singleplayer(rpc_connection):
         print("Something went wrong.")
         print(e)
         input("Press [Enter] to continue...")
+
+
+def print_multiplayer_games_list(rpc_connection):
+    pending_list = rogue_pending(rpc_connection)
+    multiplayer_pending_list = []
+    for game in pending_list["pending"]:
+        if rogue_game_info(rpc_connection, game)["maxplayers"] > 0:
+            multiplayer_pending_list.append(game)
+    print("Multiplayer games availiable to join: ")
+    for multiplayer_game in multiplayer_pending_list:
+        print(multiplayer_game)
+    input("Press [Enter] to continue...")
