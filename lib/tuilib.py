@@ -943,6 +943,13 @@ def rogue_newgame_singleplayer(rpc_connection):
     try:
        new_game_txid = rpc_connection.cclib("newgame", "17", "[1]")["txid"]
        print("New singleplayer training game succesfully created. txid: " + new_game_txid)
+       while True:
+           mempool = rpc_connection.getrawmempool()
+           if new_game_txid in mempool:
+               print("Waiting for game transaction to be mined")
+               time.sleep(2)
+           else:
+               break
        input("Press [Enter] to continue...")
     except Exception as e:
         print("Something went wrong.")
