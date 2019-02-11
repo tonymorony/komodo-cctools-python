@@ -948,7 +948,7 @@ def rogue_game_info(rpc_connection, game_txid):
 
 def rogue_game_register(rpc_connection, game_txid):
     registration_info_arg = "'" + "[%22" + game_txid + "%22]" + "'"
-    registration_info = rpc_connection.cclib("gameinfo", "17", registration_info_arg)
+    registration_info = rpc_connection.cclib("register", "17", registration_info_arg)
     return registration_info
 
 
@@ -964,7 +964,7 @@ def rogue_newgame_singleplayer(rpc_connection):
             else:
                 print("Game transaction is mined")
                 break
-        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["gametxid"]
+        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         subprocess.call(["../cc/rogue/rogue", game_info["seed"], game_info["gametxid"]])
         input("Press [Enter] to continue...")
