@@ -941,7 +941,7 @@ def marmara_info_tui(rpc_connection):
 
 def rogue_newgame_singleplayer(rpc_connection):
     try:
-       new_game_txid = rpc_connection.cclib("newgame", "[1]")["txid"]
+       new_game_txid = rpc_connection.cclib("newgame", "17", "[1]")["txid"]
        print("New singleplayer training game succesfully created. txid: " + new_game_txid)
        input("Press [Enter] to continue...")
     except Exception as e:
