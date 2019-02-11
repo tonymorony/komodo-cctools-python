@@ -977,7 +977,7 @@ def print_multiplayer_games_list(rpc_connection):
             break
         else:
             print("\nPlease choose R or E\n")
-            
+
 
 def rogue_newgame_singleplayer(rpc_connection):
     try:
