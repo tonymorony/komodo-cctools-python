@@ -983,7 +983,7 @@ def print_multiplayer_games_list(rpc_connection):
     pending_list = rogue_pending(rpc_connection)
     multiplayer_pending_list = []
     for game in pending_list["pending"]:
-        if rogue_game_info(rpc_connection, game)["maxplayers"] > 0:
+        if rogue_game_info(rpc_connection, game)["maxplayers"] > 1:
             multiplayer_pending_list.append(game)
     print("Multiplayer games availiable to join: ")
     for multiplayer_game in multiplayer_pending_list:
