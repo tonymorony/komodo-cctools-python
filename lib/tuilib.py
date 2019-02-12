@@ -1028,14 +1028,15 @@ def rogue_newgame_singleplayer(rpc_connection):
                 is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
                 if is_choice_needed == "y":
                     player_txid = input("Please input player txid: ")
+                    newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid, player_txid)["txid"]
                     break
                 elif is_choice_needed == "n":
+                    newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
                     break
                 else:
                     print("Please choose y or n !")
-        if is_choice_needed == "y":
-            newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid, player_txid)["txid"]
-        elif is_choice_needed == "n":
+        else:
+            print("No players available to select")
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
