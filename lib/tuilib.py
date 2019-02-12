@@ -947,11 +947,11 @@ def rogue_game_info(rpc_connection, game_txid):
     return game_info
 
 
-def rogue_game_register(rpc_connection, game_txid, player_txid = None):
+def rogue_game_register(rpc_connection, game_txid, player_txid = False):
     if player_txid:
-        registration_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
-    else:
         registration_info_arg = '"' + "[%22" + game_txid + "%22,%22" + player_txid + "%22]" + '"'
+    else:
+        registration_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
     registration_info = rpc_connection.cclib("register", "17", registration_info_arg)
     return registration_info
 
@@ -1034,7 +1034,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                 else:
                     print("Please choose y or n !")
         if is_choice_needed == "y":
-            newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+            newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid, player_txid)["txid"]
         elif is_choice_needed == "n":
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
