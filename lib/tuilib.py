@@ -1046,6 +1046,8 @@ def rogue_newgame_singleplayer(rpc_connection):
             current_height = int(rpc_connection.getinfo()["blocks"])
             height_difference = current_height - game_end_height
             if height_difference == 0:
+                print(current_height)
+                print(game_end_height)
                 print(colorize("Waiting for next block", "blue"))
                 time.sleep(5)
             else:
