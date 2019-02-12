@@ -947,8 +947,11 @@ def rogue_game_info(rpc_connection, game_txid):
     return game_info
 
 
-def rogue_game_register(rpc_connection, game_txid):
-    registration_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+def rogue_game_register(rpc_connection, game_txid, player_txid = None):
+    if player_txid:
+        registration_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+    else:
+        registration_info_arg = '"' + "[%22" + game_txid + "%22,%22" + player_txid + "%22]" + '"'
     registration_info = rpc_connection.cclib("register", "17", registration_info_arg)
     return registration_info
 
@@ -968,6 +971,11 @@ def rogue_highlander(rpc_connection, game_txid):
     highlander_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
     highlander_info = rpc_connection.cclib("highlander", "17", highlander_info_arg)
     return highlander_info
+
+
+def rogue_players_list(rpc_connection):
+    rogue_players_list = rpc_connection.cclib("players", "17")
+    return rogue_players_list
 
 
 def print_multiplayer_games_list(rpc_connection):
@@ -1013,7 +1021,22 @@ def rogue_newgame_singleplayer(rpc_connection):
             else:
                 print(colorize("Game transaction is mined", "green"))
                 break
-        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+        players_list = rogue_players_list(rpc_connection)
+        if len(players_list["playerdata"]) > 0:
+            print(players_list)
+            while True:
+                is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
+                if is_choice_needed == "y":
+                    player_txid = input("Please input player txid: ")
+                    break
+                elif is_choice_needed == "n":
+                    break
+                else:
+                    print("Please choose y or n !")
+        if is_choice_needed == "y":
+            newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+        elif is_choice_needed == "n":
+            newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
         bailout_info = rogue_bailout(rpc_connection, new_game_txid)
