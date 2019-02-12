@@ -1044,6 +1044,14 @@ def rogue_newgame_singleplayer(rpc_connection):
         bailout_info = rogue_bailout(rpc_connection, new_game_txid)
         print(bailout_info)
         print("\nGame is finished!\n")
+        bailout_txid = bailout_info["txid"]
+        while True:
+            if bailout_txid in mempool:
+                print(colorize("Waiting for bailout transaction to be mined", "blue"))
+                time.sleep(5)
+            else:
+                print(colorize("Bailout transaction is mined", "green"))
+                break
         input("Press [Enter] to continue...")
     except Exception as e:
         print("Something went wrong.")
