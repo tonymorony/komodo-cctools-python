@@ -1037,6 +1037,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                     print("Please choose y or n !")
         else:
             print("No players available to select")
+            input("Press [Enter] to continue...")
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
@@ -1097,3 +1098,7 @@ def rogue_join_multiplayer_game(rpc_connection):
         except KeyboardInterrupt:
             break
 
+
+def print_players_list(rpc_connection):
+    print(rogue_players_list(rpc_connection))
+    input("Press [Enter] to continue...")
