@@ -1169,16 +1169,17 @@ def warriors_scanner(rpc_connection):
 
 def print_warrior_list(rpc_connection):
     warriors_list = warriors_scanner(rpc_connection)
-    print("All warriors on ROGUE chain: ")
+    print(colorize("All warriors on ROGUE chain: \n", "blue"))
     for warrior in warriors_list:
-        print(warrior + ": " + warriors_list[warrior])
+        # TODO: print only needed data (pack and level)
+        print(warrior + ": " + str(warriors_list[warrior]))
         print("\n")
     input("Press [Enter] to continue...")
 
 
 def place_bid_on_warriror(rpc_connection):
     warriors_list = print_warrior_list(rpc_connection)
-    # TODO: have to drop my warriors or at least print ids
+    # TODO: have to drop my warriors or at least print my warriors ids
     while True:
         need_buy = input("Do you want to place order to buy some warrior? [y/n]: ")
         if need_buy == "y":
@@ -1203,3 +1204,22 @@ def place_bid_on_warriror(rpc_connection):
             break
         else:
             print(colorize("Choose y or n!", "red"))
+
+
+def check_incoming_bids(rpc_connection):
+    # TODO: have to scan for warriors which are in asks as well
+    players_list = rogue_players_list(rpc_connection)
+    incoming_orders = []
+    for player in players_list["playerdata"]:
+        orders = rpc_connection.tokenorders(player)
+        if len(orders) > 0:
+            for order in orders:
+                if order["funcid"] == "b":
+                    incoming_orders.append(order)
+    return incoming_orders
+
+
+def print_icoming_bids(rpc_connection):
+    incoming_bids = check_incoming_bids(rpc_connection)
+    print(incoming_bids)
+    input("Press [Enter] to continue...")
