@@ -1266,9 +1266,10 @@ def find_warriors_asks(rpc_connection):
     while True:
         want_to_buy = input("Do you want to buy any warrior? [y/n]: ")
         if want_to_buy == "y":
-            playertxid = input("Input playertxid of warrior you want to buy: ")
             ask_txid = input("Input asktxid which you want to fill: ")
-            tokenid = rogue_player_info(rpc_connection, playertxid)["player"]["tokenid"]
+            for ask in warriors_asks:
+                if ask_txid == ask["txid"]:
+                    tokenid = ask["tokenid"]
             fillask_raw = rpc_connection.tokenfillask(tokenid, ask_txid, "1")
             try:
                 fillask_txid = rpc_connection.sendrawtransaction(fillask_raw["hex"])
@@ -1277,9 +1278,10 @@ def find_warriors_asks(rpc_connection):
                 print(fillask_raw)
                 print("Something went wrong. Be careful with input next time.")
                 input("Press [Enter] to continue...")
-                print(colorize("Warrior succesfully bought. Txid is: " + fillask_txid, "green"))
-                input("Press [Enter] to continue...")
                 break
+            print(colorize("Warrior succesfully bought. Txid is: " + fillask_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
         if want_to_buy == "n":
             print("As you wish!")
             input("Press [Enter] to continue...")
