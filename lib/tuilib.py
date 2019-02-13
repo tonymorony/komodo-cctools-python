@@ -1136,7 +1136,14 @@ def sell_warrior(rpc_connection):
             price = input("Input price (in ROGUE coins) you want to sell warrior for: ")
             tokenid = rogue_player_info(rpc_connection, playertxid)["player"]["tokenid"]
             token_ask_raw = rpc_connection.tokenask("1", tokenid, price)
-            token_ask_txid = rpc_connection.sendrawtransaction(token_ask_raw["hex"])
+            try:
+                token_ask_txid = rpc_connection.sendrawtransaction(token_ask_raw["hex"])
+            except Exception as e:
+                print(e)
+                print(token_ask_raw)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
             print(colorize("Order succesfully placed. Order txid is: " + token_ask_txid, "green"))
             input("Press [Enter] to continue...")
             break
@@ -1146,3 +1153,22 @@ def sell_warrior(rpc_connection):
             break
         else:
             print(colorize("Choose y or n!", "red"))
+
+
+def warriors_scanner(rpc_connection):
+    token_list = rpc_connection.tokenlist()
+    warriors_list = {}
+    for token in token_list:
+        player_info =  rogue_player_info(rpc_connection, token)
+        if player_info["status"] == "error":
+            pass
+        else:
+            warriors_list["token"] = player_info["player"]
+    return warriors_list
+
+
+def print_warrior_list(rpc_connection):
+    warriors_list = warriors_scanner(rpc_connection)
+    print("All warriors on ROGUE chain: ")
+    print(warriors_list)
+    input("Press [Enter] to continue...")

@@ -21,6 +21,7 @@ menuItems = [
     {"Check mempool": tuilib.print_mempool},
     {"Check my warriors list": tuilib.print_players_list},
     {"Sell warrior": tuilib.sell_warrior},
+    {"Print all warriors on ROGUE chain": tuilib.print_warrior_list},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     # {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
     # {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
