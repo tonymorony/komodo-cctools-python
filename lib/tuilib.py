@@ -1217,7 +1217,7 @@ def check_incoming_bids(rpc_connection):
     players_list = rogue_players_list(rpc_connection)
     incoming_orders = []
     for player in players_list["playerdata"]:
-        token_id = rogue_player_info(rpc_connection, player)["tokenid"]
+        token_id = rogue_player_info(rpc_connection, player)["player"]["tokenid"]
         orders = rpc_connection.tokenorders(token_id)
         if len(orders) > 0:
             for order in orders:
