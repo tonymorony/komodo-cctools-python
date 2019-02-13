@@ -1163,7 +1163,7 @@ def warriors_scanner(rpc_connection):
         if "status" in player_info and player_info["status"] == "error":
             pass
         else:
-            warriors_list["token"] = player_info["player"]
+            warriors_list[token] = player_info["player"]
     return warriors_list
 
 
