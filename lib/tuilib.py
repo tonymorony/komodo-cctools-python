@@ -1177,7 +1177,7 @@ def print_warrior_list(rpc_connection):
 
 
 def place_bid_on_warriror(rpc_connection):
-    warriors_list = warriors_scanner(rpc_connection)
+    warriors_list = print_warrior_list(rpc_connection)
     print("All warriors on ROGUE chain: ")
     for warrior in warriors_list:
         print(warrior)
