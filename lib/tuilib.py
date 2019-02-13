@@ -978,6 +978,12 @@ def rogue_players_list(rpc_connection):
     return rogue_players_list
 
 
+def rogue_player_info(rpc_connection, playertxid):
+    player_info_arg = '"' + "[%22" + playertxid + "%22]" + '"'
+    player_info = rpc_connection.cclib("players", "17", player_info_arg)
+
+
+
 def print_multiplayer_games_list(rpc_connection):
     while True:
         pending_list = rogue_pending(rpc_connection)
@@ -1112,5 +1118,8 @@ def rogue_join_multiplayer_game(rpc_connection):
 
 
 def print_players_list(rpc_connection):
-    print(rogue_players_list(rpc_connection))
+    players_list = rogue_players_list(rpc_connection)
+    print(players_list)
+    for player in players_list["playerdata"]:
+        print(rogue_player_info(rpc_connection, player))
     input("Press [Enter] to continue...")
