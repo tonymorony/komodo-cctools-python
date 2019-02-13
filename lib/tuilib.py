@@ -980,7 +980,7 @@ def rogue_players_list(rpc_connection):
 
 def rogue_player_info(rpc_connection, playertxid):
     player_info_arg = '"' + "[%22" + playertxid + "%22]" + '"'
-    player_info = rpc_connection.cclib("players", "17", player_info_arg)
+    player_info = rpc_connection.cclib("playerinfo", "17", player_info_arg)
 
 
 
