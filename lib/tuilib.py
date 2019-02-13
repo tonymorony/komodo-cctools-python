@@ -1251,3 +1251,15 @@ def print_icoming_bids(rpc_connection):
             break
         else:
             print(colorize("Choose y or n!", "red"))
+
+
+def find_warriors_asks(rpc_connection):
+    warriors_list = warriors_scanner(rpc_connection)
+    warriors_asks = []
+    for player in warriors_list["playerdata"]:
+        orders = rpc_connection.tokenorders(player)
+        if len(orders) > 0:
+            for order in orders:
+                if order["funcid"] == "a":
+                    warriors_asks.append(order)
+    print(warriors_asks)
