@@ -1221,5 +1221,33 @@ def check_incoming_bids(rpc_connection):
 
 def print_icoming_bids(rpc_connection):
     incoming_bids = check_incoming_bids(rpc_connection)
-    print(incoming_bids)
-    input("Press [Enter] to continue...")
+    for bid in incoming_bids:
+        print("Recieved bid for warrior " + bid["tokenid"])
+        print(rogue_player_info(rpc_connection, bid["tokenid"]))
+        print(bid)
+    while True:
+        want_to_sell = input("Do you want to fill any incoming bid? [y/n]: ")
+        if want_to_sell == "y":
+            bid_txid = input("Input bid txid you want to fill: ")
+            for bid in incoming_bids:
+                if bid_txid == bid["txid"]:
+                    tokenid = bid["tokenid"]
+                    fill_sum = bid["totalrequired"]
+            fillbid_hex = rpc_connection.tokenfillbid(tokenid, bid_txid, fill_sum)
+            try:
+                fillbid_txid = rpc_connection.sendrawtrasnaction(fillbid_hex["hex"])
+            except Exception as e:
+                print(e)
+                print(fillbid_hex)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
+            print(colorize("Warrior succesfully sold. Txid is: " + fillbid_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if want_to_sell == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
