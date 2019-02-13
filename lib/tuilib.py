@@ -1159,8 +1159,8 @@ def warriors_scanner(rpc_connection):
     token_list = rpc_connection.tokenlist()
     warriors_list = {}
     for token in token_list:
-        player_info =  rogue_player_info(rpc_connection, token)
-        if player_info["status"] == "error":
+        player_info = rogue_player_info(rpc_connection, token)
+        if "status" in player_info and player_info["status"] == "error":
             pass
         else:
             warriors_list["token"] = player_info["player"]
