@@ -20,8 +20,10 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
     {"Check my warriors list": tuilib.print_players_list},
+    # TODO: show incoming trades requests for my warriors
+    # TODO: orders scanner (kinda marketplace with bids and asks)
     {"Sell warrior": tuilib.sell_warrior},
-    {"Print all warriors on ROGUE chain": tuilib.print_warrior_list},
+    {"Place order to buy someones warrior": tuilib.place_bid_on_warriror},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     # {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
     # {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},

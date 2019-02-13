@@ -1144,7 +1144,7 @@ def sell_warrior(rpc_connection):
                 print("Something went wrong. Be careful with input next time.")
                 input("Press [Enter] to continue...")
                 break
-            print(colorize("Order succesfully placed. Order txid is: " + token_ask_txid, "green"))
+            print(colorize("Ask succesfully placed. Ask txid is: " + token_ask_txid, "green"))
             input("Press [Enter] to continue...")
             break
         if need_sell == "n":
@@ -1170,5 +1170,41 @@ def warriors_scanner(rpc_connection):
 def print_warrior_list(rpc_connection):
     warriors_list = warriors_scanner(rpc_connection)
     print("All warriors on ROGUE chain: ")
-    print(warriors_list)
+    for warrior in warriors_list:
+        print(warrior)
+        print("\n")
     input("Press [Enter] to continue...")
+
+
+def place_bid_on_warriror(rpc_connection):
+    warriors_list = warriors_scanner(rpc_connection)
+    print("All warriors on ROGUE chain: ")
+    for warrior in warriors_list:
+        print(warrior)
+        print("\n")
+    input("Press [Enter] to continue...")
+    # TODO: have to drop my warriors or at least print ids
+    while True:
+        need_buy = input("Do you want to place order to buy some warrior? [y/n]: ")
+        if need_buy == "y":
+            playertxid = input("Input playertxid of warrior you want to place bid for: ")
+            price = input("Input price (in ROGUE coins) you want to buy warrior for: ")
+            tokenid = rogue_player_info(rpc_connection, playertxid)["player"]["tokenid"]
+            token_bid_raw = rpc_connection.tokenbid("1", tokenid, price)
+            try:
+                token_bid_txid = rpc_connection.sendrawtransaction(token_bid_raw["hex"])
+            except Exception as e:
+                print(e)
+                print(token_bid_raw)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
+            print(colorize("Bid succesfully placed. Bid txid is: " + token_bid_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if need_buy == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
