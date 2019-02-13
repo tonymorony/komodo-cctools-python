@@ -1233,9 +1233,9 @@ def print_icoming_bids(rpc_connection):
                 if bid_txid == bid["txid"]:
                     tokenid = bid["tokenid"]
                     fill_sum = bid["totalrequired"]
-            fillbid_hex = rpc_connection.tokenfillbid(tokenid, bid_txid, fill_sum)
+            fillbid_hex = rpc_connection.tokenfillbid(tokenid, bid_txid, str(fill_sum))
             try:
-                fillbid_txid = rpc_connection.sendrawtrasnaction(fillbid_hex["hex"])
+                fillbid_txid = rpc_connection.sendrawtransaction(fillbid_hex["hex"])
             except Exception as e:
                 print(e)
                 print(fillbid_hex)
