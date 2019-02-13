@@ -22,7 +22,7 @@ menuItems = [
     {"Check my warriors list": tuilib.print_players_list},
     {"Check if somebody wants to buy your warrior (incoming bids)": tuilib.print_icoming_bids},
     {"Place order to sell warrior": tuilib.sell_warrior},
-    {"Check cancel my warriors trade orders": tuilib.warriors_orders_check},
+    {"Check / cancel my warriors trade orders": tuilib.warriors_orders_check},
     {"Place order to buy someones warrior": tuilib.place_bid_on_warriror},
     {"Check if somebody selling warrior": tuilib.find_warriors_asks},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},

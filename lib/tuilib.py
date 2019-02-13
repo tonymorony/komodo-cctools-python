@@ -1298,26 +1298,24 @@ def find_warriors_asks(rpc_connection):
 
 
 def warriors_orders_check(rpc_connection):
-    while True:
-        my_orders_list = rpc_connection.cclib("mytokenorders", "17")
-        warriors_orders = {}
-        for order in my_orders_list:
-            player_info = rogue_player_info(rpc_connection, order["tokenid"])
-            if "status" in player_info and player_info["status"] == "error":
-                pass
-            else:
-                warriors_orders[order["tokenid"]] = [player_info["player"], order]
-        bids_list = {}
-        asks_list = {}
-        for order in warriors_orders:
-            if order[1]["funcid"] == "s":
-                asks_list.append(order)
-            else:
-                bids_list.append(order)
-        print("\nYour asks:\n")
-        print(asks_list)
-        print("\n")
-        print("\nYour bids:\n")
-        print(bids_list)
-        input("Press [Enter] to continue...")
-        break
+    my_orders_list = rpc_connection.cclib("mytokenorders", "17")
+    warriors_orders = {}
+    for order in my_orders_list:
+        player_info = rogue_player_info(rpc_connection, order["tokenid"])
+        if "status" in player_info and player_info["status"] == "error":
+            pass
+        else:
+            warriors_orders[order["tokenid"]] = [player_info["player"], order]
+    bids_list = {}
+    asks_list = {}
+    for order in warriors_orders:
+        if order[1]["funcid"] == "s":
+            asks_list.append(order)
+        else:
+            bids_list.append(order)
+    print("\nYour asks:\n")
+    print(asks_list)
+    print("\n")
+    print("\nYour bids:\n")
+    print(bids_list)
+    input("Press [Enter] to continue...")
