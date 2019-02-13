@@ -1171,18 +1171,13 @@ def print_warrior_list(rpc_connection):
     warriors_list = warriors_scanner(rpc_connection)
     print("All warriors on ROGUE chain: ")
     for warrior in warriors_list:
-        print(warrior)
+        print(warrior + ": " + warriors_list[warrior])
         print("\n")
     input("Press [Enter] to continue...")
 
 
 def place_bid_on_warriror(rpc_connection):
     warriors_list = print_warrior_list(rpc_connection)
-    print("All warriors on ROGUE chain: ")
-    for warrior in warriors_list:
-        print(warrior)
-        print("\n")
-    input("Press [Enter] to continue...")
     # TODO: have to drop my warriors or at least print ids
     while True:
         need_buy = input("Do you want to place order to buy some warrior? [y/n]: ")
