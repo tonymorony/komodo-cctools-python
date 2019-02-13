@@ -1121,5 +1121,28 @@ def print_players_list(rpc_connection):
     players_list = rogue_players_list(rpc_connection)
     print(players_list)
     for player in players_list["playerdata"]:
-        print(rogue_player_info(rpc_connection, player))
+        print(rogue_player_info(rpc_connection, player)["player"])
     input("Press [Enter] to continue...")
+
+
+def sell_warrior(rpc_connection):
+    print(colorize("Your brave warriors: \n", "blue"))
+    print_players_list(rpc_connection)
+    print("\n")
+    while True:
+        need_sell = input("Do you want to place order to sell any? [y/n]: ")
+        if need_sell == "y":
+            playertxid = input("Input playertxid of warrior you want to sell: ")
+            price = input("Input price (in ROGUE coins) you want to sell warrior for: ")
+            tokenid = rogue_player_info(rpc_connection, playertxid)["player"]["tokenid"]
+            token_ask_raw = rpc_connection.tokenask("1", tokenid, price)
+            token_ask_txid = rpc_connection.sendrawtransaction(token_ask_raw["hex"])
+            print(colorize("Order succesfully placed. Order txid is: " + token_ask_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if need_sell == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
