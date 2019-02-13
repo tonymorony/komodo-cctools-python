@@ -1256,10 +1256,33 @@ def print_icoming_bids(rpc_connection):
 def find_warriors_asks(rpc_connection):
     warriors_list = warriors_scanner(rpc_connection)
     warriors_asks = []
-    for player in warriors_list["playerdata"]:
+    for player in warriors_list:
         orders = rpc_connection.tokenorders(player)
         if len(orders) > 0:
             for order in orders:
-                if order["funcid"] == "a":
+                if order["funcid"] == "s":
                     warriors_asks.append(order)
     print(warriors_asks)
+    while True:
+        want_to_buy = input("Do you want to buy any warrior? [y/n]: ")
+        if want_to_buy == "y":
+            playertxid = input("Input playertxid of warrior you want to buy: ")
+            ask_txid = input("Input asktxid which you want to fill: ")
+            tokenid = rogue_player_info(rpc_connection, playertxid)["player"]["tokenid"]
+            fillask_raw = rpc_connection.tokenfillask(tokenid, ask_txid, "1")
+            try:
+                fillask_txid = rpc_connection.sendrawtransaction(fillask_raw["hex"])
+            except Exception as e:
+                print(e)
+                print(fillask_raw)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                print(colorize("Warrior succesfully bought. Txid is: " + fillask_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+        if want_to_buy == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
