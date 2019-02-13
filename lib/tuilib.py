@@ -981,7 +981,7 @@ def rogue_players_list(rpc_connection):
 def rogue_player_info(rpc_connection, playertxid):
     player_info_arg = '"' + "[%22" + playertxid + "%22]" + '"'
     player_info = rpc_connection.cclib("playerinfo", "17", player_info_arg)
-
+    return player_info
 
 
 def print_multiplayer_games_list(rpc_connection):
