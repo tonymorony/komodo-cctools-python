@@ -1339,8 +1339,7 @@ def find_warriors_asks(rpc_connection):
         for item in player_data["pack"]:
             print(item)
         print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
-        print(colorize("\n================================\n", "blue"))
-        print("Order info: \n")
+        print(colorize("Order info: \n", "red"))
         print("Bid txid: " + ask["txid"])
         print("Price: " + str(ask["price"]) + "\n")
     while True:
