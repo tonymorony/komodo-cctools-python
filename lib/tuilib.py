@@ -1123,10 +1123,10 @@ def print_players_list(rpc_connection):
     warrior_counter = 0
     for player in players_list["playerdata"]:
         warrior_counter = warrior_counter + 1
+        player_data = rogue_player_info(rpc_connection, player)["player"]
         print(colorize("\n================================\n","green"))
         print("Warrior " + str(warrior_counter))
         print("Name: " + player_data["name"] + "\n")
-        player_data = rogue_player_info(rpc_connection, player)["player"]
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + str(player_data["hitpoints"]))
