@@ -20,12 +20,12 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
     {"Check my warriors list": tuilib.print_players_list},
+    {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     {"Check if somebody wants to buy your warrior (incoming bids)": tuilib.print_icoming_bids},
     {"Place order to sell warrior": tuilib.sell_warrior},
-    {"Check / cancel my warriors trade orders": tuilib.warriors_orders_check},
     {"Place order to buy someones warrior": tuilib.place_bid_on_warriror},
     {"Check if somebody selling warrior": tuilib.find_warriors_asks},
-    {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
+    {"Check / cancel my warriors trade orders": tuilib.warriors_orders_check},
     # {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
     # {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
     # {"Start multiplayer game": "test"},
@@ -39,8 +39,12 @@ def main():
         os.system('clear')
         print(tuilib.colorize(header, 'pink'))
         print(tuilib.colorize('TUI v0.0.1\n', 'green'))
+        menu_items_counter = 0
         for item in menuItems:
+            menu_items_counter = menu_items_counter + 1
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
+            if menu_items_counter == 3:
+                print("DEX features:")
         choice = input(">> ")
         try:
             if int(choice) < 0:
