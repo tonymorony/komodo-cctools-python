@@ -1373,7 +1373,7 @@ def find_warriors_asks(rpc_connection):
 
 
 def warriors_orders_check(rpc_connection):
-    my_orders_list = rpc_connection.cclib("mytokenorders", "17")
+    my_orders_list = rpc_connection.mytokenorders("17")
     warriors_orders = {}
     for order in my_orders_list:
         player_info = rogue_player_info(rpc_connection, order["tokenid"])
