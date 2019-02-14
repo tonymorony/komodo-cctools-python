@@ -1191,12 +1191,27 @@ def warriors_scanner(rpc_connection):
 
 
 def print_warrior_list(rpc_connection):
-    warriors_list = warriors_scanner(rpc_connection)
+    players_list = warriors_scanner(rpc_connection)
     print(colorize("All warriors on ROGUE chain: \n", "blue"))
-    for warrior in warriors_list:
-        # TODO: print only needed data (pack and level)
-        print(warrior + ": " + str(warriors_list[warrior]))
-        print("\n")
+    warrior_counter = 0
+    for player in players_list:
+        warrior_counter = warrior_counter + 1
+        player_data = rogue_player_info(rpc_connection, player)["player"]
+        print(colorize("\n================================\n","green"))
+        print("Warrior " + str(warrior_counter))
+        print("Name: " + player_data["name"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n","blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
     input("Press [Enter] to continue...")
 
 
