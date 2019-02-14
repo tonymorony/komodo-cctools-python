@@ -1389,6 +1389,7 @@ def warriors_orders_check(rpc_connection):
         else:
             bids_list.append(order)
     print(colorize("\nYour asks:\n", "blue"))
+    print(colorize("\n******************************\n", "blue"))
     for ask in asks_list:
         print("txid: " + ask["txid"])
         print("Price: " + ask["price"])
@@ -1410,6 +1411,7 @@ def warriors_orders_check(rpc_connection):
         print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
         print(colorize("\n================================\n", "green"))
     print(colorize("\nYour bids:\n", "blue"))
+    print(colorize("\n******************************\n", "blue"))
     for bid in bids_list:
         print("txid: " + bid["txid"])
         print("Price: " + bid["price"])
