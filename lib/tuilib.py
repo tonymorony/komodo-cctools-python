@@ -1277,11 +1277,10 @@ def print_icoming_bids(rpc_connection):
         for item in player_data["pack"]:
             print(item)
         print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print(colorize("\n================================\n", "blue"))
         print("Order info: \n")
-        print(colorize("\n================================\n", "green"))
         print("Bid txid: " + bid["txid"])
         print("Price: " + str(bid["price"]) + "\n")
-        print(colorize("\n================================\n", "green"))
     if len(incoming_bids) == 0:
         print(colorize("There is no any incoming orders!", "blue"))
         input("Press [Enter] to continue...")
@@ -1323,7 +1322,27 @@ def find_warriors_asks(rpc_connection):
             for order in orders:
                 if order["funcid"] == "s":
                     warriors_asks.append(order)
-    print(warriors_asks)
+    for ask in warriors_asks:
+        print("Warrior selling on marketplace: " + ask["tokenid"])
+        player_data = rogue_player_info(rpc_connection, ask["tokenid"])["player"]
+        print(colorize("\n================================\n", "green"))
+        print("Name: " + player_data["name"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n", "blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print(colorize("\n================================\n", "blue"))
+        print("Order info: \n")
+        print("Bid txid: " + ask["txid"])
+        print("Price: " + str(ask["price"]) + "\n")
     while True:
         want_to_buy = input("Do you want to buy any warrior? [y/n]: ")
         if want_to_buy == "y":
