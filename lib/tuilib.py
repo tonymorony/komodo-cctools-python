@@ -1262,8 +1262,24 @@ def print_icoming_bids(rpc_connection):
     incoming_bids = check_incoming_bids(rpc_connection)
     for bid in incoming_bids:
         print("Recieved bid for warrior " + bid["tokenid"])
-        print(rogue_player_info(rpc_connection, bid["tokenid"]))
-        print(bid)
+        player_data = rogue_player_info(rpc_connection, bid["tokenid"])["player"]
+        print(colorize("\n================================\n", "green"))
+        print("Name: " + player_data["name"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n", "blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print("Order info: \n")
+        print("Bid txid: " + bid["txid"])
+        print("Price: " + str(bid["price"]) + "\n")
     while True:
         want_to_sell = input("Do you want to fill any incoming bid? [y/n]: ")
         if want_to_sell == "y":
