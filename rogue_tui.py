@@ -41,8 +41,12 @@ def main():
         print(tuilib.colorize('TUI v0.0.1\n', 'green'))
         menu_items_counter = 0
         for item in menuItems:
+            if menu_items_counter == 0:
+                print("\nUtility:")
             menu_items_counter = menu_items_counter + 1
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
+            if menu_items_counter == 3:
+                print("\nNew game:\n")
             if menu_items_counter == 4:
                 print("\nDEX features:\n")
         choice = input(">> ")
