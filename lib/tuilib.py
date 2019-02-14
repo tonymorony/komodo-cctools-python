@@ -1393,6 +1393,7 @@ def warriors_orders_check(rpc_connection):
     for ask in asks_list:
         print("txid: " + ask["txid"])
         print("Price: " + ask["price"])
+        print("Warrior tokenid: " + ask["tokenid"])
         print(colorize("\n================================\n", "green"))
         print("Warrior selling on marketplace: " + ask["tokenid"])
         player_data = rogue_player_info(rpc_connection, ask["tokenid"])["player"]
@@ -1415,6 +1416,7 @@ def warriors_orders_check(rpc_connection):
     for bid in bids_list:
         print("txid: " + bid["txid"])
         print("Price: " + bid["price"])
+        print("Warrior tokenid: " + bid["tokenid"])
         print(colorize("\n================================\n", "green"))
         print("Warrior selling on marketplace: " + bid["tokenid"])
         player_data = rogue_player_info(rpc_connection, bid["tokenid"])["player"]
@@ -1432,4 +1434,38 @@ def warriors_orders_check(rpc_connection):
             print(item)
         print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
         print(colorize("\n================================\n", "green"))
-    input("\nPress [Enter] to continue...")
+    while True:
+        need_order_change = input("Do you want to cancel any of your orders? [y/n]: ")
+        if need_order_change == "y":
+            while True:
+                ask_or_bid = input("Do you want cancel ask or bid? [a/b]: ")
+                if ask_or_bid == "a":
+                    ask_txid = input("Input txid of ask you want to cancel: ")
+                    warrior_tokenid = input("Input warrior token id for this ask: ")
+                    try:
+                        ask_cancellation_hex = rpc_connection.tokencancelask(warrior_tokenid, ask_txid)
+                        ask_cancellation_txid = rpc_connection.sendrawtransaction(ask_cancellation_hex["hex"])
+                    except Exception as e:
+                        print(colorize("Please re-check your input!", "red"))
+                    print(colorize("Ask succefully cancelled. Cancellation txid: " + ask_cancellation_txid, "green"))
+                    break
+                if ask_or_bid == "b":
+                    bid_txid = input("Input txid of bid you want to cancel: ")
+                    warrior_tokenid = input("Input warrior token id for this bid: ")
+                    try:
+                        bid_cancellation_hex = rpc_connection.tokencancelbid(warrior_tokenid, bid_txid)
+                        bid_cancellation_txid = rpc_connection.sendrawtransaction(bid_cancellation_hex["hex"])
+                    except Exception as e:
+                        print(colorize("Please re-check your input!", "red"))
+                    print(colorize("Bid succefully cancelled. Cancellation txid: " + bid_cancellation_txid, "green"))
+                    break
+                else:
+                    print(colorize("Choose a or b!", "red"))
+            input("Press [Enter] to continue...")
+            break
+        if need_order_change == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
