@@ -1119,7 +1119,7 @@ def rogue_join_multiplayer_game(rpc_connection):
 
 def print_players_list(rpc_connection):
     players_list = rogue_players_list(rpc_connection)
-    print(colorize("\nYou own " + str(players_list["numplayerdata"] + " warriors\n"), "blue"))
+    print(colorize("\nYou own " + str(players_list["numplayerdata"]) + " warriors\n", "blue"))
     warrior_counter = 0
     for player in players_list["playerdata"]:
         warrior_counter = warrior_counter + 1
@@ -1127,7 +1127,7 @@ def print_players_list(rpc_connection):
         print("Warrior" + str(warrior_counter))
         player_data = rogue_player_info(rpc_connection, player)["player"]
         print("Player txid: " + player_data["playertxid"])
-        print("Token txid: " + player_data["tokentxid"])
+        print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + player_data["hitpoints"])
         print("Strength: " + player_data["strength"])
         print("Level: " + player_data["level"])
