@@ -1323,9 +1323,9 @@ def find_warriors_asks(rpc_connection):
                 if order["funcid"] == "s":
                     warriors_asks.append(order)
     for ask in warriors_asks:
+        print(colorize("\n================================\n", "green"))
         print("Warrior selling on marketplace: " + ask["tokenid"])
         player_data = rogue_player_info(rpc_connection, ask["tokenid"])["player"]
-        print(colorize("\n================================\n", "green"))
         print("Name: " + player_data["name"] + "\n")
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
