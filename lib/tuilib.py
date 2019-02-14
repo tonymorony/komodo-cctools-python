@@ -1408,7 +1408,26 @@ def warriors_orders_check(rpc_connection):
         for item in player_data["pack"]:
             print(item)
         print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
-    print("\n")
+        print(colorize("\n================================\n", "green"))
     print(colorize("\nYour bids:\n", "blue"))
-    print(bids_list)
+    for bid in bids_list:
+        print("txid: " + bid["txid"])
+        print("Price: " + bid["price"])
+        print(colorize("\n================================\n", "green"))
+        print("Warrior selling on marketplace: " + bid["tokenid"])
+        player_data = rogue_player_info(rpc_connection, bid["tokenid"])["player"]
+        print("Name: " + player_data["name"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n", "blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print(colorize("\n================================\n", "green"))
     input("\nPress [Enter] to continue...")
