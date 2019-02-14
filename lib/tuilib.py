@@ -1048,16 +1048,16 @@ def rogue_newgame_singleplayer(rpc_connection):
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
         game_end_height = int(rpc_connection.getinfo()["blocks"])
-        # while True:
-        #     current_height = int(rpc_connection.getinfo()["blocks"])
-        #     height_difference = current_height - game_end_height
-        #     if height_difference == 0:
-        #         print(current_height)
-        #         print(game_end_height)
-        #         print(colorize("Waiting for next block", "blue"))
-        #         time.sleep(5)
-        #     else:
-        #         break
+        while True:
+            current_height = int(rpc_connection.getinfo()["blocks"])
+            height_difference = current_height - game_end_height
+            if height_difference == 0:
+                print(current_height)
+                print(game_end_height)
+                print(colorize("Waiting for next block before bailout", "blue"))
+                time.sleep(5)
+            else:
+                break
         bailout_info = rogue_bailout(rpc_connection, new_game_txid)
         print(bailout_info)
         print("\nGame is finished!\n")
