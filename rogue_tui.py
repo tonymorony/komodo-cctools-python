@@ -43,8 +43,8 @@ def main():
         for item in menuItems:
             menu_items_counter = menu_items_counter + 1
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
-            if menu_items_counter == 3:
-                print("DEX features:")
+            if menu_items_counter == 4:
+                print("\nDEX features:\n")
         choice = input(">> ")
         try:
             if int(choice) < 0:
