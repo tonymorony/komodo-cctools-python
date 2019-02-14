@@ -1029,7 +1029,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                 break
         players_list = rogue_players_list(rpc_connection)
         if len(players_list["playerdata"]) > 0:
-            print(players_list)
+            print_warrior_list(rpc_connection)
             while True:
                 is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
                 if is_choice_needed == "y":
