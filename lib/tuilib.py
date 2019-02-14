@@ -1124,7 +1124,8 @@ def print_players_list(rpc_connection):
     for player in players_list["playerdata"]:
         warrior_counter = warrior_counter + 1
         print(colorize("\n================================\n","green"))
-        print("Warrior" + str(warrior_counter))
+        print("Warrior " + str(warrior_counter))
+        print("Name: " + player_data["name"] + "\n")
         player_data = rogue_player_info(rpc_connection, player)["player"]
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
@@ -1134,11 +1135,10 @@ def print_players_list(rpc_connection):
         print("Experience: " + str(player_data["experience"]))
         print("Dungeon Level: " + str(player_data["dungeonlevel"]))
         print("Chain: " + player_data["chain"])
-        print("Name: " + player_data["name"] + "\n")
         print(colorize("\nInventory:\n","blue"))
         for item in player_data["pack"]:
             print(item)
-        print("Total packsize: " + str(player_data["packsize"]))
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
     input("Press [Enter] to continue...")
 
 
