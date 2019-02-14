@@ -1385,7 +1385,7 @@ def warriors_orders_check(rpc_connection):
     asks_list = []
     for order in warriors_orders:
         if warriors_orders[order]["funcid"] == "s":
-            asks_list.append(warriors_orders["order"])
+            asks_list.append(warriors_orders[order])
         else:
             bids_list.append(order)
     print("\nYour asks:\n")
