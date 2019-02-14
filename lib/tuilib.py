@@ -1119,9 +1119,26 @@ def rogue_join_multiplayer_game(rpc_connection):
 
 def print_players_list(rpc_connection):
     players_list = rogue_players_list(rpc_connection)
-    print(players_list)
+    print(colorize("\nYou own " + str(players_list["numplayerdata"] + " warriors\n"), "blue"))
+    warrior_counter = 0
     for player in players_list["playerdata"]:
-        print(rogue_player_info(rpc_connection, player)["player"])
+        warrior_counter = warrior_counter + 1
+        print(colorize("\n================================\n","green"))
+        print("Warrior" + str(warrior_counter))
+        player_data = rogue_player_info(rpc_connection, player)["player"]
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokentxid"])
+        print("Hitpoints: " + player_data["hitpoints"])
+        print("Strength: " + player_data["strength"])
+        print("Level: " + player_data["level"])
+        print("Experience: " + player_data["experience"])
+        print("Dungeon Level: " + player_data["dungeonlevel"])
+        print("Chain: " + player_data["chain"])
+        print("Name: " + player_data["name"] + "\n")
+        print(colorize("\nInventory:\n","blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("Total packsize: " + str(player_data["packsize"]))
     input("Press [Enter] to continue...")
 
 
