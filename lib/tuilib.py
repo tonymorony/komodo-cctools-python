@@ -1278,34 +1278,40 @@ def print_icoming_bids(rpc_connection):
             print(item)
         print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
         print("Order info: \n")
+        print(colorize("\n================================\n", "green"))
         print("Bid txid: " + bid["txid"])
         print("Price: " + str(bid["price"]) + "\n")
-    while True:
-        want_to_sell = input("Do you want to fill any incoming bid? [y/n]: ")
-        if want_to_sell == "y":
-            bid_txid = input("Input bid txid you want to fill: ")
-            for bid in incoming_bids:
-                if bid_txid == bid["txid"]:
-                    tokenid = bid["tokenid"]
-                    fill_sum = bid["totalrequired"]
-            fillbid_hex = rpc_connection.tokenfillbid(tokenid, bid_txid, str(fill_sum))
-            try:
-                fillbid_txid = rpc_connection.sendrawtransaction(fillbid_hex["hex"])
-            except Exception as e:
-                print(e)
-                print(fillbid_hex)
-                print("Something went wrong. Be careful with input next time.")
+        print(colorize("\n================================\n", "green"))
+    if len(incoming_bids) == 0:
+        print(colorize("There is no any incoming orders!", "blue"))
+        input("Press [Enter] to continue...")
+    else:
+        while True:
+            want_to_sell = input("Do you want to fill any incoming bid? [y/n]: ")
+            if want_to_sell == "y":
+                bid_txid = input("Input bid txid you want to fill: ")
+                for bid in incoming_bids:
+                    if bid_txid == bid["txid"]:
+                        tokenid = bid["tokenid"]
+                        fill_sum = bid["totalrequired"]
+                fillbid_hex = rpc_connection.tokenfillbid(tokenid, bid_txid, str(fill_sum))
+                try:
+                    fillbid_txid = rpc_connection.sendrawtransaction(fillbid_hex["hex"])
+                except Exception as e:
+                    print(e)
+                    print(fillbid_hex)
+                    print("Something went wrong. Be careful with input next time.")
+                    input("Press [Enter] to continue...")
+                    break
+                print(colorize("Warrior succesfully sold. Txid is: " + fillbid_txid, "green"))
                 input("Press [Enter] to continue...")
                 break
-            print(colorize("Warrior succesfully sold. Txid is: " + fillbid_txid, "green"))
-            input("Press [Enter] to continue...")
-            break
-        if want_to_sell == "n":
-            print("As you wish!")
-            input("Press [Enter] to continue...")
-            break
-        else:
-            print(colorize("Choose y or n!", "red"))
+            if want_to_sell == "n":
+                print("As you wish!")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                print(colorize("Choose y or n!", "red"))
 
 
 def find_warriors_asks(rpc_connection):
