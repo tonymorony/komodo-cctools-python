@@ -1380,11 +1380,11 @@ def warriors_orders_check(rpc_connection):
         if "status" in player_info and player_info["status"] == "error":
             pass
         else:
-            warriors_orders[order["tokenid"]] = [player_info["player"], order]
+            warriors_orders[order["tokenid"]] = order
     bids_list = {}
     asks_list = {}
     for order in warriors_orders:
-        if order[1]["funcid"] == "s":
+        if warriors_orders[order]["funcid"] == "s":
             asks_list.append(order)
         else:
             bids_list.append(order)
