@@ -1469,3 +1469,13 @@ def warriors_orders_check(rpc_connection):
             break
         else:
             print(colorize("Choose y or n!", "red"))
+
+
+def set_warriors_name(rpc_connection):
+    warriors_name = input("Input the name which you want to give to your unnamed warriors: ")
+    warrior_name_arg = '"' + "[%22" + warriors_name + "%22]" + '"'
+    set_name_status = rpc_connection.cclib("setname", "17", warrior_name_arg)
+    print(colorize("Warrior name succesfully set", "green"))
+    print("Result: " + set_name_status["result"])
+    print("Name: " + set_name_status["name"])
+    input("Press [Enter] to continue...")
