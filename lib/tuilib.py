@@ -1478,5 +1478,5 @@ def set_warriors_name(rpc_connection):
     set_name_status = rpc_connection.cclib("setname", "17", warrior_name_arg)
     print(colorize("Warrior name succesfully set", "green"))
     print("Result: " + set_name_status["result"])
-    print("Name: " + set_name_status["name"])
+    print("Name: " + set_name_status["pname"])
     input("Press [Enter] to continue...")

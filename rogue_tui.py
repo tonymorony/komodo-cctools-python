@@ -20,7 +20,7 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
     {"Check my warriors list": tuilib.print_players_list},
-    {"Set warriors name": tuilib.set_warriors_name},
+    {"Set warriors name (if there any unnamed warriors)": tuilib.set_warriors_name},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     {"Check if somebody wants to buy your warrior (incoming bids)": tuilib.print_icoming_bids},
     {"Place order to sell warrior": tuilib.sell_warrior},
