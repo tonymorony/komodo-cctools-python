@@ -1037,6 +1037,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                     newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid, player_txid)["txid"]
                     break
                 elif is_choice_needed == "n":
+                    set_warriors_name(rpc_connection)
                     newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
                     break
                 else:
@@ -1472,7 +1473,7 @@ def warriors_orders_check(rpc_connection):
 
 
 def set_warriors_name(rpc_connection):
-    warriors_name = input("Input the name which you want to give to your unnamed warriors: ")
+    warriors_name = input("What warrior name do you want for legends and tales about your brave adventures?: ")
     warrior_name_arg = '"' + "[%22" + warriors_name + "%22]" + '"'
     set_name_status = rpc_connection.cclib("setname", "17", warrior_name_arg)
     print(colorize("Warrior name succesfully set", "green"))
