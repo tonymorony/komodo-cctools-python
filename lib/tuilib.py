@@ -1126,7 +1126,7 @@ def print_players_list(rpc_connection):
         player_data = rogue_player_info(rpc_connection, player)["player"]
         print(colorize("\n================================\n","green"))
         print("Warrior " + str(warrior_counter))
-        print("Name: " + player_data["name"] + "\n")
+        print("Name: " + player_data["pname"] + "\n")
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + str(player_data["hitpoints"]))
@@ -1202,7 +1202,7 @@ def print_warrior_list(rpc_connection):
         player_data = rogue_player_info(rpc_connection, player)["player"]
         print(colorize("\n================================\n","green"))
         print("Warrior " + str(warrior_counter))
-        print("Name: " + player_data["name"] + "\n")
+        print("Name: " + player_data["pname"] + "\n")
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + str(player_data["hitpoints"]))
@@ -1267,7 +1267,7 @@ def print_icoming_bids(rpc_connection):
         print("Recieved bid for warrior " + bid["tokenid"])
         player_data = rogue_player_info(rpc_connection, bid["tokenid"])["player"]
         print(colorize("\n================================\n", "green"))
-        print("Name: " + player_data["name"] + "\n")
+        print("Name: " + player_data["pname"] + "\n")
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + str(player_data["hitpoints"]))
@@ -1329,7 +1329,7 @@ def find_warriors_asks(rpc_connection):
         print(colorize("\n================================\n", "green"))
         print("Warrior selling on marketplace: " + ask["tokenid"])
         player_data = rogue_player_info(rpc_connection, ask["tokenid"])["player"]
-        print("Name: " + player_data["name"] + "\n")
+        print("Name: " + player_data["pname"] + "\n")
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + str(player_data["hitpoints"]))
@@ -1397,7 +1397,7 @@ def warriors_orders_check(rpc_connection):
         print(colorize("\n================================\n", "green"))
         print("Warrior selling on marketplace: " + ask["tokenid"])
         player_data = rogue_player_info(rpc_connection, ask["tokenid"])["player"]
-        print("Name: " + player_data["name"] + "\n")
+        print("Name: " + player_data["pname"] + "\n")
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + str(player_data["hitpoints"]))
@@ -1420,7 +1420,7 @@ def warriors_orders_check(rpc_connection):
         print(colorize("\n================================\n", "green"))
         print("Warrior selling on marketplace: " + bid["tokenid"])
         player_data = rogue_player_info(rpc_connection, bid["tokenid"])["player"]
-        print("Name: " + player_data["name"] + "\n")
+        print("Name: " + player_data["pname"] + "\n")
         print("Player txid: " + player_data["playertxid"])
         print("Token txid: " + player_data["tokenid"])
         print("Hitpoints: " + str(player_data["hitpoints"]))
