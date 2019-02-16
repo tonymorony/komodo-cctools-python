@@ -7,6 +7,8 @@ import sys
 import pickle
 import platform
 import os
+import subprocess
+import signal
 from slickrpc import Proxy
 from binascii import hexlify
 from binascii import unhexlify
@@ -937,3 +939,544 @@ def marmara_info_tui(rpc_connection):
             print("Something went wrong. Please check your input")
             input("Press [Enter] to continue...")
             break
+
+
+def rogue_game_info(rpc_connection, game_txid):
+    game_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+    game_info = rpc_connection.cclib("gameinfo", "17", game_info_arg)
+    return game_info
+
+
+def rogue_game_register(rpc_connection, game_txid, player_txid = False):
+    if player_txid:
+        registration_info_arg = '"' + "[%22" + game_txid + "%22,%22" + player_txid + "%22]" + '"'
+    else:
+        registration_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+    registration_info = rpc_connection.cclib("register", "17", registration_info_arg)
+    return registration_info
+
+
+def rogue_pending(rpc_connection):
+    rogue_pending_list = rpc_connection.cclib("pending", "17")
+    return rogue_pending_list
+
+
+def rogue_bailout(rpc_connection, game_txid):
+    bailout_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+    bailout_info = rpc_connection.cclib("bailout", "17", bailout_info_arg)
+    return bailout_info
+
+
+def rogue_highlander(rpc_connection, game_txid):
+    highlander_info_arg = '"' + "[%22" + game_txid + "%22]" + '"'
+    highlander_info = rpc_connection.cclib("highlander", "17", highlander_info_arg)
+    return highlander_info
+
+
+def rogue_players_list(rpc_connection):
+    rogue_players_list = rpc_connection.cclib("players", "17")
+    return rogue_players_list
+
+
+def rogue_player_info(rpc_connection, playertxid):
+    player_info_arg = '"' + "[%22" + playertxid + "%22]" + '"'
+    player_info = rpc_connection.cclib("playerinfo", "17", player_info_arg)
+    return player_info
+
+
+def print_multiplayer_games_list(rpc_connection):
+    while True:
+        pending_list = rogue_pending(rpc_connection)
+        multiplayer_pending_list = []
+        for game in pending_list["pending"]:
+            if rogue_game_info(rpc_connection, game)["maxplayers"] > 1:
+                multiplayer_pending_list.append(game)
+        multiplayer_pending_info = []
+        for multiplayer_game in multiplayer_pending_list:
+            game_info = rogue_game_info(rpc_connection, multiplayer_game)
+            game_info_dict = {}
+            game_info_dict["gametxid"] = game_info["gametxid"]
+            game_info_dict["numplayers"] = game_info["numplayers"]
+            game_info_dict["maxplayers"] = game_info["maxplayers"]
+            game_info_dict["buyin"] = game_info["buyin"]
+            multiplayer_pending_info.append(game_info_dict)
+        print("Multiplayer games availiable to join: \n")
+        for multiplayer_game in multiplayer_pending_info:
+            print(multiplayer_game)
+        print(colorize("\nR + Enter - refresh list.\nE + Enter - to the game choice.\nCTRL + C - back to main menu", "blue"))
+        is_refresh = input("Choose your destiny: ")
+        if is_refresh == "R":
+            print("\n")
+            pass
+        elif is_refresh == "E":
+            print("\n")
+            break
+        else:
+            print("\nPlease choose R or E\n")
+
+
+def rogue_newgame_singleplayer(rpc_connection):
+    try:
+        new_game_txid = rpc_connection.cclib("newgame", "17", "[1]")["txid"]
+        print("New singleplayer training game succesfully created. txid: " + new_game_txid)
+        while True:
+            mempool = rpc_connection.getrawmempool()
+            if new_game_txid in mempool:
+                print(colorize("Waiting for game transaction to be mined", "blue"))
+                time.sleep(5)
+            else:
+                print(colorize("Game transaction is mined", "green"))
+                break
+        players_list = rogue_players_list(rpc_connection)
+        if len(players_list["playerdata"]) > 0:
+            print_players_list(rpc_connection)
+            while True:
+                is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
+                if is_choice_needed == "y":
+                    player_txid = input("Please input player txid: ")
+                    newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid, player_txid)["txid"]
+                    break
+                elif is_choice_needed == "n":
+                    set_warriors_name(rpc_connection)
+                    newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+                    break
+                else:
+                    print("Please choose y or n !")
+        else:
+            print("No players available to select")
+            input("Press [Enter] to continue...")
+            newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+        game_info = rogue_game_info(rpc_connection, new_game_txid)
+        subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+        game_end_height = int(rpc_connection.getinfo()["blocks"])
+        while True:
+            current_height = int(rpc_connection.getinfo()["blocks"])
+            height_difference = current_height - game_end_height
+            if height_difference == 0:
+                print(current_height)
+                print(game_end_height)
+                print(colorize("Waiting for next block before bailout", "blue"))
+                time.sleep(5)
+            else:
+                break
+        bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+        print(bailout_info)
+        print("\nGame is finished!\n")
+        bailout_txid = bailout_info["txid"]
+        input("Press [Enter] to continue...")
+    except Exception as e:
+        print("Something went wrong.")
+        print(e)
+        input("Press [Enter] to continue...")
+
+
+def rogue_newgame_multiplayer(rpc_connection):
+    while True:
+        max_players = input("Input game max. players (>1): ")
+        if int(max_players) > 1:
+            break
+        else:
+            print("Please re-check your input")
+            input("Press [Enter] to continue...")
+    while True:
+        buyin = input("Input game buyin (>0.001): ")
+        if float(buyin) > 0.001:
+            break
+        else:
+            print("Please re-check your input")
+            input("Press [Enter] to continue...")
+    try:
+        new_game_txid = rpc_connection.cclib("newgame", "17", '"[' + max_players + "," + buyin + ']"')["txid"]
+        print(colorize("New multiplayer game succesfully created. txid: " + new_game_txid, "green"))
+        input("Press [Enter] to continue...")
+    except Exception as e:
+        print("Something went wrong.")
+        print(e)
+        input("Press [Enter] to continue...")
+
+
+def rogue_join_multiplayer_game(rpc_connection):
+    while True:
+        try:
+            print_multiplayer_games_list(rpc_connection)
+            # TODO: optional player data txid (print players you have and ask if you want to choose one)
+            game_txid = input("Input txid of game you want to join: ")
+            try:
+                newgame_regisration = rogue_game_register(rpc_connection, game_txid)
+                newgame_regisration_txid = newgame_regisration["txid"]
+                game_info = rogue_game_info(rpc_connection, game_txid)
+                print(colorize("Succesfully registered.", "green"))
+                print(game_info)
+                input("Press [Enter] to continue...")
+                break
+            except Exception as e:
+                print("Something went wrong.")
+                print(newgame_regisration)
+                print(e)
+                input("Press [Enter] to continue...")
+        except KeyboardInterrupt:
+            break
+
+
+def print_players_list(rpc_connection):
+    players_list = rogue_players_list(rpc_connection)
+    print(colorize("\nYou own " + str(players_list["numplayerdata"]) + " warriors\n", "blue"))
+    warrior_counter = 0
+    for player in players_list["playerdata"]:
+        warrior_counter = warrior_counter + 1
+        player_data = rogue_player_info(rpc_connection, player)["player"]
+        print(colorize("\n================================\n","green"))
+        print("Warrior " + str(warrior_counter))
+        print("Name: " + player_data["pname"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n","blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+    input("Press [Enter] to continue...")
+
+
+def sell_warrior(rpc_connection):
+    print(colorize("Your brave warriors: \n", "blue"))
+    print_players_list(rpc_connection)
+    print("\n")
+    while True:
+        need_sell = input("Do you want to place order to sell any? [y/n]: ")
+        if need_sell == "y":
+            playertxid = input("Input playertxid of warrior you want to sell: ")
+            price = input("Input price (in ROGUE coins) you want to sell warrior for: ")
+            try:
+                tokenid = rogue_player_info(rpc_connection, playertxid)["player"]["tokenid"]
+            except Exception as e:
+                print(e)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
+            token_ask_raw = rpc_connection.tokenask("1", tokenid, price)
+            try:
+                token_ask_txid = rpc_connection.sendrawtransaction(token_ask_raw["hex"])
+            except Exception as e:
+                print(e)
+                print(token_ask_raw)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
+            print(colorize("Ask succesfully placed. Ask txid is: " + token_ask_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if need_sell == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
+
+
+def warriors_scanner(rpc_connection):
+    token_list = rpc_connection.tokenlist()
+    my_warriors_list = rogue_players_list(rpc_connection)
+    warriors_list = {}
+    for token in token_list:
+        player_info = rogue_player_info(rpc_connection, token)
+        if "status" in player_info and player_info["status"] == "error":
+            pass
+        elif player_info["player"]["tokenid"] in my_warriors_list["playerdata"]:
+            pass
+        else:
+            warriors_list[token] = player_info["player"]
+    return warriors_list
+
+
+def print_warrior_list(rpc_connection):
+    players_list = warriors_scanner(rpc_connection)
+    print(colorize("All warriors on ROGUE chain: \n", "blue"))
+    warrior_counter = 0
+    for player in players_list:
+        warrior_counter = warrior_counter + 1
+        player_data = rogue_player_info(rpc_connection, player)["player"]
+        print(colorize("\n================================\n","green"))
+        print("Warrior " + str(warrior_counter))
+        print("Name: " + player_data["pname"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n","blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+    input("Press [Enter] to continue...")
+
+
+def place_bid_on_warriror(rpc_connection):
+    warriors_list = print_warrior_list(rpc_connection)
+    # TODO: have to drop my warriors or at least print my warriors ids
+    while True:
+        need_buy = input("Do you want to place order to buy some warrior? [y/n]: ")
+        if need_buy == "y":
+            playertxid = input("Input playertxid of warrior you want to place bid for: ")
+            price = input("Input price (in ROGUE coins) you want to buy warrior for: ")
+            tokenid = rogue_player_info(rpc_connection, playertxid)["player"]["tokenid"]
+            token_bid_raw = rpc_connection.tokenbid("1", tokenid, price)
+            try:
+                token_bid_txid = rpc_connection.sendrawtransaction(token_bid_raw["hex"])
+            except Exception as e:
+                print(e)
+                print(token_bid_raw)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
+            print(colorize("Bid succesfully placed. Bid txid is: " + token_bid_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if need_buy == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
+
+
+def check_incoming_bids(rpc_connection):
+    # TODO: have to scan for warriors which are in asks as well
+    players_list = rogue_players_list(rpc_connection)
+    incoming_orders = []
+    for player in players_list["playerdata"]:
+        token_id = rogue_player_info(rpc_connection, player)["player"]["tokenid"]
+        orders = rpc_connection.tokenorders(token_id)
+        if len(orders) > 0:
+            for order in orders:
+                if order["funcid"] == "b":
+                    incoming_orders.append(order)
+    return incoming_orders
+
+
+def print_icoming_bids(rpc_connection):
+    incoming_bids = check_incoming_bids(rpc_connection)
+    for bid in incoming_bids:
+        print("Recieved bid for warrior " + bid["tokenid"])
+        player_data = rogue_player_info(rpc_connection, bid["tokenid"])["player"]
+        print(colorize("\n================================\n", "green"))
+        print("Name: " + player_data["pname"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n", "blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print(colorize("\n================================\n", "blue"))
+        print("Order info: \n")
+        print("Bid txid: " + bid["txid"])
+        print("Price: " + str(bid["price"]) + "\n")
+    if len(incoming_bids) == 0:
+        print(colorize("There is no any incoming orders!", "blue"))
+        input("Press [Enter] to continue...")
+    else:
+        while True:
+            want_to_sell = input("Do you want to fill any incoming bid? [y/n]: ")
+            if want_to_sell == "y":
+                bid_txid = input("Input bid txid you want to fill: ")
+                for bid in incoming_bids:
+                    if bid_txid == bid["txid"]:
+                        tokenid = bid["tokenid"]
+                        fill_sum = bid["totalrequired"]
+                fillbid_hex = rpc_connection.tokenfillbid(tokenid, bid_txid, str(fill_sum))
+                try:
+                    fillbid_txid = rpc_connection.sendrawtransaction(fillbid_hex["hex"])
+                except Exception as e:
+                    print(e)
+                    print(fillbid_hex)
+                    print("Something went wrong. Be careful with input next time.")
+                    input("Press [Enter] to continue...")
+                    break
+                print(colorize("Warrior succesfully sold. Txid is: " + fillbid_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+            if want_to_sell == "n":
+                print("As you wish!")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                print(colorize("Choose y or n!", "red"))
+
+
+def find_warriors_asks(rpc_connection):
+    warriors_list = warriors_scanner(rpc_connection)
+    warriors_asks = []
+    for player in warriors_list:
+        orders = rpc_connection.tokenorders(player)
+        if len(orders) > 0:
+            for order in orders:
+                if order["funcid"] == "s":
+                    warriors_asks.append(order)
+    for ask in warriors_asks:
+        print(colorize("\n================================\n", "green"))
+        print("Warrior selling on marketplace: " + ask["tokenid"])
+        player_data = rogue_player_info(rpc_connection, ask["tokenid"])["player"]
+        print("Name: " + player_data["pname"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n", "blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print(colorize("Order info: \n", "red"))
+        print("Bid txid: " + ask["txid"])
+        print("Price: " + str(ask["price"]) + "\n")
+    while True:
+        want_to_buy = input("Do you want to buy any warrior? [y/n]: ")
+        if want_to_buy == "y":
+            ask_txid = input("Input asktxid which you want to fill: ")
+            for ask in warriors_asks:
+                if ask_txid == ask["txid"]:
+                    tokenid = ask["tokenid"]
+            fillask_raw = rpc_connection.tokenfillask(tokenid, ask_txid, "1")
+            try:
+                fillask_txid = rpc_connection.sendrawtransaction(fillask_raw["hex"])
+            except Exception as e:
+                print(e)
+                print(fillask_raw)
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
+            print(colorize("Warrior succesfully bought. Txid is: " + fillask_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if want_to_buy == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
+
+
+def warriors_orders_check(rpc_connection):
+    my_orders_list = rpc_connection.mytokenorders("17")
+    warriors_orders = {}
+    for order in my_orders_list:
+        player_info = rogue_player_info(rpc_connection, order["tokenid"])
+        if "status" in player_info and player_info["status"] == "error":
+            pass
+        else:
+            warriors_orders[order["tokenid"]] = order
+    bids_list = []
+    asks_list = []
+    for order in warriors_orders:
+        if warriors_orders[order]["funcid"] == "s":
+            asks_list.append(warriors_orders[order])
+        else:
+            bids_list.append(order)
+    print(colorize("\nYour asks:\n", "blue"))
+    print(colorize("\n********************************\n", "red"))
+    for ask in asks_list:
+        print("txid: " + ask["txid"])
+        print("Price: " + ask["price"])
+        print("Warrior tokenid: " + ask["tokenid"])
+        print(colorize("\n================================\n", "green"))
+        print("Warrior selling on marketplace: " + ask["tokenid"])
+        player_data = rogue_player_info(rpc_connection, ask["tokenid"])["player"]
+        print("Name: " + player_data["pname"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n", "blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print(colorize("\n================================\n", "green"))
+    print(colorize("\nYour bids:\n", "blue"))
+    print(colorize("\n********************************\n", "red"))
+    for bid in bids_list:
+        print("txid: " + bid["txid"])
+        print("Price: " + bid["price"])
+        print("Warrior tokenid: " + bid["tokenid"])
+        print(colorize("\n================================\n", "green"))
+        print("Warrior selling on marketplace: " + bid["tokenid"])
+        player_data = rogue_player_info(rpc_connection, bid["tokenid"])["player"]
+        print("Name: " + player_data["pname"] + "\n")
+        print("Player txid: " + player_data["playertxid"])
+        print("Token txid: " + player_data["tokenid"])
+        print("Hitpoints: " + str(player_data["hitpoints"]))
+        print("Strength: " + str(player_data["strength"]))
+        print("Level: " + str(player_data["level"]))
+        print("Experience: " + str(player_data["experience"]))
+        print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+        print("Chain: " + player_data["chain"])
+        print(colorize("\nInventory:\n", "blue"))
+        for item in player_data["pack"]:
+            print(item)
+        print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+        print(colorize("\n================================\n", "green"))
+    while True:
+        need_order_change = input("Do you want to cancel any of your orders? [y/n]: ")
+        if need_order_change == "y":
+            while True:
+                ask_or_bid = input("Do you want cancel ask or bid? [a/b]: ")
+                if ask_or_bid == "a":
+                    ask_txid = input("Input txid of ask you want to cancel: ")
+                    warrior_tokenid = input("Input warrior token id for this ask: ")
+                    try:
+                        ask_cancellation_hex = rpc_connection.tokencancelask(warrior_tokenid, ask_txid)
+                        ask_cancellation_txid = rpc_connection.sendrawtransaction(ask_cancellation_hex["hex"])
+                    except Exception as e:
+                        print(colorize("Please re-check your input!", "red"))
+                    print(colorize("Ask succefully cancelled. Cancellation txid: " + ask_cancellation_txid, "green"))
+                    break
+                if ask_or_bid == "b":
+                    bid_txid = input("Input txid of bid you want to cancel: ")
+                    warrior_tokenid = input("Input warrior token id for this bid: ")
+                    try:
+                        bid_cancellation_hex = rpc_connection.tokencancelbid(warrior_tokenid, bid_txid)
+                        bid_cancellation_txid = rpc_connection.sendrawtransaction(bid_cancellation_hex["hex"])
+                    except Exception as e:
+                        print(colorize("Please re-check your input!", "red"))
+                    print(colorize("Bid succefully cancelled. Cancellation txid: " + bid_cancellation_txid, "green"))
+                    break
+                else:
+                    print(colorize("Choose a or b!", "red"))
+            input("Press [Enter] to continue...")
+            break
+        if need_order_change == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
+
+
+def set_warriors_name(rpc_connection):
+    warriors_name = input("What warrior name do you want for legends and tales about your brave adventures?: ")
+    warrior_name_arg = '"' + "[%22" + warriors_name + "%22]" + '"'
+    set_name_status = rpc_connection.cclib("setname", "17", warrior_name_arg)
+    print(colorize("Warrior name succesfully set", "green"))
+    print("Result: " + set_name_status["result"])
+    print("Name: " + set_name_status["name"])
+    input("Press [Enter] to continue...")
