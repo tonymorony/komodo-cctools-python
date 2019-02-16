@@ -20,7 +20,8 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
     {"Check my warriors list": tuilib.print_players_list},
-    {"Set warriors name (if there any unnamed warriors)": tuilib.set_warriors_name},
+    {"TOP-20 ROGUE Warriors": tuilib.top_warriors_rating},
+    {"Set warriors name": tuilib.set_warriors_name},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     {"Check if somebody wants to buy your warrior (incoming bids)": tuilib.print_icoming_bids},
     {"Place order to sell warrior": tuilib.sell_warrior},
@@ -46,9 +47,9 @@ def main():
                 print("\nUtility:\n")
             menu_items_counter = menu_items_counter + 1
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
-            if menu_items_counter == 4:
-                print("\nNew game:\n")
             if menu_items_counter == 5:
+                print("\nNew game:\n")
+            if menu_items_counter == 6:
                 print("\nDEX features:\n")
         choice = input(">> ")
         try:

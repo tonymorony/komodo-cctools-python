@@ -1480,3 +1480,15 @@ def set_warriors_name(rpc_connection):
     print("Result: " + set_name_status["result"])
     print("Name: " + set_name_status["pname"])
     input("Press [Enter] to continue...")
+
+
+def top_warriors_rating(rpc_connection):
+    warriors_list = warriors_scanner(rpc_connection)
+    warriors_list = sorted(warriors_list, key=lambda k: k['playerdata'].get('experience', 0), reverse=True)
+    top_counter = 0
+    while top_counter < 20:
+        for warrior in warriors_list:
+            top_counter = top_counter + 1
+            print(str(top_counter) + " place")
+            print(warrior)
+    input("Press [Enter] to continue...")
