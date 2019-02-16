@@ -1496,8 +1496,7 @@ def top_warriors_rating(rpc_connection):
         if counter < 20:
             counter = counter + 1
             print(str(counter) + " place.")
-            print("Warrior tokenid: " + experienced_warrior)
-            print(colorize("\n================================\n", "green"))
+            print(colorize("\n================================\n", "blue"))
             player_data = rogue_player_info(rpc_connection, experienced_warrior)["player"]
             print("Name: " + player_data["pname"] + "\n")
             print("Player txid: " + player_data["playertxid"])
@@ -1508,5 +1507,4 @@ def top_warriors_rating(rpc_connection):
             print("Experience: " + str(player_data["experience"]))
             print("Dungeon Level: " + str(player_data["dungeonlevel"]))
             print("Chain: " + player_data["chain"])
-            print(colorize("\n================================\n", "green"))
     input("Press [Enter] to continue...")
