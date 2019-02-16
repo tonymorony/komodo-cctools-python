@@ -1508,9 +1508,5 @@ def top_warriors_rating(rpc_connection):
             print("Experience: " + str(player_data["experience"]))
             print("Dungeon Level: " + str(player_data["dungeonlevel"]))
             print("Chain: " + player_data["chain"])
-            print(colorize("\nInventory:\n", "blue"))
-            for item in player_data["pack"]:
-                print(item)
-            print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
             print(colorize("\n================================\n", "green"))
     input("Press [Enter] to continue...")
