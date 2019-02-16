@@ -1495,7 +1495,7 @@ def top_warriors_rating(rpc_connection):
     for experienced_warrior in warriors_exp_sorted:
         if counter < 20:
             counter = counter + 1
-            print(str(counter) + " place.")
+            print("\n" + str(counter) + " place.")
             print(colorize("\n================================\n", "blue"))
             player_data = rogue_player_info(rpc_connection, experienced_warrior)["player"]
             print("Name: " + player_data["pname"] + "\n")
