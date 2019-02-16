@@ -1484,11 +1484,33 @@ def set_warriors_name(rpc_connection):
 
 def top_warriors_rating(rpc_connection):
     warriors_list = warriors_scanner(rpc_connection)
-    warriors_list = sorted(warriors_list, key=lambda k: k['playerdata'].get('experience', 0), reverse=True)
-    top_counter = 0
-    while top_counter < 20:
-        for warrior in warriors_list:
-            top_counter = top_counter + 1
-            print(str(top_counter) + " place")
-            print(warrior)
+    warriors_exp = {}
+    for warrior in warriors_list:
+        warriors_exp[warrior] = warriors_list[warrior]["experience"]
+    warriors_exp_sorted = {}
+    temp = [(k, warriors_exp[k]) for k in sorted(warriors_exp, key=warriors_exp.get, reverse=True)]
+    for k,v in temp:
+        warriors_exp_sorted[k] = v
+    counter = 0
+    for experienced_warrior in warriors_exp_sorted:
+        if counter < 20:
+            counter = counter + 1
+            print(str(counter) + " place.")
+            print("Warrior tokenid: " + experienced_warrior)
+            print(colorize("\n================================\n", "green"))
+            player_data = rogue_player_info(rpc_connection, experienced_warrior)["player"]
+            print("Name: " + player_data["pname"] + "\n")
+            print("Player txid: " + player_data["playertxid"])
+            print("Token txid: " + player_data["tokenid"])
+            print("Hitpoints: " + str(player_data["hitpoints"]))
+            print("Strength: " + str(player_data["strength"]))
+            print("Level: " + str(player_data["level"]))
+            print("Experience: " + str(player_data["experience"]))
+            print("Dungeon Level: " + str(player_data["dungeonlevel"]))
+            print("Chain: " + player_data["chain"])
+            print(colorize("\nInventory:\n", "blue"))
+            for item in player_data["pack"]:
+                print(item)
+            print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
+            print(colorize("\n================================\n", "green"))
     input("Press [Enter] to continue...")
