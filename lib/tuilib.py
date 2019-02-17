@@ -1195,6 +1195,22 @@ def warriors_scanner(rpc_connection):
             warriors_list[token] = player_info["player"]
     return warriors_list
 
+#TODO: have to combine into single scanner only difference from DEX scanner is that it showing your warriors also
+def warriors_scanner_for_rating(rpc_connection):
+    token_list = rpc_connection.tokenlist()
+    my_warriors_list = rogue_players_list(rpc_connection)
+    warriors_list = {}
+    for token in token_list:
+        player_info = rogue_player_info(rpc_connection, token)
+        if "status" in player_info and player_info["status"] == "error":
+            pass
+        elif rpc_connection.tokenbalance(player_info["player"]["tokenid"], "02deaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddead")["balance"] == 1:
+            pass
+        else:
+            warriors_list[token] = player_info["player"]
+    return warriors_list
+
+
 
 def print_warrior_list(rpc_connection):
     players_list = warriors_scanner(rpc_connection)
@@ -1485,7 +1501,7 @@ def set_warriors_name(rpc_connection):
 
 
 def top_warriors_rating(rpc_connection):
-    warriors_list = warriors_scanner(rpc_connection)
+    warriors_list = warriors_scanner_for_rating(rpc_connection)
     warriors_exp = {}
     for warrior in warriors_list:
         warriors_exp[warrior] = warriors_list[warrior]["experience"]
