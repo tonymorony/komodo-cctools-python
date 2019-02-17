@@ -1180,6 +1180,7 @@ def sell_warrior(rpc_connection):
 
 
 def warriors_scanner(rpc_connection):
+    start_time = time.time()
     token_list = rpc_connection.tokenlist()
     my_warriors_list = rogue_players_list(rpc_connection)
     warriors_list = {}
@@ -1193,6 +1194,7 @@ def warriors_scanner(rpc_connection):
             pass
         else:
             warriors_list[token] = player_info["player"]
+    print("--- %s seconds ---" % (time.time() - start_time))
     return warriors_list
 
 #TODO: have to combine into single scanner only difference from DEX scanner is that it showing your warriors also
