@@ -1189,6 +1189,8 @@ def warriors_scanner(rpc_connection):
             pass
         elif player_info["player"]["tokenid"] in my_warriors_list["playerdata"]:
             pass
+        elif rpc_connection.tokenbalance(player_info["player"]["tokenid"], "02deaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddead")["balance"] == 1:
+            pass
         else:
             warriors_list[token] = player_info["player"]
     return warriors_list
