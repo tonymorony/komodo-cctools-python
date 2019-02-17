@@ -1501,6 +1501,7 @@ def set_warriors_name(rpc_connection):
 
 
 def top_warriors_rating(rpc_connection):
+    start_time = time.time()
     warriors_list = warriors_scanner_for_rating(rpc_connection)
     warriors_exp = {}
     for warrior in warriors_list:
@@ -1525,4 +1526,5 @@ def top_warriors_rating(rpc_connection):
             print("Experience: " + str(player_data["experience"]))
             print("Dungeon Level: " + str(player_data["dungeonlevel"]))
             print("Chain: " + player_data["chain"])
+    print("--- %s seconds ---" % (time.time() - start_time))
     input("Press [Enter] to continue...")
