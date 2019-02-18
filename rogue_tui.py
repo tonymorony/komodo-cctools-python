@@ -3,7 +3,7 @@
 from lib import rpclib, tuilib
 import os
 import time
-
+import sys
 
 header = "\
 ______                       _____  _____ \n\
@@ -33,7 +33,7 @@ menuItems = [
     # {"Start multiplayer game": "test"},
     # {"Manually exit the game (bailout)": "test"},
     # {"Manually claim ROGUE coins for game (highlander)": "test"},
-    {"Exit": exit}
+    {"Exit": tuilib.exit}
 ]
 
 def main():
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             exit()
         else:
             print(tuilib.colorize("Succesfully connected!\n", "green"))
-            with (open("lib/logo.txt", "r")) as logo:
+            with (open(sys.path[0] + "/lib/logo.txt", "r")) as logo:
                 for line in logo:
                     print(line, end='')
                     time.sleep(0.04)
