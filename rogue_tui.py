@@ -77,7 +77,7 @@ if __name__ == "__main__":
             exit()
         else:
             print(tuilib.colorize("Succesfully connected!\n", "green"))
-            with (open(sys.path[0] + "/lib/logo.txt", "r")) as logo:
+            with (open("lib/logo.txt", "r")) as logo:
                 for line in logo:
                     print(line, end='')
                     time.sleep(0.04)
