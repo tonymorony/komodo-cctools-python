@@ -1544,8 +1544,22 @@ def play_multiplayer_game(rpc_connection):
         gameinfo = rogue_game_info(rpc_connection, game)
         if gameinfo["maxplayers"] > 1:
             active_multiplayer_games_list.append(gameinfo)
+    games_counter = 0
     for active_multiplayer_game in active_multiplayer_games_list:
-        print(active_multiplayer_game)
+        games_counter = games_counter + 1
+        print(colorize("\n================================\n", "green"))
+        print("Game txid: " + active_multiplayer_game["gametxid"])
+        print("Game buyin: " + str(active_multiplayer_game["buyin"]))
+        print("Game height: " + str(active_multiplayer_game["gameheight"]))
+        print("Start height: " + str(active_multiplayer_game["start"]))
+        print("Alive players: " + str(active_multiplayer_game["alive"]))
+        print("Registered players: " + str(active_multiplayer_game["numplayers"]))
+        print("Max players: " + str(active_multiplayer_game["maxplayers"]))
+        for player in active_multiplayer_game["players"]:
+            print("Slot: " + str(player["slot"]))
+            pritn("Baton: " + str(player["baton"]))
+            print("Tokenid: " +  str(player["tokenid"]))
+            print("Is mine?: " + str(player["ismine"]))
     # asking user if he want to start any of them
     while True:
         start_game = input("\nDo you want to start any of your pendning multiplayer games?[y/n]: ")
