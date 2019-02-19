@@ -23,13 +23,13 @@ menuItems = [
     {"TOP-20 ROGUE Warriors": tuilib.top_warriors_rating},
     {"Set warriors name": tuilib.set_warriors_name},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
+    {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
+    {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
     {"Check if somebody wants to buy your warrior (incoming bids)": tuilib.print_icoming_bids},
     {"Place order to sell warrior": tuilib.sell_warrior},
     {"Place order to buy someones warrior": tuilib.place_bid_on_warriror},
     {"Check if somebody selling warrior": tuilib.find_warriors_asks},
     {"Check / cancel my warriors trade orders": tuilib.warriors_orders_check},
-    {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
-    {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
     # {"Start multiplayer game": "test"},
     # {"Manually exit the game (bailout)": "test"},
     # {"Manually claim ROGUE coins for game (highlander)": "test"},
@@ -48,8 +48,10 @@ def main():
             menu_items_counter = menu_items_counter + 1
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
             if menu_items_counter == 5:
-                print("\nNew game:\n")
+                print("\nNew singleplayer game:\n")
             if menu_items_counter == 6:
+                print("\nMultiplayer games:\n")
+            if menu_items_counter == 8:
                 print("\nDEX features:\n")
         choice = input(">> ")
         try:
