@@ -1103,6 +1103,7 @@ def rogue_join_multiplayer_game(rpc_connection):
             game_txid = input("Input txid of game you want to join: ")
             try:
                 while True:
+                    print_players_list(rpc_connection)
                     is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
                     if is_choice_needed == "y":
                         player_txid = input("Please input player txid: ")
