@@ -991,18 +991,24 @@ def print_multiplayer_games_list(rpc_connection):
         for game in pending_list["pending"]:
             if rogue_game_info(rpc_connection, game)["maxplayers"] > 1:
                 multiplayer_pending_list.append(game)
-        multiplayer_pending_info = []
-        for multiplayer_game in multiplayer_pending_list:
-            game_info = rogue_game_info(rpc_connection, multiplayer_game)
-            game_info_dict = {}
-            game_info_dict["gametxid"] = game_info["gametxid"]
-            game_info_dict["numplayers"] = game_info["numplayers"]
-            game_info_dict["maxplayers"] = game_info["maxplayers"]
-            game_info_dict["buyin"] = game_info["buyin"]
-            multiplayer_pending_info.append(game_info_dict)
         print("Multiplayer games availiable to join: \n")
-        for multiplayer_game in multiplayer_pending_info:
-            print(multiplayer_game)
+        for active_multiplayer_game in multiplayer_pending_list:
+            game_info = rogue_game_info(rpc_connection, active_multiplayer_game)
+            print(colorize("\n================================\n", "green"))
+            print("Game txid: " + game_info["gametxid"])
+            print("Game buyin: " + str(game_info["buyin"]))
+            print("Game height: " + str(game_info["gameheight"]))
+            print("Start height: " + str(game_info["start"]))
+            print("Alive players: " + str(game_info["alive"]))
+            print("Registered players: " + str(game_info["numplayers"]))
+            print("Max players: " + str(game_info["maxplayers"]))
+            print(colorize("\n***\n", "blue"))
+            print("Players in game:")
+            for player in game_info["players"]:
+                print("Slot: " + str(player["slot"]))
+                print("Baton: " + str(player["baton"]))
+                print("Tokenid: " + str(player["tokenid"]))
+                print("Is mine?: " + str(player["ismine"]))
         print(colorize("\nR + Enter - refresh list.\nE + Enter - to the game choice.\nCTRL + C - back to main menu", "blue"))
         is_refresh = input("Choose your destiny: ")
         if is_refresh == "R":
@@ -1102,18 +1108,27 @@ def rogue_join_multiplayer_game(rpc_connection):
             # TODO: optional player data txid (print players you have and ask if you want to choose one)
             game_txid = input("Input txid of game you want to join: ")
             try:
-                newgame_regisration = rogue_game_register(rpc_connection, game_txid)
-                newgame_regisration_txid = newgame_regisration["txid"]
-                game_info = rogue_game_info(rpc_connection, game_txid)
-                print(colorize("Succesfully registered.", "green"))
-                print(game_info)
-                input("Press [Enter] to continue...")
-                break
+                while True:
+                    print_players_list(rpc_connection)
+                    is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
+                    if is_choice_needed == "y":
+                        player_txid = input("Please input player txid: ")
+                        newgame_regisration_txid = rogue_game_register(rpc_connection, game_txid, player_txid)["txid"]
+                        break
+                    elif is_choice_needed == "n":
+                        set_warriors_name(rpc_connection)
+                        newgame_regisration_txid = rogue_game_register(rpc_connection, game_txid)["txid"]
+                        break
+                    else:
+                        print("Please choose y or n !")
             except Exception as e:
-                print("Something went wrong.")
-                print(newgame_regisration)
+                print("Something went wrong. Maybe you're trying to register on game twice or don't have enough funds to pay buyin.")
                 print(e)
                 input("Press [Enter] to continue...")
+            print(colorize("Succesfully registered.", "green"))
+            print(newgame_regisration_txid)
+            input("Press [Enter] to continue...")
+            break
         except KeyboardInterrupt:
             break
 
@@ -1534,3 +1549,96 @@ def top_warriors_rating(rpc_connection):
 
 def exit():
     sys.exit()
+    
+
+def play_multiplayer_game(rpc_connection):
+    # printing list of user active multiplayer games
+    active_games_list = rpc_connection.cclib("games", "17")["games"]
+    active_multiplayer_games_list = []
+    for game in active_games_list:
+        gameinfo = rogue_game_info(rpc_connection, game)
+        if gameinfo["maxplayers"] > 1:
+            active_multiplayer_games_list.append(gameinfo)
+    games_counter = 0
+    for active_multiplayer_game in active_multiplayer_games_list:
+        games_counter = games_counter + 1
+        print(colorize("\n================================\n", "green"))
+        print("Game txid: " + active_multiplayer_game["gametxid"])
+        print("Game buyin: " + str(active_multiplayer_game["buyin"]))
+        print("Game height: " + str(active_multiplayer_game["gameheight"]))
+        print("Start height: " + str(active_multiplayer_game["start"]))
+        print("Alive players: " + str(active_multiplayer_game["alive"]))
+        print("Registered players: " + str(active_multiplayer_game["numplayers"]))
+        print("Max players: " + str(active_multiplayer_game["maxplayers"]))
+        print(colorize("\n***\n", "blue"))
+        print("Players in game:")
+        for player in active_multiplayer_game["players"]:
+            print("Slot: " + str(player["slot"]))
+            print("Baton: " + str(player["baton"]))
+            print("Tokenid: " +  str(player["tokenid"]))
+            print("Is mine?: " + str(player["ismine"]))
+    # asking user if he want to start any of them
+    while True:
+        start_game = input("\nDo you want to start any of your pendning multiplayer games?[y/n]: ")
+        if start_game == "y":
+            new_game_txid = input("Input txid of game which you want to start: ")
+            game_info = rogue_game_info(rpc_connection, new_game_txid)
+            subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            game_end_height = int(rpc_connection.getinfo()["blocks"])
+            while True:
+                current_height = int(rpc_connection.getinfo()["blocks"])
+                height_difference = current_height - game_end_height
+                if height_difference == 0:
+                    print(current_height)
+                    print(game_end_height)
+                    print(colorize("Waiting for next block before bailout or highlander", "blue"))
+                    time.sleep(5)
+                else:
+                    break
+            # hope its work this way: if alive more than 1 now just bailout, if only I alive try to highlander
+            if game_info["alive"] > 1:
+                bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+                print(bailout_info)
+                print("\nGame is finished!\n")
+                bailout_txid = bailout_info["txid"]
+            else:
+                highlander_info = rogue_highlander(rpc_connection, new_game_txid)
+                print(highlander_info)
+                print("\nGame is finished!\n")
+                highlander_info = highlander_info["txid"]
+            input("Press [Enter] to continue...")
+            break
+        if start_game == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
+
+
+def warrior_trasnfer(rpc_connection):
+    print(colorize("Your brave warriors: \n", "blue"))
+    print_players_list(rpc_connection)
+    print("\n")
+    while True:
+        need_transfer = input("Do you want to transfer any warrior? [y/n]: ")
+        if need_transfer == "y":
+            warrior_tokenid = input("Input warrior tokenid: ")
+            recepient_pubkey = input("Input recepient pubkey: ")
+            try:
+                token_transfer_hex = rpc_connection.tokentransfer(warrior_tokenid, recepient_pubkey, "1")
+                token_transfer_txid = rpc_connection.sendrawtransaction(token_transfer_hex["hex"])
+            except Exception as e:
+                print(e)
+                print("Something went wrong. Please be careful with your input next time!")
+                input("Press [Enter] to continue...")
+                break
+            print(colorize("Warrior succesfully transferred! Transfer txid: " + token_transfer_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if need_transfer == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
