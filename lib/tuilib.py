@@ -1584,9 +1584,19 @@ def play_multiplayer_game(rpc_connection):
     games_counter = 0
     for active_multiplayer_game in active_multiplayer_games_list:
         games_counter = games_counter + 1
+        if_ready_to_start = False
+        try:
+            active_multiplayer_game["seed"]
+            if_ready_to_start = True
+        except Exception as e:
+            pass
         print(colorize("\n================================\n", "green"))
         print("Game txid: " + active_multiplayer_game["gametxid"])
         print("Game buyin: " + str(active_multiplayer_game["buyin"]))
+        if if_ready_to_start:
+            print(colorize("Ready for start!", "green"))
+        else:
+            print(colorize("Not ready for start yet, wait until start height!", "red"))
         print("Game height: " + str(active_multiplayer_game["gameheight"]))
         print("Start height: " + str(active_multiplayer_game["start"]))
         print("Alive players: " + str(active_multiplayer_game["alive"]))
