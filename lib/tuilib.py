@@ -1194,6 +1194,8 @@ def sell_warrior(rpc_connection):
             print(colorize("Choose y or n!", "red"))
 
 
+#TODO: have to combine into single scanner with different cases
+
 def warriors_scanner(rpc_connection):
     start_time = time.time()
     token_list = rpc_connection.tokenlist()
@@ -1212,7 +1214,6 @@ def warriors_scanner(rpc_connection):
     print("--- %s seconds ---" % (time.time() - start_time))
     return warriors_list
 
-#TODO: have to combine into single scanner only difference from DEX scanner is that it showing your warriors also
 def warriors_scanner_for_rating(rpc_connection):
     token_list = rpc_connection.tokenlist()
     my_warriors_list = rogue_players_list(rpc_connection)
@@ -1227,6 +1228,22 @@ def warriors_scanner_for_rating(rpc_connection):
             warriors_list[token] = player_info["player"]
     return warriors_list
 
+
+def warriors_scanner_for_dex(rpc_connection):
+    start_time = time.time()
+    token_list = rpc_connection.tokenlist()
+    my_warriors_list = rogue_players_list(rpc_connection)
+    warriors_list = {}
+    for token in token_list:
+        player_info = rogue_player_info(rpc_connection, token)
+        if "status" in player_info and player_info["status"] == "error":
+            pass
+        elif player_info["player"]["tokenid"] in my_warriors_list["playerdata"]:
+            pass
+        else:
+            warriors_list[token] = player_info["player"]
+    print("--- %s seconds ---" % (time.time() - start_time))
+    return warriors_list
 
 
 def print_warrior_list(rpc_connection):
@@ -1353,7 +1370,7 @@ def print_icoming_bids(rpc_connection):
 
 
 def find_warriors_asks(rpc_connection):
-    warriors_list = warriors_scanner(rpc_connection)
+    warriors_list = warriors_scanner_for_dex(rpc_connection)
     warriors_asks = []
     for player in warriors_list:
         orders = rpc_connection.tokenorders(player)
