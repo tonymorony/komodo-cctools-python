@@ -25,12 +25,12 @@ menuItems = [
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
     {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
+    {"Check my multiplayer games status / start": tuilib.track_multiplayer_game},
     {"Check if somebody wants to buy your warrior (incoming bids)": tuilib.print_icoming_bids},
     {"Place order to sell warrior": tuilib.sell_warrior},
     {"Place order to buy someones warrior": tuilib.place_bid_on_warriror},
     {"Check if somebody selling warrior": tuilib.find_warriors_asks},
     {"Check / cancel my warriors trade orders": tuilib.warriors_orders_check},
-    # {"Start multiplayer game": "test"},
     # {"Manually exit the game (bailout)": "test"},
     # {"Manually claim ROGUE coins for game (highlander)": "test"},
     {"Exit": tuilib.exit}
@@ -51,7 +51,7 @@ def main():
                 print("\nNew singleplayer game:\n")
             if menu_items_counter == 6:
                 print("\nMultiplayer games:\n")
-            if menu_items_counter == 8:
+            if menu_items_counter == 9:
                 print("\nDEX features:\n")
         choice = input(">> ")
         try:
