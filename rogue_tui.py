@@ -20,6 +20,7 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
     {"Check my warriors list": tuilib.print_players_list},
+    {"Transfer warrior to other pubkey": tuilib.warrior_trasnfer},
     {"TOP-20 ROGUE Warriors": tuilib.top_warriors_rating},
     {"Set warriors name": tuilib.set_warriors_name},
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
@@ -47,11 +48,11 @@ def main():
                 print("\nUtility:\n")
             menu_items_counter = menu_items_counter + 1
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
-            if menu_items_counter == 5:
-                print("\nNew singleplayer game:\n")
             if menu_items_counter == 6:
+                print("\nNew singleplayer game:\n")
+            if menu_items_counter == 7:
                 print("\nMultiplayer games:\n")
-            if menu_items_counter == 9:
+            if menu_items_counter == 10:
                 print("\nDEX features:\n")
         choice = input(">> ")
         try:

@@ -1581,8 +1581,33 @@ def play_multiplayer_game(rpc_connection):
             print("As you wish!")
             input("Press [Enter] to continue...")
             break
-
         else:
             print(colorize("Choose y or n!", "red"))
 
 
+def warrior_trasnfer(rpc_connection):
+    print(colorize("Your brave warriors: \n", "blue"))
+    print_players_list(rpc_connection)
+    print("\n")
+    while True:
+        need_transfer = input("Do you want to transfer any warrior? [y/n]: ")
+        if need_transfer == "y":
+            warrior_tokenid = input("Input warrior tokenid: ")
+            recepient_pubkey = input("Input recepient pubkey: ")
+            try:
+                token_transfer_hex = rpc_connection.tokentransfer(warrior_tokenid, recepient_pubkey, "1")
+                token_transfer_txid = rpc_connection.sendrawtransaction(token_transfer_hex["hex"])
+            except Exception as e:
+                print(e)
+                print("Something went wrong. Please be careful with your input next time!")
+                input("Press [Enter] to continue...")
+                break
+            print(colorize("Warrior succesfully transferred! Transfer txid: " + token_transfer_txid, "green"))
+            input("Press [Enter] to continue...")
+            break
+        if need_transfer == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
