@@ -1107,11 +1107,11 @@ def rogue_join_multiplayer_game(rpc_connection):
                     is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
                     if is_choice_needed == "y":
                         player_txid = input("Please input player txid: ")
-                        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid, player_txid)["txid"]
+                        newgame_regisration_txid = rogue_game_register(rpc_connection, game_txid, player_txid)["txid"]
                         break
                     elif is_choice_needed == "n":
                         set_warriors_name(rpc_connection)
-                        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+                        newgame_regisration_txid = rogue_game_register(rpc_connection, game_txid)["txid"]
                         break
                     else:
                         print("Please choose y or n !")
