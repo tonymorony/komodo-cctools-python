@@ -1540,8 +1540,9 @@ def track_multiplayer_game(rpc_connection):
     active_games_list = rpc_connection.cclib("games", "17")["games"]
     active_multiplayer_games_list = []
     for game in active_games_list:
-        if game["players"] > 1:
-            active_multiplayer_games_list.append(game)
+        gameinfo = rogue_game_info(rpc_connection, game)
+        if gameinfo["players"] > 1:
+            active_multiplayer_games_list.append(gameinfo)
     for active_multiplayer_game in active_multiplayer_games_list:
         print(active_multiplayer_game)
     input("Press [Enter] to continue...")
