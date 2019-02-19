@@ -1536,7 +1536,8 @@ def exit():
     sys.exit()
 
 
-def track_multiplayer_game(rpc_connection):
+def play_multiplayer_game(rpc_connection):
+    # printing list of user active multiplayer games
     active_games_list = rpc_connection.cclib("games", "17")["games"]
     active_multiplayer_games_list = []
     for game in active_games_list:
@@ -1545,5 +1546,35 @@ def track_multiplayer_game(rpc_connection):
             active_multiplayer_games_list.append(gameinfo)
     for active_multiplayer_game in active_multiplayer_games_list:
         print(active_multiplayer_game)
-    input("Press [Enter] to continue...")
+    # asking user if he want to start any of them
+    while True:
+        start_game = input("\nDo you want to start any of your pendning multiplayer games?[y/n]: ")
+        if start_game == "y":
+            game_info = rogue_game_info(rpc_connection, new_game_txid)
+            subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            game_end_height = int(rpc_connection.getinfo()["blocks"])
+            while True:
+                current_height = int(rpc_connection.getinfo()["blocks"])
+                height_difference = current_height - game_end_height
+                if height_difference == 0:
+                    print(current_height)
+                    print(game_end_height)
+                    print(colorize("Waiting for next block before bailout", "blue"))
+                    time.sleep(5)
+                else:
+                    break
+            # TODO: check if player is last standing and execute highlander here
+            bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+            print(bailout_info)
+            print("\nGame is finished!\n")
+            bailout_txid = bailout_info["txid"]
+            input("Press [Enter] to continue...")
+        if start_game == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+
+        else:
+            print(colorize("Choose y or n!", "red"))
+
 

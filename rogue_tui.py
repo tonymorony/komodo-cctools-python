@@ -25,7 +25,7 @@ menuItems = [
     {"Start singleplayer training game (creating, registering and starting game)": tuilib.rogue_newgame_singleplayer},
     {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
     {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
-    {"Check my multiplayer games status / start": tuilib.track_multiplayer_game},
+    {"Check my multiplayer games status / start": tuilib.play_multiplayer_game},
     {"Check if somebody wants to buy your warrior (incoming bids)": tuilib.print_icoming_bids},
     {"Place order to sell warrior": tuilib.sell_warrior},
     {"Place order to buy someones warrior": tuilib.place_bid_on_warriror},
