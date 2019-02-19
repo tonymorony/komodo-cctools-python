@@ -1541,7 +1541,7 @@ def track_multiplayer_game(rpc_connection):
     active_multiplayer_games_list = []
     for game in active_games_list:
         gameinfo = rogue_game_info(rpc_connection, game)
-        if gameinfo["players"] > 1:
+        if gameinfo["maxplayers"] > 1:
             active_multiplayer_games_list.append(gameinfo)
     for active_multiplayer_game in active_multiplayer_games_list:
         print(active_multiplayer_game)
