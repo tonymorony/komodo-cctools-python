@@ -41,7 +41,7 @@ def main():
     while True:
         os.system('clear')
         print(tuilib.colorize(header, 'pink'))
-        print(tuilib.colorize('TUI v0.0.2\n', 'green'))
+        print(tuilib.colorize('TUI v0.0.3\n', 'green'))
         menu_items_counter = 0
         for item in menuItems:
             if menu_items_counter == 0:
