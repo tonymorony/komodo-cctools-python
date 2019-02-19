@@ -33,7 +33,7 @@ menuItems = [
     # {"Start multiplayer game": "test"},
     # {"Manually exit the game (bailout)": "test"},
     # {"Manually claim ROGUE coins for game (highlander)": "test"},
-    {"Exit": exit()}
+    {"Exit": tuilib.exit}
 ]
 
 def main():

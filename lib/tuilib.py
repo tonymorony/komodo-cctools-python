@@ -1530,3 +1530,7 @@ def top_warriors_rating(rpc_connection):
             print("Chain: " + player_data["chain"])
     print("--- %s seconds ---" % (time.time() - start_time))
     input("Press [Enter] to continue...")
+
+
+def exit():
+    sys.exit()
