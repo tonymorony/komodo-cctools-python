@@ -1559,20 +1559,19 @@ def play_multiplayer_game(rpc_connection):
         if gameinfo["maxplayers"] > 1:
             active_multiplayer_games_list.append(gameinfo)
     games_counter = 0
-    for multiplayer_game in active_multiplayer_games_list:
+    for active_multiplayer_game in active_multiplayer_games_list:
         games_counter = games_counter + 1
-        game_info = rogue_game_info(rpc_connection, multiplayer_game)
         print(colorize("\n================================\n", "green"))
-        print("Game txid: " + game_info["gametxid"])
-        print("Game buyin: " + str(game_info["buyin"]))
-        print("Game height: " + str(game_info["gameheight"]))
-        print("Start height: " + str(game_info["start"]))
-        print("Alive players: " + str(game_info["alive"]))
-        print("Registered players: " + str(game_info["numplayers"]))
-        print("Max players: " + str(game_info["maxplayers"]))
+        print("Game txid: " + active_multiplayer_game["gametxid"])
+        print("Game buyin: " + str(active_multiplayer_game["buyin"]))
+        print("Game height: " + str(active_multiplayer_game["gameheight"]))
+        print("Start height: " + str(active_multiplayer_game["start"]))
+        print("Alive players: " + str(active_multiplayer_game["alive"]))
+        print("Registered players: " + str(active_multiplayer_game["numplayers"]))
+        print("Max players: " + str(active_multiplayer_game["maxplayers"]))
         print(colorize("\n***\n", "blue"))
         print("Players in game:")
-        for player in game_info["players"]:
+        for player in active_multiplayer_game["players"]:
             print("Slot: " + str(player["slot"]))
             print("Baton: " + str(player["baton"]))
             print("Tokenid: " +  str(player["tokenid"]))
