@@ -29,7 +29,7 @@ menuItems = [
     {"Check if somebody selling warrior": tuilib.find_warriors_asks},
     {"Check / cancel my warriors trade orders": tuilib.warriors_orders_check},
     {"Create multiplayer game": tuilib.rogue_newgame_multiplayer},
-    # {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
+    {"Join (register) multiplayer game": tuilib.rogue_join_multiplayer_game},
     # {"Start multiplayer game": "test"},
     # {"Manually exit the game (bailout)": "test"},
     # {"Manually claim ROGUE coins for game (highlander)": "test"},
