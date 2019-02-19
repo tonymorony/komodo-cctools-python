@@ -1557,7 +1557,7 @@ def play_multiplayer_game(rpc_connection):
         print("Max players: " + str(active_multiplayer_game["maxplayers"]))
         for player in active_multiplayer_game["players"]:
             print("Slot: " + str(player["slot"]))
-            pritn("Baton: " + str(player["baton"]))
+            print("Baton: " + str(player["baton"]))
             print("Tokenid: " +  str(player["tokenid"]))
             print("Is mine?: " + str(player["ismine"]))
     # asking user if he want to start any of them
