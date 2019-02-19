@@ -1405,7 +1405,12 @@ def find_warriors_asks(rpc_connection):
             for ask in warriors_asks:
                 if ask_txid == ask["txid"]:
                     tokenid = ask["tokenid"]
-            fillask_raw = rpc_connection.tokenfillask(tokenid, ask_txid, "1")
+            try:
+                fillask_raw = rpc_connection.tokenfillask(tokenid, ask_txid, "1")
+            except Exception as e:
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
             try:
                 fillask_txid = rpc_connection.sendrawtransaction(fillask_raw["hex"])
             except Exception as e:
