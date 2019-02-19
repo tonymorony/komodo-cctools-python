@@ -1555,6 +1555,8 @@ def play_multiplayer_game(rpc_connection):
         print("Alive players: " + str(active_multiplayer_game["alive"]))
         print("Registered players: " + str(active_multiplayer_game["numplayers"]))
         print("Max players: " + str(active_multiplayer_game["maxplayers"]))
+        print(colorize("\n***\n", "blue"))
+        print("Players in game:")
         for player in active_multiplayer_game["players"]:
             print("Slot: " + str(player["slot"]))
             print("Baton: " + str(player["baton"]))
