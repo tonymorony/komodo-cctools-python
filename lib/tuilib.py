@@ -1550,6 +1550,7 @@ def play_multiplayer_game(rpc_connection):
     while True:
         start_game = input("\nDo you want to start any of your pendning multiplayer games?[y/n]: ")
         if start_game == "y":
+            new_game_txid = input("Input txid of game which you want to start: ")
             game_info = rogue_game_info(rpc_connection, new_game_txid)
             subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
             game_end_height = int(rpc_connection.getinfo()["blocks"])
