@@ -1549,7 +1549,7 @@ def top_warriors_rating(rpc_connection):
 
 def exit():
     sys.exit()
-
+    
 
 def play_multiplayer_game(rpc_connection):
     # printing list of user active multiplayer games

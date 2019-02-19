@@ -3,7 +3,7 @@
 from lib import rpclib, tuilib
 import os
 import time
-
+import sys
 
 header = "\
 ______                       _____  _____ \n\
