@@ -1117,7 +1117,7 @@ def rogue_join_multiplayer_game(rpc_connection):
                         print("Please choose y or n !")
             except Exception as e:
                 print("Something went wrong.")
-                print(newgame_regisration)
+                print(newgame_regisration_txid)
                 print(e)
                 input("Press [Enter] to continue...")
             print(colorize("Succesfully registered.", "green"))
