@@ -1102,18 +1102,27 @@ def rogue_join_multiplayer_game(rpc_connection):
             # TODO: optional player data txid (print players you have and ask if you want to choose one)
             game_txid = input("Input txid of game you want to join: ")
             try:
-                newgame_regisration = rogue_game_register(rpc_connection, game_txid)
-                newgame_regisration_txid = newgame_regisration["txid"]
-                game_info = rogue_game_info(rpc_connection, game_txid)
-                print(colorize("Succesfully registered.", "green"))
-                print(game_info)
-                input("Press [Enter] to continue...")
-                break
-            except Exception as e:
-                print("Something went wrong.")
-                print(newgame_regisration)
-                print(e)
-                input("Press [Enter] to continue...")
+                while True:
+                    is_choice_needed = input("Do you want to choose a player for this game? [y/n] ")
+                    if is_choice_needed == "y":
+                        player_txid = input("Please input player txid: ")
+                        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid, player_txid)["txid"]
+                        break
+                    elif is_choice_needed == "n":
+                        set_warriors_name(rpc_connection)
+                        newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+                        break
+                    else:
+                        print("Please choose y or n !")
+            print(colorize("Succesfully registered.", "green"))
+            print(game_info)
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print("Something went wrong.")
+            print(newgame_regisration)
+            print(e)
+            input("Press [Enter] to continue...")
         except KeyboardInterrupt:
             break
 
