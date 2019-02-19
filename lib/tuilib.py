@@ -1560,16 +1560,23 @@ def play_multiplayer_game(rpc_connection):
                 if height_difference == 0:
                     print(current_height)
                     print(game_end_height)
-                    print(colorize("Waiting for next block before bailout", "blue"))
+                    print(colorize("Waiting for next block before bailout or highlander", "blue"))
                     time.sleep(5)
                 else:
                     break
-            # TODO: check if player is last standing and execute highlander here
-            bailout_info = rogue_bailout(rpc_connection, new_game_txid)
-            print(bailout_info)
-            print("\nGame is finished!\n")
-            bailout_txid = bailout_info["txid"]
+            # hope its work this way: if alive more than 1 now just bailout, if only I alive try to highlander
+            if game_info["alive"] > 1:
+                bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+                print(bailout_info)
+                print("\nGame is finished!\n")
+                bailout_txid = bailout_info["txid"]
+            else:
+                highlander_info = rogue_highlander(rpc_connection, new_game_txid)
+                print(highlander_info)
+                print("\nGame is finished!\n")
+                highlander_info = highlander_info["txid"]
             input("Press [Enter] to continue...")
+            break
         if start_game == "n":
             print("As you wish!")
             input("Press [Enter] to continue...")
