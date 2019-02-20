@@ -1006,7 +1006,8 @@ def print_multiplayer_games_list(rpc_connection):
             print("Players in game:")
             for player in game_info["players"]:
                 print("Slot: " + str(player["slot"]))
-                print("Baton: " + str(player["baton"]))
+                if "baton" in player.keys():
+                    print("Baton: " + str(player["baton"]))
                 print("Tokenid: " + str(player["tokenid"]))
                 print("Is mine?: " + str(player["ismine"]))
         print(colorize("\nR + Enter - refresh list.\nE + Enter - to the game choice.\nCTRL + C - back to main menu", "blue"))
