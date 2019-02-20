@@ -1065,7 +1065,13 @@ def rogue_newgame_singleplayer(rpc_connection):
                 time.sleep(5)
             else:
                 break
-        bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+        while True:
+            bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+            if "hex" in bailout_info.keys():
+                break
+            else:
+                print("bailout not broadcasted yet by some reason. Let's wait...")
+                time.sleep(5)
         print(bailout_info)
         print("\nGame is finished!\n")
         bailout_txid = bailout_info["txid"]
