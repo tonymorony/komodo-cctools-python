@@ -77,7 +77,7 @@ if __name__ == "__main__":
             rpclib.getinfo(rpc_connection)
         except Exception:
             print(tuilib.colorize("Cant connect to ROGUE daemon RPC! Please check if daemon is up.", "pink"))
-            exit()
+            tuilib.exit()
         else:
             print(tuilib.colorize("Succesfully connected!\n", "green"))
             with (open("lib/logo.txt", "r")) as logo:
