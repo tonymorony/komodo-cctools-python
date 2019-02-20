@@ -1,7 +1,6 @@
 from lib import rpclib
 import json
 import time
-import readline
 import re
 import sys
 import pickle
@@ -14,6 +13,9 @@ from binascii import hexlify
 from binascii import unhexlify
 from functools import partial
 
+operating_system = platform.system()
+if operating_system != 'Win64' and operating_system != 'Windows':
+    import readline
 
 
 def colorize(string, color):
@@ -69,7 +71,7 @@ def def_credentials(chain):
         ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
     elif operating_system == 'Linux':
         ac_dir = os.environ['HOME'] + '/.komodo'
-    elif operating_system == 'Win64':
+    elif operating_system == 'Win64' or operating_system == 'Windows':
         ac_dir = "dont have windows machine now to test"
     if chain == 'KMD':
         coin_config_file = str(ac_dir + '/komodo.conf')
