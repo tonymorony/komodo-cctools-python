@@ -986,6 +986,12 @@ def rogue_player_info(rpc_connection, playertxid):
     return player_info
 
 
+def rogue_game_extract(rpc_connection, gametxid, pubkey):
+    rogue_extract_arg = '"' + "[%22" + gametxid + "%22,%22" + pubkey + "%22]" + '"'
+    extract_info = rpc_connection.cclib("extract", "17", rogue_extract_arg)
+    return extract_info
+
+
 def print_multiplayer_games_list(rpc_connection):
     while True:
         pending_list = rogue_pending(rpc_connection)
@@ -1692,3 +1698,10 @@ def warrior_trasnfer(rpc_connection):
             break
         else:
             print(colorize("Choose y or n!", "red"))
+
+
+def extract_replays(rpc_connection):
+    games_list = rpc_connection.cclib("games", "17")["pastgames"]
+    pubkey = input("Input pubpkey for replays: ")
+    for game in games_list:
+        rogue_game_extract(rpc_connection, game, pubkey)
