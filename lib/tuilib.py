@@ -1,7 +1,6 @@
 from lib import rpclib
 import json
 import time
-import readline
 import re
 import sys
 import pickle
@@ -14,6 +13,9 @@ from binascii import hexlify
 from binascii import unhexlify
 from functools import partial
 
+operating_system = platform.system()
+if operating_system != 'Win64' and operating_system != 'Windows':
+    import readline
 
 
 def colorize(string, color):
@@ -69,8 +71,8 @@ def def_credentials(chain):
         ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
     elif operating_system == 'Linux':
         ac_dir = os.environ['HOME'] + '/.komodo'
-    elif operating_system == 'Win64':
-        ac_dir = "dont have windows machine now to test"
+    elif operating_system == 'Win64' or operating_system == 'Windows':
+        ac_dir = '%s/komodo/' % os.environ['APPDATA']
     if chain == 'KMD':
         coin_config_file = str(ac_dir + '/komodo.conf')
     else:
@@ -1006,7 +1008,8 @@ def print_multiplayer_games_list(rpc_connection):
             print("Players in game:")
             for player in game_info["players"]:
                 print("Slot: " + str(player["slot"]))
-                print("Baton: " + str(player["baton"]))
+                if "baton" in player.keys():
+                    print("Baton: " + str(player["baton"]))
                 print("Tokenid: " + str(player["tokenid"]))
                 print("Is mine?: " + str(player["ismine"]))
         print(colorize("\nR + Enter - refresh list.\nE + Enter - to the game choice.\nCTRL + C - back to main menu", "blue"))
@@ -1053,7 +1056,11 @@ def rogue_newgame_singleplayer(rpc_connection):
             input("Press [Enter] to continue...")
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
-        subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+        operating_system = platform.system()
+        if operating_system == 'Win64' or operating_system == 'Windows':
+            subprocess.call(["cc/rogue/rogue.exe", str(game_info["seed"]), str(game_info["gametxid"])])
+        else:
+            subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
         game_end_height = int(rpc_connection.getinfo()["blocks"])
         while True:
             current_height = int(rpc_connection.getinfo()["blocks"])
@@ -1065,7 +1072,13 @@ def rogue_newgame_singleplayer(rpc_connection):
                 time.sleep(5)
             else:
                 break
-        bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+        while True:
+            bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+            if "hex" in bailout_info.keys():
+                break
+            else:
+                print("bailout not broadcasted yet by some reason. Let's wait...")
+                time.sleep(5)
         print(bailout_info)
         print("\nGame is finished!\n")
         bailout_txid = bailout_info["txid"]
@@ -1194,6 +1207,8 @@ def sell_warrior(rpc_connection):
             print(colorize("Choose y or n!", "red"))
 
 
+#TODO: have to combine into single scanner with different cases
+
 def warriors_scanner(rpc_connection):
     start_time = time.time()
     token_list = rpc_connection.tokenlist()
@@ -1212,7 +1227,6 @@ def warriors_scanner(rpc_connection):
     print("--- %s seconds ---" % (time.time() - start_time))
     return warriors_list
 
-#TODO: have to combine into single scanner only difference from DEX scanner is that it showing your warriors also
 def warriors_scanner_for_rating(rpc_connection):
     token_list = rpc_connection.tokenlist()
     my_warriors_list = rogue_players_list(rpc_connection)
@@ -1227,6 +1241,22 @@ def warriors_scanner_for_rating(rpc_connection):
             warriors_list[token] = player_info["player"]
     return warriors_list
 
+
+def warriors_scanner_for_dex(rpc_connection):
+    start_time = time.time()
+    token_list = rpc_connection.tokenlist()
+    my_warriors_list = rogue_players_list(rpc_connection)
+    warriors_list = {}
+    for token in token_list:
+        player_info = rogue_player_info(rpc_connection, token)
+        if "status" in player_info and player_info["status"] == "error":
+            pass
+        elif player_info["player"]["tokenid"] in my_warriors_list["playerdata"]:
+            pass
+        else:
+            warriors_list[token] = player_info["player"]
+    print("--- %s seconds ---" % (time.time() - start_time))
+    return warriors_list
 
 
 def print_warrior_list(rpc_connection):
@@ -1353,7 +1383,7 @@ def print_icoming_bids(rpc_connection):
 
 
 def find_warriors_asks(rpc_connection):
-    warriors_list = warriors_scanner(rpc_connection)
+    warriors_list = warriors_scanner_for_dex(rpc_connection)
     warriors_asks = []
     for player in warriors_list:
         orders = rpc_connection.tokenorders(player)
@@ -1388,7 +1418,12 @@ def find_warriors_asks(rpc_connection):
             for ask in warriors_asks:
                 if ask_txid == ask["txid"]:
                     tokenid = ask["tokenid"]
-            fillask_raw = rpc_connection.tokenfillask(tokenid, ask_txid, "1")
+            try:
+                fillask_raw = rpc_connection.tokenfillask(tokenid, ask_txid, "1")
+            except Exception as e:
+                print("Something went wrong. Be careful with input next time.")
+                input("Press [Enter] to continue...")
+                break
             try:
                 fillask_txid = rpc_connection.sendrawtransaction(fillask_raw["hex"])
             except Exception as e:
@@ -1562,9 +1597,19 @@ def play_multiplayer_game(rpc_connection):
     games_counter = 0
     for active_multiplayer_game in active_multiplayer_games_list:
         games_counter = games_counter + 1
+        if_ready_to_start = False
+        try:
+            active_multiplayer_game["seed"]
+            if_ready_to_start = True
+        except Exception as e:
+            pass
         print(colorize("\n================================\n", "green"))
         print("Game txid: " + active_multiplayer_game["gametxid"])
         print("Game buyin: " + str(active_multiplayer_game["buyin"]))
+        if if_ready_to_start:
+            print(colorize("Ready for start!", "green"))
+        else:
+            print(colorize("Not ready for start yet, wait until start height!", "red"))
         print("Game height: " + str(active_multiplayer_game["gameheight"]))
         print("Start height: " + str(active_multiplayer_game["start"]))
         print("Alive players: " + str(active_multiplayer_game["alive"]))
@@ -1583,7 +1628,12 @@ def play_multiplayer_game(rpc_connection):
         if start_game == "y":
             new_game_txid = input("Input txid of game which you want to start: ")
             game_info = rogue_game_info(rpc_connection, new_game_txid)
-            subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            try:
+                subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            except Exception as e:
+                print("Maybe game isn't ready for start yet or your input was not correct, sorry.")
+                input("Press [Enter] to continue...")
+                break
             game_end_height = int(rpc_connection.getinfo()["blocks"])
             while True:
                 current_height = int(rpc_connection.getinfo()["blocks"])
