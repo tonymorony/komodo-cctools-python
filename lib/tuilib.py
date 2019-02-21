@@ -72,7 +72,7 @@ def def_credentials(chain):
     elif operating_system == 'Linux':
         ac_dir = os.environ['HOME'] + '/.komodo'
     elif operating_system == 'Win64' or operating_system == 'Windows':
-        ac_dir = "dont have windows machine now to test"
+        ac_dir = '%s/komodo/' % os.environ['APPDATA']
     if chain == 'KMD':
         coin_config_file = str(ac_dir + '/komodo.conf')
     else:
