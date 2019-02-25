@@ -75,6 +75,26 @@ if __name__ == "__main__":
                                   "Please provide asset chain RPC connection details for initialization", "blue"))
             rpc_connection = tuilib.def_credentials(chain)
             rpclib.getinfo(rpc_connection)
+            # waiting until chain is in sync
+            while True:
+                have_blocks = rpclib.getinfo(rpc_connection)["blocks"]
+                longest_chain = rpclib.getinfo(rpc_connection)["longestchain"]
+                if have_blocks != longest_chain:
+                    print(tuilib.colorize("ROGUE not synced yet.", "red"))
+                    print("Have " + str(have_blocks) + " from " + str(longest_chain) + " blocks")
+                    time.sleep(5)
+                else:
+                    print(tuilib.colorize("Chain is synced!", "green"))
+                    break
+            # checking if pubkey is set
+            info = rpclib.getinfo(rpc_connection)
+            if "pubkey" in info.keys():
+                print("Pubkey is already set")
+            else:
+                valid_address = rpc_connection.getaccountaddress("")
+                valid_pubkey = rpc_connection.validateaddress(valid_address)["pubkey"]
+                rpc_connection.setpubkey(valid_pubkey)
+                print(tuilib.colorize("Pubkey is succesfully set!", "green"))
         except Exception:
             print(tuilib.colorize("Cant connect to ROGUE daemon RPC! Please check if daemon is up.", "pink"))
             tuilib.exit()
