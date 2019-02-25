@@ -12,7 +12,7 @@ from slickrpc import Proxy
 from binascii import hexlify
 from binascii import unhexlify
 from functools import partial
-from shutil import copyfile
+from shutil import copy
 
 
 operating_system = platform.system()
@@ -1707,7 +1707,7 @@ def check_if_config_is_here(rpc_connection):
         elif operating_system == 'Win64' or operating_system == 'Windows':
             path_to_config = '%s/komodo/ROGUE/ROGUE.conf' % os.environ['APPDATA']
     try:
-        copyfile(path_to_config, os.getcwd())
+        copy(path_to_config, os.getcwd())
     except Exception as e:
         print(e)
         print("Can't copy config to current daemon directory automatically by some reason.")
