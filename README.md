@@ -3,7 +3,7 @@
 These tools creating for demonstration and partial automation of Komodo cryptoconditions modules testing. (RogueCC game, AssetsCC, OraclesCC, GatewaysCC, MarmaraCC, ...)
 
 
-Developer installation:
+Developer installation (on Ubuntu 18.04) :
 
 Python3 required for execution:
 
