@@ -18,11 +18,15 @@ Starting:
 
 # TUI for RogueCC
 
+If you're looking for player 3 in 1 (daemon + game + TUI) multiOS bundle - please check `releases` of this repo.
+
 `python3 rogue_tui.py`
 
 ![alt text](https://i.imgur.com/gkcxMGt.png)
 
-# TUI for OraclesCC (have files uploader/downloader functionality - also there is a AWS branch for AWS certificates uploading demonstration)
+# TUI for OraclesCC
+
+Have files uploader/downloader functionality - also there is a AWS branch for AWS certificates uploading demonstration
 
 `python3 oracles_cc_tui.py`
 
