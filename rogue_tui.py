@@ -86,7 +86,7 @@ if __name__ == "__main__":
                 else:
                     print(tuilib.colorize("Chain is synced!", "green"))
                     break
-            # checking if pubkey is set
+            # checking if pubkey is set and set valid if not
             info = rpclib.getinfo(rpc_connection)
             if "pubkey" in info.keys():
                 print("Pubkey is already set")
@@ -95,6 +95,8 @@ if __name__ == "__main__":
                 valid_pubkey = rpc_connection.validateaddress(valid_address)["pubkey"]
                 rpc_connection.setpubkey(valid_pubkey)
                 print(tuilib.colorize("Pubkey is succesfully set!", "green"))
+            # copy ROGUE config to current daemon directory if it's not here
+            tuilib.check_if_config_is_here(rpc_connection)
         except Exception:
             print(tuilib.colorize("Cant connect to ROGUE daemon RPC! Please check if daemon is up.", "pink"))
             tuilib.exit()

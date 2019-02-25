@@ -12,6 +12,8 @@ from slickrpc import Proxy
 from binascii import hexlify
 from binascii import unhexlify
 from functools import partial
+from shutil import copyfile
+
 
 operating_system = platform.system()
 if operating_system != 'Win64' and operating_system != 'Windows':
@@ -1692,3 +1694,21 @@ def warrior_trasnfer(rpc_connection):
             break
         else:
             print(colorize("Choose y or n!", "red"))
+
+
+def check_if_config_is_here(rpc_connection):
+    if os.path.exists("ROGUE.conf"):
+        print(colorize("Config is already in daemon folder", "green"))
+    else:
+        if operating_system == 'Darwin':
+            path_to_config = os.environ['HOME'] + '/Library/Application Support/Komodo/ROGUE/ROGUE.conf'
+        elif operating_system == 'Linux':
+            path_to_config = os.environ['HOME'] + '/.komodo/ROGUE/ROGUE.conf'
+        elif operating_system == 'Win64' or operating_system == 'Windows':
+            path_to_config = '%s/komodo/ROGUE/ROGUE.conf' % os.environ['APPDATA']
+    try:
+        copyfile(path_to_config, os.getcwd())
+    except Exception as e:
+        print(e)
+        print("Can't copy config to current daemon directory automatically by some reason.")
+        print("Please copy it manually. It's locating here: " + path_to_config)
