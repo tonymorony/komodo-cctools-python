@@ -1214,10 +1214,8 @@ def is_warrior_alive(rpc_connection, player_info):
     warrior_alive = False
     raw_transaction = rpc_connection.getrawtransaction(player_info["player"]["tokenid"], 1)
     for vout in raw_transaction["vout"]:
-        if vout["value"] == 0.00000001:
-            vout_num = vout["n"]
-            if rpc_connection.gettxout(raw_transaction["txid"], vout_num):
-                warrior_alive = True
+        if vout["value"] == 0.00000001 and rpc_connection.gettxout(raw_transaction["txid"], vout["n"]):
+            warrior_alive = True
     return warrior_alive
 
 
@@ -1232,7 +1230,7 @@ def warriors_scanner(rpc_connection):
             pass
         elif player_info["player"]["tokenid"] in my_warriors_list["playerdata"]:
             pass
-        elif not is_warrior_alive(rpc_connection, player_info):
+        elif not is_warrior_alive(rpc_connection, player_info["player"]["tokenid"]):
             pass
         else:
             warriors_list[token] = player_info["player"]
@@ -1248,7 +1246,7 @@ def warriors_scanner_for_rating(rpc_connection):
         player_info = rogue_player_info(rpc_connection, token)
         if "status" in player_info and player_info["status"] == "error":
             pass
-        elif not is_warrior_alive(rpc_connection, player_info):
+        elif not is_warrior_alive(rpc_connection, player_info["player"]["tokenid"]):
             pass
         else:
             warriors_list[token] = player_info["player"]
