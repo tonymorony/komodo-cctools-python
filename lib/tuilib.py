@@ -1706,9 +1706,9 @@ def check_if_config_is_here(rpc_connection):
             path_to_config = os.environ['HOME'] + '/.komodo/ROGUE/ROGUE.conf'
         elif operating_system == 'Win64' or operating_system == 'Windows':
             path_to_config = '%s/komodo/ROGUE/ROGUE.conf' % os.environ['APPDATA']
-    try:
-        copy(path_to_config, os.getcwd())
-    except Exception as e:
-        print(e)
-        print("Can't copy config to current daemon directory automatically by some reason.")
-        print("Please copy it manually. It's locating here: " + path_to_config)
+        try:
+            copy(path_to_config, os.getcwd())
+        except Exception as e:
+            print(e)
+            print("Can't copy config to current daemon directory automatically by some reason.")
+            print("Please copy it manually. It's locating here: " + path_to_config)
