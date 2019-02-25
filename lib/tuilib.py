@@ -1210,6 +1210,16 @@ def sell_warrior(rpc_connection):
 
 
 #TODO: have to combine into single scanner with different cases
+def is_warrior_alive(rpc_connection, player_info):
+    warrior_alive = False
+    raw_transaction = rpc_connection.getrawttransaction(player_info["player"]["tokenid"], 1)
+    for vout in raw_transaction["vout"]:
+        if vout["value"] == 0.00000001:
+            vout_num = vout["n"]
+            if rpc_connection.gettxout(raw_transaction["txid"], vout_num):
+                warrior_alive = True
+    return warrior_alive
+
 
 def warriors_scanner(rpc_connection):
     start_time = time.time()
@@ -1222,12 +1232,13 @@ def warriors_scanner(rpc_connection):
             pass
         elif player_info["player"]["tokenid"] in my_warriors_list["playerdata"]:
             pass
-        elif not rpc_connection.gettxout(player_info["player"]["tokenid"], 1):
+        elif not is_warrior_alive(rpc_connection, player_info):
             pass
         else:
             warriors_list[token] = player_info["player"]
     print("--- %s seconds ---" % (time.time() - start_time))
     return warriors_list
+
 
 def warriors_scanner_for_rating(rpc_connection):
     token_list = rpc_connection.tokenlist()
@@ -1237,7 +1248,7 @@ def warriors_scanner_for_rating(rpc_connection):
         player_info = rogue_player_info(rpc_connection, token)
         if "status" in player_info and player_info["status"] == "error":
             pass
-        elif not rpc_connection.gettxout(player_info["player"]["tokenid"], 1):
+        elif not is_warrior_alive(rpc_connection, player_info):
             pass
         else:
             warriors_list[token] = player_info["player"]
