@@ -1210,9 +1210,9 @@ def sell_warrior(rpc_connection):
 
 
 #TODO: have to combine into single scanner with different cases
-def is_warrior_alive(rpc_connection, player_info):
+def is_warrior_alive(rpc_connection, warrior_txid):
     warrior_alive = False
-    raw_transaction = rpc_connection.getrawtransaction(player_info["player"]["tokenid"], 1)
+    raw_transaction = rpc_connection.getrawtransaction(warrior_txid, 1)
     for vout in raw_transaction["vout"]:
         if vout["value"] == 0.00000001 and rpc_connection.gettxout(raw_transaction["txid"], vout["n"]):
             warrior_alive = True
