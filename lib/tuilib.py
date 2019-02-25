@@ -1228,9 +1228,9 @@ def warriors_scanner(rpc_connection):
         player_info = rogue_player_info(rpc_connection, token)
         if "status" in player_info and player_info["status"] == "error":
             pass
-        elif player_info["player"]["tokenid"] in my_warriors_list["playerdata"]:
+        elif player_info["player"]["playertxid"] in my_warriors_list["playerdata"]:
             pass
-        elif not is_warrior_alive(rpc_connection, player_info["player"]["tokenid"]):
+        elif not is_warrior_alive(rpc_connection, player_info["player"]["playertxid"]):
             pass
         else:
             warriors_list[token] = player_info["player"]
@@ -1246,7 +1246,7 @@ def warriors_scanner_for_rating(rpc_connection):
         player_info = rogue_player_info(rpc_connection, token)
         if "status" in player_info and player_info["status"] == "error":
             pass
-        elif not is_warrior_alive(rpc_connection, player_info["player"]["tokenid"]):
+        elif not is_warrior_alive(rpc_connection, player_info["player"]["playertxid"]):
             pass
         else:
             warriors_list[token] = player_info["player"]
