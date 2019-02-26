@@ -1212,6 +1212,14 @@ def sell_warrior(rpc_connection):
 #TODO: have to combine into single scanner with different cases
 def is_warrior_alive(rpc_connection, warrior_txid):
     warrior_alive = False
+    #finding most actual playertxid
+    while True:
+        playerinfo = rogue_player_info(rpc_connection, warrior_txid)
+        if "batontxid" in playerinfo["player"].keys():
+            warrior_txid = playerinfo["player"]["batontxid"]
+        else:
+            break
+    # checking if it dead or not
     raw_transaction = rpc_connection.getrawtransaction(warrior_txid, 1)
     for vout in raw_transaction["vout"]:
         if vout["value"] == 0.00000001 and rpc_connection.gettxout(raw_transaction["txid"], vout["n"]):
