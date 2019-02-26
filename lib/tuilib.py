@@ -1212,7 +1212,6 @@ def sell_warrior(rpc_connection):
 #TODO: have to combine into single scanner with different cases
 def is_warrior_alive(rpc_connection, warrior_txid):
     warrior_alive = False
-    # checking if it dead or not
     raw_transaction = rpc_connection.getrawtransaction(warrior_txid, 1)
     for vout in raw_transaction["vout"]:
         if vout["value"] == 0.00000001 and rpc_connection.gettxout(raw_transaction["txid"], vout["n"]):
@@ -1227,25 +1226,14 @@ def warriors_scanner(rpc_connection):
     warriors_list = {}
     for token in token_list:
         player_info = rogue_player_info(rpc_connection, token)
-        # checking if it a warrior
         if "status" in player_info and player_info["status"] == "error":
             pass
-        # if yes - finding most actual playertxid first
+        elif player_info["player"]["playertxid"] in my_warriors_list["playerdata"]:
+            pass
+        elif not is_warrior_alive(rpc_connection, player_info["player"]["playertxid"]):
+            pass
         else:
-            while True:
-                if "batontxid" in player_info["player"].keys():
-                    warrior_txid = player_info["player"]["batontxid"]
-                    player_info = rogue_player_info(rpc_connection, warrior_txid)
-                else:
-                    break
-            # not including to list if it belongs to player
-            if warrior_txid in my_warriors_list["playerdata"]:
-                pass
-            # not including if warrior is dead
-            elif not is_warrior_alive(rpc_connection, warrior_txid):
-                pass
-            else:
-                warriors_list[token] = player_info["player"]
+            warriors_list[token] = player_info["player"]
     print("--- %s seconds ---" % (time.time() - start_time))
     return warriors_list
 
@@ -1258,19 +1246,10 @@ def warriors_scanner_for_rating(rpc_connection):
         player_info = rogue_player_info(rpc_connection, token)
         if "status" in player_info and player_info["status"] == "error":
             pass
-        # if yes - finding most actual playertxid first
+        elif not is_warrior_alive(rpc_connection, player_info["player"]["playertxid"]):
+            pass
         else:
-            while True:
-                if "batontxid" in player_info["player"].keys():
-                    warrior_txid = player_info["player"]["batontxid"]
-                    player_info = rogue_player_info(rpc_connection, warrior_txid)
-                else:
-                    break
-            # not including if warrior is dead
-            if not is_warrior_alive(rpc_connection, warrior_txid):
-                pass
-            else:
-                warriors_list[token] = player_info["player"]
+            warriors_list[token] = player_info["player"]
     return warriors_list
 
 
