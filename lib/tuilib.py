@@ -1012,7 +1012,8 @@ def print_multiplayer_games_list(rpc_connection):
                 print("Slot: " + str(player["slot"]))
                 if "baton" in player.keys():
                     print("Baton: " + str(player["baton"]))
-                print("Tokenid: " + str(player["tokenid"]))
+                if "tokenid" in player.keys():
+                    print("Tokenid: " + str(player["tokenid"]))
                 print("Is mine?: " + str(player["ismine"]))
         print(colorize("\nR + Enter - refresh list.\nE + Enter - to the game choice.\nCTRL + C - back to main menu", "blue"))
         is_refresh = input("Choose your destiny: ")
@@ -1140,6 +1141,7 @@ def rogue_join_multiplayer_game(rpc_connection):
                 print("Something went wrong. Maybe you're trying to register on game twice or don't have enough funds to pay buyin.")
                 print(e)
                 input("Press [Enter] to continue...")
+                break
             print(colorize("Succesfully registered.", "green"))
             print(newgame_regisration_txid)
             input("Press [Enter] to continue...")
@@ -1671,7 +1673,11 @@ def play_multiplayer_game(rpc_connection):
                 bailout_info = rogue_bailout(rpc_connection, new_game_txid)
                 print(bailout_info)
                 print("\nGame is finished!\n")
-                bailout_txid = bailout_info["txid"]
+                try:
+                    bailout_txid = bailout_info["txid"]
+                except Exception:
+                    highlander_info = rogue_highlander(rpc_connection, new_game_txid)
+                    highlander_info = highlander_info["txid"]
             else:
                 highlander_info = rogue_highlander(rpc_connection, new_game_txid)
                 print(highlander_info)
