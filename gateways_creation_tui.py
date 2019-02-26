@@ -31,7 +31,7 @@ def main():
     while True:
         os.system('clear')
         print(tuilib.colorize(header, 'pink'))
-        print(tuilib.colorize('CLI version 0.2 by Anton Lysakov\n', 'green'))
+        print(tuilib.colorize('CLI version 0.2\n', 'green'))
         for item in menuItems:
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
         choice = input(">> ")
