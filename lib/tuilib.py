@@ -1420,7 +1420,7 @@ def find_warriors_asks(rpc_connection):
             print(item)
         print("\nTotal packsize: " + str(player_data["packsize"]) + "\n")
         print(colorize("Order info: \n", "red"))
-        print("Bid txid: " + ask["txid"])
+        print("Ask txid: " + ask["txid"])
         print("Price: " + str(ask["price"]) + "\n")
     while True:
         want_to_buy = input("Do you want to buy any warrior? [y/n]: ")
