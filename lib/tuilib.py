@@ -1241,15 +1241,25 @@ def warriors_scanner(rpc_connection):
 def warriors_scanner_for_rating(rpc_connection):
     token_list = rpc_connection.tokenlist()
     my_warriors_list = rogue_players_list(rpc_connection)
+    actual_playerids = []
     warriors_list = {}
     for token in token_list:
         player_info = rogue_player_info(rpc_connection, token)
         if "status" in player_info and player_info["status"] == "error":
             pass
-        elif not is_warrior_alive(rpc_connection, player_info["player"]["playertxid"]):
+        else:
+            while True:
+                if "batontxid" in player_info["player"].keys():
+                    player_info = rogue_player_info(rpc_connection, player_info["player"]["batontxid"])
+                else:
+                    actual_playerids.append(player_info["player"]["playertxid"])
+                    break
+    for player_id in actual_playerids:
+        player_info = rogue_player_info(rpc_connection, player_id)
+        if not is_warrior_alive(rpc_connection, player_info["player"]["playertxid"]):
             pass
         else:
-            warriors_list[token] = player_info["player"]
+            warriors_list[player_id] = player_info["player"]
     return warriors_list
 
 
