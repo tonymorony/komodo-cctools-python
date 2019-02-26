@@ -341,9 +341,12 @@ def gateways_bind_tui(rpc_connection):
                 pubkeys = []
                 for i in range(int(N)):
                     pubkeys.append(input("Input pubkey {}: ".format(i+1)))
-                #pubkeys = ', '.join(pubkeys)
+                pubtype = input("Input pubtype of external coin: ")
+                p2shtype = input("Input p2shtype of external coin: ")
+                wiftype = input("Input wiftype of external coin: ")
                 args = [rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N]
-                args = args + pubkeys
+                new_args = [pubtype, p2shtype, wiftype]
+                args = args + pubkeys + new_args
                 # broadcasting block
                 try:
                     gateways_bind_hex = rpclib.gateways_bind(*args)
