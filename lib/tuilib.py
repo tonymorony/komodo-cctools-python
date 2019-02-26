@@ -1235,6 +1235,7 @@ def warriors_scanner(rpc_connection):
             while True:
                 if "batontxid" in player_info["player"].keys():
                     warrior_txid = player_info["player"]["batontxid"]
+                    player_info = rogue_player_info(rpc_connection, player_info["player"]["batontxid"])
                 else:
                     break
             # not including to list if it belongs to player
@@ -1262,6 +1263,7 @@ def warriors_scanner_for_rating(rpc_connection):
             while True:
                 if "batontxid" in player_info["player"].keys():
                     warrior_txid = player_info["player"]["batontxid"]
+                    player_info = rogue_player_info(rpc_connection, player_info["player"]["batontxid"])
                 else:
                     break
             # not including if warrior is dead
