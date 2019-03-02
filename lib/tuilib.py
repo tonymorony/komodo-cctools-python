@@ -997,6 +997,12 @@ def rogue_extract(rpc_connection, game_txid, pubkey):
     return extract_info
 
 
+def rogue_keystrokes(rpc_connection, game_txid, keystroke):
+    rogue_keystrokes_arg = '"' + "[%22" + game_txid + "%22,%22" + keystroke + "%22]" + '"'
+    keystroke_info = rpc_connection.cclib("keystrokes", "17", rogue_keystrokes_arg)
+    return keystroke_info
+
+
 def print_multiplayer_games_list(rpc_connection):
     while True:
         pending_list = rogue_pending(rpc_connection)
@@ -1085,7 +1091,19 @@ def rogue_newgame_singleplayer(rpc_connection):
             else:
                 break
         print("\nKeystrokes of this game:\n")
-        print(find_game_keystrokes_in_log(new_game_txid))
+        keystrokes_rpc_responses = find_game_keystrokes_in_log(new_game_txid)[1::2]
+        for keystroke in keystrokes_rpc_responses:
+            json_keystroke = json.loads(keystroke)
+            if "status" in json_keystroke.keys() and json_keystroke["status"] == "error":
+                while True:
+                    print("Trying to re-brodcast keystroke")
+                    keystroke_rebroadcast = rogue_keystrokes(rpc_connection, json_keystroke["gametxid"], json_keystroke["keystrokes"])
+                    if "txid" in keystroke_rebroadcast.keys():
+                        print("Keystroke broadcasted! txid: " + keystroke_rebroadcast["txid"])
+                        break
+                    else:
+                        print("Let's try again in 5 seconds")
+                        time.sleep(5)
         while True:
             print("\nExtraction info:\n")
             print(rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"]))
