@@ -345,7 +345,7 @@ def gateways_bind_tui(rpc_connection):
                 p2shtype = input("Input p2shtype of external coin: ")
                 wiftype = input("Input wiftype of external coin: ")
                 args = [rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N]
-                new_args = [pubtype, p2shtype, wiftype]
+                new_args = [str(pubtype), str(p2shtype), wiftype]
                 args = args + pubkeys + new_args
                 # broadcasting block
                 try:
@@ -991,6 +991,12 @@ def rogue_player_info(rpc_connection, playertxid):
     return player_info
 
 
+def rogue_extract(rpc_connection, game_txid, pubkey):
+    extract_info_arg = '"' + "[%22" + game_txid + "%22,%22" + pubkey + "%22]" + '"'
+    extract_info = rpc_connection.cclib("extract", "17", extract_info_arg)
+    return extract_info
+
+
 def print_multiplayer_games_list(rpc_connection):
     while True:
         pending_list = rogue_pending(rpc_connection)
@@ -1078,13 +1084,27 @@ def rogue_newgame_singleplayer(rpc_connection):
                 time.sleep(5)
             else:
                 break
+        print("\nKeystrokes of this game:\n")
+        print(find_game_keystrokes_in_log(new_game_txid))
         while True:
-            bailout_info = rogue_bailout(rpc_connection, new_game_txid)
-            if "hex" in bailout_info.keys():
+            print("\nExtraction info:\n")
+            print(rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo["pubkey"]))
+            print("\n")
+            is_bailout_needed = input("Do you want to make bailout now? [y/n]: ")
+            if is_bailout_needed == "y":
+                while True:
+                    bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+                    if "hex" in bailout_info.keys():
+                        break
+                    else:
+                        print("bailout not broadcasted yet by some reason. Let's wait...")
+                        time.sleep(5)
                 break
+            elif is_bailout_needed == "n":
+                print("waiting 10 more seconds")
+                time.sleep(10)
             else:
-                print("bailout not broadcasted yet by some reason. Let's wait...")
-                time.sleep(5)
+                print("Please choose y or n !")
         print(bailout_info)
         print("\nGame is finished!\n")
         bailout_txid = bailout_info["txid"]
@@ -1740,3 +1760,12 @@ def check_if_config_is_here(rpc_connection):
             print(e)
             print("Can't copy config to current daemon directory automatically by some reason.")
             print("Please copy it manually. It's locating here: " + path_to_config)
+
+
+def find_game_keystrokes_in_log(gametxid):
+    p1 = subprocess.Popen(["cat", "keystrokes.log"], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(["grep", gametxid], stdin=p1.stdout, stdout=subprocess.PIPE)
+    p1.stdout.close()
+    output = p2.communicate()[0]
+    keystrokes_log_for_game = bytes.decode(output).split("\n")
+    return keystrokes_log_for_game
