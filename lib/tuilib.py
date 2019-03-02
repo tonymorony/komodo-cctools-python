@@ -1088,7 +1088,7 @@ def rogue_newgame_singleplayer(rpc_connection):
         print(find_game_keystrokes_in_log(new_game_txid))
         while True:
             print("\nExtraction info:\n")
-            print(rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo["pubkey"]))
+            print(rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"]))
             print("\n")
             is_bailout_needed = input("Do you want to make bailout now? [y/n]: ")
             if is_bailout_needed == "y":
