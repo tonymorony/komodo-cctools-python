@@ -1091,7 +1091,14 @@ def rogue_newgame_singleplayer(rpc_connection):
             else:
                 break
         print("\nKeystrokes of this game:\n")
-        keystrokes_rpc_responses = find_game_keystrokes_in_log(new_game_txid)[1::2]
+        time.sleep(0.5)
+        while True:
+            keystrokes_rpc_responses = find_game_keystrokes_in_log(new_game_txid)[1::2]
+            if len(keystrokes_rpc_responses) < 1:
+                print("No keystrokes broadcasted yet. Let's wait 5 seconds")
+                time.sleep(5)
+            else:
+                break
         for keystroke in keystrokes_rpc_responses:
             json_keystroke = json.loads(keystroke)
             if "status" in json_keystroke.keys() and json_keystroke["status"] == "error":
