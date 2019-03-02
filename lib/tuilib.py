@@ -1101,7 +1101,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                 break
         print(keystrokes_rpc_responses)
         for keystroke in keystrokes_rpc_responses:
-            json_keystroke = json.loads(keystroke)
+            json_keystroke = json.loads(keystroke)["result"]
             if "status" in json_keystroke.keys() and json_keystroke["status"] == "error":
                 while True:
                     print("Trying to re-brodcast keystroke")
