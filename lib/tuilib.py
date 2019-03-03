@@ -1075,10 +1075,7 @@ def rogue_newgame_singleplayer(rpc_connection):
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         operating_system = platform.system()
-        if operating_system == 'Win64' or operating_system == 'Windows':
-            subprocess.call(["cc/rogue/rogue.exe", str(game_info["seed"]), str(game_info["gametxid"])])
-        else:
-            subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+        subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
         game_end_height = int(rpc_connection.getinfo()["blocks"])
         while True:
             current_height = int(rpc_connection.getinfo()["blocks"])
