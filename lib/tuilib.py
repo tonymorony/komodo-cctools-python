@@ -21,19 +21,17 @@ if operating_system != 'Win64' and operating_system != 'Windows':
 
 
 def colorize(string, color):
-    if operating_system != 'Win64' or operating_system != 'Windows':
-        colors = {
-            'blue': '\033[94m',
-            'magenta': '\033[95m',
-            'green': '\033[92m',
-            'red': '\033[91m'
-        }
-        if color not in colors:
-            return string
-        else:
-            return colors[color] + string + '\033[0m'
-    else:
+
+    colors = {
+        'blue': '\033[94m',
+        'magenta': '\033[95m',
+        'green': '\033[92m',
+        'red': '\033[91m'
+    }
+    if color not in colors:
         return string
+    else:
+        return colors[color] + string + '\033[0m'
 
 
 def rpc_connection_tui():
