@@ -21,17 +21,19 @@ if operating_system != 'Win64' and operating_system != 'Windows':
 
 
 def colorize(string, color):
-
-    colors = {
-        'blue': '\033[94m',
-        'magenta': '\033[95m',
-        'green': '\033[92m',
-        'red': '\033[91m'
-    }
-    if color not in colors:
-        return string
+    if operating_system != 'Win64' or operating_system != 'Windows':
+        colors = {
+            'blue': '\033[94m',
+            'magenta': '\033[95m',
+            'green': '\033[92m',
+            'red': '\033[91m'
+        }
+        if color not in colors:
+            return string
+        else:
+            return colors[color] + string + '\033[0m'
     else:
-        return colors[color] + string + '\033[0m'
+        return string
 
 
 def rpc_connection_tui():
@@ -1074,7 +1076,6 @@ def rogue_newgame_singleplayer(rpc_connection):
             input("Press [Enter] to continue...")
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
-        operating_system = platform.system()
         subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
         game_end_height = int(rpc_connection.getinfo()["blocks"])
         while True:

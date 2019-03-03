@@ -4,6 +4,7 @@ from lib import rpclib, tuilib
 import os
 import time
 import sys
+import platform
 
 header = "\
 ______                       _____  _____ \n\
@@ -39,7 +40,11 @@ menuItems = [
 
 def main():
     while True:
-        os.system('clear')
+        operating_system = platform.system()
+        if operating_system == 'Win64' or operating_system == 'Windows':
+            os.system('cls')
+        else:
+            os.system('clear')
         print(tuilib.colorize(header, 'pink'))
         print(tuilib.colorize('TUI v0.0.3\n', 'green'))
         menu_items_counter = 0
