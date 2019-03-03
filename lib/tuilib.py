@@ -1113,13 +1113,13 @@ def rogue_newgame_singleplayer(rpc_connection):
             extraction_info = rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"])
             if extraction_info["status"] == "error":
                 print(colorize("Your warrior died or no any information about game was saved on blockchain", "red"))
-                print("If warrior was alive - try to wait a little. If was dead - you can bailout.")
+                print("If warrior was alive - try to wait a little (choose n to wait for a next block). If was dead - you can bailout.")
             else:
                 print("Current game state:")
                 print("Game txid: " + extraction_info["gametxid"])
                 print("Information about game saved on chain: " + extraction_info["extracted"])
             print("\n")
-            is_bailout_needed = input("Do you want to make bailout now or wait for one more block? [y/n]: ")
+            is_bailout_needed = input("Do you want to make bailout now [y] or wait for one more block [n]? [y/n]: ")
             if is_bailout_needed == "y":
                 while True:
                     bailout_info = rogue_bailout(rpc_connection, new_game_txid)
@@ -1137,7 +1137,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                     if height_difference == 0:
                         print(current_height)
                         print(game_end_height)
-                        print(colorize("Waiting for next block before bailout or highlander", "blue"))
+                        print(colorize("Waiting for next block before bailout", "blue"))
                         time.sleep(5)
                     else:
                         break

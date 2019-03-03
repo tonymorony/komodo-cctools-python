@@ -42,7 +42,7 @@ def main():
     while True:
         operating_system = platform.system()
         if operating_system == 'Win64' or operating_system == 'Windows':
-            os.system('cls')
+            pass
         else:
             os.system('clear')
         print(tuilib.colorize(header, 'pink'))
