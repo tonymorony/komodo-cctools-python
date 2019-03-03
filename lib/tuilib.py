@@ -1086,8 +1086,8 @@ def rogue_newgame_singleplayer(rpc_connection):
                 time.sleep(5)
             else:
                 break
-        print("\nKeystrokes of this game:\n")
-        time.sleep(0.5)
+        #print("\nKeystrokes of this game:\n")
+        #time.sleep(0.5)
         while True:
             keystrokes_rpc_responses = find_game_keystrokes_in_log(new_game_txid)[1::2]
             if len(keystrokes_rpc_responses) < 1:
@@ -1095,7 +1095,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                 time.sleep(5)
             else:
                 break
-        print(keystrokes_rpc_responses)
+        #print(keystrokes_rpc_responses)
         for keystroke in keystrokes_rpc_responses:
             json_keystroke = json.loads(keystroke)["result"]
             if "status" in json_keystroke.keys() and json_keystroke["status"] == "error":
@@ -1110,9 +1110,16 @@ def rogue_newgame_singleplayer(rpc_connection):
                         time.sleep(5)
         while True:
             print("\nExtraction info:\n")
-            print(rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"]))
+            extraction_info = rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"])
+            if extraction_info["status"] == "error":
+                print(colorize("Your warrior died or no any information about game was saved on blockchain", "red"))
+                print("If warrior was alive - try to wait a little. If was dead - you can bailout.")
+            else:
+                print("Current game state:")
+                print("Game txid: " + extraction_info["gametxid"])
+                print("Information about game saved on chain: " + extraction_info["extracted"])
             print("\n")
-            is_bailout_needed = input("Do you want to make bailout now? [y/n]: ")
+            is_bailout_needed = input("Do you want to make bailout now or wait for one more block? [y/n]: ")
             if is_bailout_needed == "y":
                 while True:
                     bailout_info = rogue_bailout(rpc_connection, new_game_txid)
@@ -1123,8 +1130,17 @@ def rogue_newgame_singleplayer(rpc_connection):
                         time.sleep(5)
                 break
             elif is_bailout_needed == "n":
-                print("waiting 10 more seconds")
-                time.sleep(10)
+                game_end_height = int(rpc_connection.getinfo()["blocks"])
+                while True:
+                    current_height = int(rpc_connection.getinfo()["blocks"])
+                    height_difference = current_height - game_end_height
+                    if height_difference == 0:
+                        print(current_height)
+                        print(game_end_height)
+                        print(colorize("Waiting for next block before bailout or highlander", "blue"))
+                        time.sleep(5)
+                    else:
+                        break
             else:
                 print("Please choose y or n !")
         print(bailout_info)
