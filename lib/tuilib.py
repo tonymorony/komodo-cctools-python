@@ -1074,7 +1074,15 @@ def rogue_newgame_singleplayer(rpc_connection):
             input("Press [Enter] to continue...")
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
         game_info = rogue_game_info(rpc_connection, new_game_txid)
-        subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+        start_time = time.time()
+        while True:
+            subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            time_elapsed = time.time() - start_time
+            if time_elapsed > 1:
+                break
+            else:
+                print("Game less than 1 second. Trying to start again")
+                time.sleep(1)
         game_end_height = int(rpc_connection.getinfo()["blocks"])
         while True:
             current_height = int(rpc_connection.getinfo()["blocks"])
