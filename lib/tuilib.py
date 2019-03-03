@@ -1310,6 +1310,7 @@ def warriors_scanner(rpc_connection):
 
 
 def warriors_scanner_for_rating(rpc_connection):
+    print("It can take some time")
     token_list = rpc_connection.tokenlist()
     my_warriors_list = rogue_players_list(rpc_connection)
     actual_playerids = []
