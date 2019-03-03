@@ -41,9 +41,7 @@ menuItems = [
 def main():
     while True:
         operating_system = platform.system()
-        if operating_system == 'Win64' or operating_system == 'Windows':
-            pass
-        else:
+        if operating_system != 'Win64' or operating_system != 'Windows':
             os.system('clear')
         print(tuilib.colorize(header, 'pink'))
         print(tuilib.colorize('TUI v0.0.3\n', 'green'))
