@@ -482,9 +482,9 @@ def gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo):
         claim_vout = "0"
         proof_sending_block = "[\"{}\"]".format(coin_txid)
         proof = rpc_connection_komodo.gettxoutproof(json.loads(proof_sending_block))
-        # !!! height needs to be converted to string, omegalul
         deposit_hex = rpclib.gateways_deposit(rpc_connection_assetchain, bind_txid, str(height), coin_name, \
                          coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
+        print(deposit_hex)
         deposit_txid = rpclib.sendrawtransaction(rpc_connection_assetchain, deposit_hex["hex"])
         print("Done! Gateways deposit txid is: " + deposit_txid + " Please not forget to claim your deposit!")
         input("Press [Enter] to continue...")
@@ -1121,7 +1121,7 @@ def rogue_newgame_singleplayer(rpc_connection):
             extraction_info = rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"])
             if extraction_info["status"] == "error":
                 print(colorize("Your warrior died or no any information about game was saved on blockchain", "red"))
-                print("If warrior was alive - try to wait a little (choose n to wait for a next block). If was dead - you can bailout.")
+                print("If warrior was alive - try to wait a little (choose n to wait for a next block). If he is dead - you can bailout now (choose y).")
             else:
                 print("Current game state:")
                 print("Game txid: " + extraction_info["gametxid"])
