@@ -1073,6 +1073,14 @@ def rogue_newgame_singleplayer(rpc_connection):
             print("No players available to select")
             input("Press [Enter] to continue...")
             newgame_regisration_txid = rogue_game_register(rpc_connection, new_game_txid)["txid"]
+            while True:
+                mempool = rpc_connection.getrawmempool()
+                if newgame_regisration_txid in mempool:
+                    print(colorize("Waiting for game transaction to be mined", "blue"))
+                    time.sleep(5)
+                else:
+                    print(colorize("Game transaction is mined", "green"))
+                    break
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         start_time = time.time()
         while True:
