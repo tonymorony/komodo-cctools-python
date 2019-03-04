@@ -1076,10 +1076,10 @@ def rogue_newgame_singleplayer(rpc_connection):
             while True:
                 mempool = rpc_connection.getrawmempool()
                 if newgame_regisration_txid in mempool:
-                    print(colorize("Waiting for game transaction to be mined", "blue"))
+                    print(colorize("Waiting for registration transaction to be mined", "blue"))
                     time.sleep(5)
                 else:
-                    print(colorize("Game transaction is mined", "green"))
+                    print(colorize("Registration transaction is mined", "green"))
                     break
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         start_time = time.time()
