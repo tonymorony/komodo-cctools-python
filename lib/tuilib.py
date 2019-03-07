@@ -1199,16 +1199,16 @@ def play_multiplayer_game(rpc_connection):
     games_counter = 0
     for active_multiplayer_game in active_multiplayer_games_list:
         games_counter = games_counter + 1
-        if_ready_to_start = False
+        is_ready_to_start = False
         try:
             active_multiplayer_game["seed"]
-            if_ready_to_start = True
+            is_ready_to_start = True
         except Exception as e:
             pass
         print(colorize("\n================================\n", "green"))
         print("Game txid: " + active_multiplayer_game["gametxid"])
         print("Game buyin: " + str(active_multiplayer_game["buyin"]))
-        if if_ready_to_start:
+        if is_ready_to_start:
             print(colorize("Ready for start!", "green"))
         else:
             print(colorize("Not ready for start yet, wait until start height!", "red"))
@@ -1316,11 +1316,19 @@ def play_multiplayer_game(rpc_connection):
                             except Exception:
                                 highlander_info = rogue_highlander(rpc_connection, new_game_txid)
                                 highlander_info = highlander_info["txid"]
+                                print(highlander_info)
+                                print("\nGame is finished!\n")
+                                highlander_info = highlander_info["txid"]
                         else:
                             highlander_info = rogue_highlander(rpc_connection, new_game_txid)
-                            print(highlander_info)
-                            print("\nGame is finished!\n")
-                            highlander_info = highlander_info["txid"]
+                            if 'error' in highlander_info.keys and highlander_info["error"] == 'numplayers != maxplayers':
+                                bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+                                print(bailout_info)
+                                print("\nGame is finished!\n")
+                            else:
+                                print(highlander_info)
+                                print("\nGame is finished!\n")
+                                highlander_info = highlander_info["txid"]
                         break
                     elif is_bailout_needed == "n":
                         game_end_height = int(rpc_connection.getinfo()["blocks"])
