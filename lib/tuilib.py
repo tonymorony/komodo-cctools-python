@@ -1127,7 +1127,7 @@ def rogue_newgame_singleplayer(rpc_connection):
         # waiting for last keystroke confirmation here
         last_keystroke_json = json.loads(keystrokes_rpc_responses[-1])
         while True:
-            confirmations_amount = rpc_connection.getrawtransaction(last_keystroke_json["txid"])
+            confirmations_amount = rpc_connection.getrawtransaction(last_keystroke_json["result"]["txid"])
             if confirmations_amount < 2:
                 print("Last keystroke not confirmed yet! Let's wait a little")
                 time.sleep(10)
