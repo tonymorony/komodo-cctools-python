@@ -1309,27 +1309,32 @@ def play_multiplayer_game(rpc_connection):
                     if is_bailout_needed == "y":
                         if game_info["alive"] > 1:
                             bailout_info = rogue_bailout(rpc_connection, new_game_txid)
-                            print(bailout_info)
-                            print("\nGame is finished!\n")
                             try:
                                 bailout_txid = bailout_info["txid"]
+                                print(bailout_info)
+                                print("\nGame is finished!\n")
+                                input("Press [Enter] to continue...")
+                                break
                             except Exception:
                                 highlander_info = rogue_highlander(rpc_connection, new_game_txid)
                                 highlander_info = highlander_info["txid"]
                                 print(highlander_info)
                                 print("\nGame is finished!\n")
-                                highlander_info = highlander_info["txid"]
+                                input("Press [Enter] to continue...")
+                                break
                         else:
                             highlander_info = rogue_highlander(rpc_connection, new_game_txid)
                             if 'error' in highlander_info.keys() and highlander_info["error"] == 'numplayers != maxplayers':
                                 bailout_info = rogue_bailout(rpc_connection, new_game_txid)
                                 print(bailout_info)
                                 print("\nGame is finished!\n")
+                                input("Press [Enter] to continue...")
+                                break
                             else:
                                 print(highlander_info)
                                 print("\nGame is finished!\n")
-                                highlander_info = highlander_info["txid"]
-                        break
+                                input("Press [Enter] to continue...")
+                                break
                     elif is_bailout_needed == "n":
                         game_end_height = int(rpc_connection.getinfo()["blocks"])
                         while True:
