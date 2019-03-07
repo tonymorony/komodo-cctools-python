@@ -1321,7 +1321,7 @@ def play_multiplayer_game(rpc_connection):
                                 highlander_info = highlander_info["txid"]
                         else:
                             highlander_info = rogue_highlander(rpc_connection, new_game_txid)
-                            if 'error' in highlander_info.keys and highlander_info["error"] == 'numplayers != maxplayers':
+                            if 'error' in highlander_info.keys() and highlander_info["error"] == 'numplayers != maxplayers':
                                 bailout_info = rogue_bailout(rpc_connection, new_game_txid)
                                 print(bailout_info)
                                 print("\nGame is finished!\n")
