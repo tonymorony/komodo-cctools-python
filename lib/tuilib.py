@@ -1134,6 +1134,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                 except Exception as e:
                     print(e)
                     print("Let's wait a little bit more")
+                    rpc_connection.sendrawtransaction(last_keystroke_json["result"]["hex"])
                     time.sleep(5)
                     pass
             if confirmations_amount < 2:
@@ -1283,6 +1284,7 @@ def play_multiplayer_game(rpc_connection):
                     except Exception as e:
                         print(e)
                         print("Let's wait a little bit more")
+                        rpc_connection.sendrawtransaction(last_keystroke_json["result"]["hex"])
                         time.sleep(5)
                         pass
                 if confirmations_amount < 2:
