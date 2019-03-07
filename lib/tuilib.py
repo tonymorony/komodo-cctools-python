@@ -1187,6 +1187,90 @@ def rogue_newgame_singleplayer(rpc_connection):
         input("Press [Enter] to continue...")
 
 
+def play_multiplayer_game(rpc_connection):
+    # printing list of user active multiplayer games
+    active_games_list = rpc_connection.cclib("games", "17")["games"]
+    active_multiplayer_games_list = []
+    for game in active_games_list:
+        gameinfo = rogue_game_info(rpc_connection, game)
+        if gameinfo["maxplayers"] > 1:
+            active_multiplayer_games_list.append(gameinfo)
+    games_counter = 0
+    for active_multiplayer_game in active_multiplayer_games_list:
+        games_counter = games_counter + 1
+        if_ready_to_start = False
+        try:
+            active_multiplayer_game["seed"]
+            if_ready_to_start = True
+        except Exception as e:
+            pass
+        print(colorize("\n================================\n", "green"))
+        print("Game txid: " + active_multiplayer_game["gametxid"])
+        print("Game buyin: " + str(active_multiplayer_game["buyin"]))
+        if if_ready_to_start:
+            print(colorize("Ready for start!", "green"))
+        else:
+            print(colorize("Not ready for start yet, wait until start height!", "red"))
+        print("Game height: " + str(active_multiplayer_game["gameheight"]))
+        print("Start height: " + str(active_multiplayer_game["start"]))
+        print("Alive players: " + str(active_multiplayer_game["alive"]))
+        print("Registered players: " + str(active_multiplayer_game["numplayers"]))
+        print("Max players: " + str(active_multiplayer_game["maxplayers"]))
+        print(colorize("\n***\n", "blue"))
+        print("Players in game:")
+        for player in active_multiplayer_game["players"]:
+            print("Slot: " + str(player["slot"]))
+            print("Baton: " + str(player["baton"]))
+            print("Tokenid: " +  str(player["tokenid"]))
+            print("Is mine?: " + str(player["ismine"]))
+    # asking user if he want to start any of them
+    while True:
+        start_game = input("\nDo you want to start any of your pendning multiplayer games?[y/n]: ")
+        if start_game == "y":
+            new_game_txid = input("Input txid of game which you want to start: ")
+            game_info = rogue_game_info(rpc_connection, new_game_txid)
+            try:
+                subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            except Exception as e:
+                print("Maybe game isn't ready for start yet or your input was not correct, sorry.")
+                input("Press [Enter] to continue...")
+                break
+            game_end_height = int(rpc_connection.getinfo()["blocks"])
+            while True:
+                current_height = int(rpc_connection.getinfo()["blocks"])
+                height_difference = current_height - game_end_height
+                if height_difference == 0:
+                    print(current_height)
+                    print(game_end_height)
+                    print(colorize("Waiting for next block before bailout or highlander", "blue"))
+                    time.sleep(5)
+                else:
+                    break
+            # hope its work this way: if alive more than 1 now just bailout, if only I alive try to highlander
+            if game_info["alive"] > 1:
+                bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+                print(bailout_info)
+                print("\nGame is finished!\n")
+                try:
+                    bailout_txid = bailout_info["txid"]
+                except Exception:
+                    highlander_info = rogue_highlander(rpc_connection, new_game_txid)
+                    highlander_info = highlander_info["txid"]
+            else:
+                highlander_info = rogue_highlander(rpc_connection, new_game_txid)
+                print(highlander_info)
+                print("\nGame is finished!\n")
+                highlander_info = highlander_info["txid"]
+            input("Press [Enter] to continue...")
+            break
+        if start_game == "n":
+            print("As you wish!")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            print(colorize("Choose y or n!", "red"))
+
+
 def rogue_newgame_multiplayer(rpc_connection):
     while True:
         max_players = input("Input game max. players (>1): ")
@@ -1238,6 +1322,14 @@ def rogue_join_multiplayer_game(rpc_connection):
                 input("Press [Enter] to continue...")
                 break
             print(colorize("Succesfully registered.", "green"))
+            while True:
+                mempool = rpc_connection.getrawmempool()
+                if newgame_regisration_txid in mempool:
+                    print(colorize("Waiting for registration transaction to be mined", "blue"))
+                    time.sleep(5)
+                else:
+                    print(colorize("Registration transaction is mined", "green"))
+                    break
             print(newgame_regisration_txid)
             input("Press [Enter] to continue...")
             break
@@ -1703,90 +1795,6 @@ def top_warriors_rating(rpc_connection):
 
 def exit():
     sys.exit()
-    
-
-def play_multiplayer_game(rpc_connection):
-    # printing list of user active multiplayer games
-    active_games_list = rpc_connection.cclib("games", "17")["games"]
-    active_multiplayer_games_list = []
-    for game in active_games_list:
-        gameinfo = rogue_game_info(rpc_connection, game)
-        if gameinfo["maxplayers"] > 1:
-            active_multiplayer_games_list.append(gameinfo)
-    games_counter = 0
-    for active_multiplayer_game in active_multiplayer_games_list:
-        games_counter = games_counter + 1
-        if_ready_to_start = False
-        try:
-            active_multiplayer_game["seed"]
-            if_ready_to_start = True
-        except Exception as e:
-            pass
-        print(colorize("\n================================\n", "green"))
-        print("Game txid: " + active_multiplayer_game["gametxid"])
-        print("Game buyin: " + str(active_multiplayer_game["buyin"]))
-        if if_ready_to_start:
-            print(colorize("Ready for start!", "green"))
-        else:
-            print(colorize("Not ready for start yet, wait until start height!", "red"))
-        print("Game height: " + str(active_multiplayer_game["gameheight"]))
-        print("Start height: " + str(active_multiplayer_game["start"]))
-        print("Alive players: " + str(active_multiplayer_game["alive"]))
-        print("Registered players: " + str(active_multiplayer_game["numplayers"]))
-        print("Max players: " + str(active_multiplayer_game["maxplayers"]))
-        print(colorize("\n***\n", "blue"))
-        print("Players in game:")
-        for player in active_multiplayer_game["players"]:
-            print("Slot: " + str(player["slot"]))
-            print("Baton: " + str(player["baton"]))
-            print("Tokenid: " +  str(player["tokenid"]))
-            print("Is mine?: " + str(player["ismine"]))
-    # asking user if he want to start any of them
-    while True:
-        start_game = input("\nDo you want to start any of your pendning multiplayer games?[y/n]: ")
-        if start_game == "y":
-            new_game_txid = input("Input txid of game which you want to start: ")
-            game_info = rogue_game_info(rpc_connection, new_game_txid)
-            try:
-                subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
-            except Exception as e:
-                print("Maybe game isn't ready for start yet or your input was not correct, sorry.")
-                input("Press [Enter] to continue...")
-                break
-            game_end_height = int(rpc_connection.getinfo()["blocks"])
-            while True:
-                current_height = int(rpc_connection.getinfo()["blocks"])
-                height_difference = current_height - game_end_height
-                if height_difference == 0:
-                    print(current_height)
-                    print(game_end_height)
-                    print(colorize("Waiting for next block before bailout or highlander", "blue"))
-                    time.sleep(5)
-                else:
-                    break
-            # hope its work this way: if alive more than 1 now just bailout, if only I alive try to highlander
-            if game_info["alive"] > 1:
-                bailout_info = rogue_bailout(rpc_connection, new_game_txid)
-                print(bailout_info)
-                print("\nGame is finished!\n")
-                try:
-                    bailout_txid = bailout_info["txid"]
-                except Exception:
-                    highlander_info = rogue_highlander(rpc_connection, new_game_txid)
-                    highlander_info = highlander_info["txid"]
-            else:
-                highlander_info = rogue_highlander(rpc_connection, new_game_txid)
-                print(highlander_info)
-                print("\nGame is finished!\n")
-                highlander_info = highlander_info["txid"]
-            input("Press [Enter] to continue...")
-            break
-        if start_game == "n":
-            print("As you wish!")
-            input("Press [Enter] to continue...")
-            break
-        else:
-            print(colorize("Choose y or n!", "red"))
 
 
 def warrior_trasnfer(rpc_connection):
