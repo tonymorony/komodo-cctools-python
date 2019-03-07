@@ -1254,23 +1254,84 @@ def play_multiplayer_game(rpc_connection):
                     time.sleep(5)
                 else:
                     break
-            # hope its work this way: if alive more than 1 now just bailout, if only I alive try to highlander
-            if game_info["alive"] > 1:
-                bailout_info = rogue_bailout(rpc_connection, new_game_txid)
-                print(bailout_info)
-                print("\nGame is finished!\n")
-                try:
-                    bailout_txid = bailout_info["txid"]
-                except Exception:
-                    highlander_info = rogue_highlander(rpc_connection, new_game_txid)
-                    highlander_info = highlander_info["txid"]
-            else:
-                highlander_info = rogue_highlander(rpc_connection, new_game_txid)
-                print(highlander_info)
-                print("\nGame is finished!\n")
-                highlander_info = highlander_info["txid"]
-            input("Press [Enter] to continue...")
-            break
+            while True:
+                keystrokes_rpc_responses = find_game_keystrokes_in_log(new_game_txid)[1::2]
+                if len(keystrokes_rpc_responses) < 1:
+                    print("No keystrokes broadcasted yet. Let's wait 5 seconds")
+                    time.sleep(5)
+                else:
+                    break
+            for keystroke in keystrokes_rpc_responses:
+                json_keystroke = json.loads(keystroke)["result"]
+                if "status" in json_keystroke.keys() and json_keystroke["status"] == "error":
+                    while True:
+                        print("Trying to re-brodcast keystroke")
+                        keystroke_rebroadcast = rogue_keystrokes(rpc_connection, json_keystroke["gametxid"],
+                                                                 json_keystroke["keystrokes"])
+                        if "txid" in keystroke_rebroadcast.keys():
+                            print("Keystroke broadcasted! txid: " + keystroke_rebroadcast["txid"])
+                            break
+                        else:
+                            print("Let's try again in 5 seconds")
+                            time.sleep(5)
+            last_keystroke_json = json.loads(keystrokes_rpc_responses[-1])
+            while True:
+                while True:
+                    try:
+                        confirmations_amount = rpc_connection.getrawtransaction(last_keystroke_json["result"]["txid"], 1)["confirmations"]
+                        break
+                    except Exception as e:
+                        print(e)
+                        print("Let's wait a little bit more")
+                        time.sleep(5)
+                        pass
+                if confirmations_amount < 2:
+                    print("Last keystroke not confirmed yet! Let's wait a little")
+                    time.sleep(10)
+                else:
+                    print("Last keystroke confirmed!")
+                    break
+                while True:
+                    print("\nExtraction info:\n")
+                    extraction_info = rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"])
+                    if extraction_info["status"] == "error":
+                        print(colorize("Your warrior died or no any information about game was saved on blockchain", "red"))
+                        print("If warrior was alive - try to wait a little (choose n to wait for a next block). If he is dead - you can bailout now (choose y).")
+                    else:
+                        print("Current game state:")
+                        print("Game txid: " + extraction_info["gametxid"])
+                        print("Information about game saved on chain: " + extraction_info["extracted"])
+                    print("\n")
+                    is_bailout_needed = input(
+                        "Do you want to make bailout now [y] or wait for one more block [n]? [y/n]: ")
+                    if is_bailout_needed == "y":
+                        if game_info["alive"] > 1:
+                            bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+                            print(bailout_info)
+                            print("\nGame is finished!\n")
+                            try:
+                                bailout_txid = bailout_info["txid"]
+                            except Exception:
+                                highlander_info = rogue_highlander(rpc_connection, new_game_txid)
+                                highlander_info = highlander_info["txid"]
+                        else:
+                            highlander_info = rogue_highlander(rpc_connection, new_game_txid)
+                            print(highlander_info)
+                            print("\nGame is finished!\n")
+                            highlander_info = highlander_info["txid"]
+                        break
+                    elif is_bailout_needed == "n":
+                        game_end_height = int(rpc_connection.getinfo()["blocks"])
+                        while True:
+                            current_height = int(rpc_connection.getinfo()["blocks"])
+                            height_difference = current_height - game_end_height
+                            if height_difference == 0:
+                                print(current_height)
+                                print(game_end_height)
+                                print(colorize("Waiting for next block before bailout", "blue"))
+                                time.sleep(5)
+                            else:
+                                break
         if start_game == "n":
             print("As you wish!")
             input("Press [Enter] to continue...")
