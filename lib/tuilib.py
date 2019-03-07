@@ -1348,6 +1348,7 @@ def play_multiplayer_game(rpc_connection):
                             else:
                                 break
                 break
+            break
         if start_game == "n":
             print("As you wish!")
             input("Press [Enter] to continue...")
