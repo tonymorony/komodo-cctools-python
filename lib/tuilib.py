@@ -1230,7 +1230,15 @@ def play_multiplayer_game(rpc_connection):
             new_game_txid = input("Input txid of game which you want to start: ")
             game_info = rogue_game_info(rpc_connection, new_game_txid)
             try:
-                subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+                start_time = time.time()
+                while True:
+                    subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+                    time_elapsed = time.time() - start_time
+                    if time_elapsed > 1:
+                        break
+                    else:
+                        print("Game less than 1 second. Trying to start again")
+                        time.sleep(1)
             except Exception as e:
                 print("Maybe game isn't ready for start yet or your input was not correct, sorry.")
                 input("Press [Enter] to continue...")
