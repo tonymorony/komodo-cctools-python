@@ -1124,6 +1124,16 @@ def rogue_newgame_singleplayer(rpc_connection):
                     else:
                         print("Let's try again in 5 seconds")
                         time.sleep(5)
+        # waiting for last keystroke confirmation here
+        last_keystroke_json = json.loads(keystrokes_rpc_responses[-1])
+        while True:
+            confirmations_amount = rpc_connection.getrawtransaction(last_keystroke_json["txid"])
+            if confirmations_amount < 2:
+                print("Last keystroke not confirmed yet! Let's wait a little")
+                time.sleep(10)
+            else:
+                print("Last keystroke confirmed!")
+                break
         while True:
             print("\nExtraction info:\n")
             extraction_info = rogue_extract(rpc_connection, new_game_txid, rpc_connection.getinfo()["pubkey"])
