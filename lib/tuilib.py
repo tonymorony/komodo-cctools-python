@@ -1942,3 +1942,14 @@ def find_game_keystrokes_in_log(gametxid):
     output = p2.communicate()[0]
     keystrokes_log_for_game = bytes.decode(output).split("\n")
     return keystrokes_log_for_game
+
+
+def check_if_tx_in_mempool(rpc_connection, txid):
+    while True:
+        mempool = rpc_connection.getrawmempool()
+        if txid in mempool:
+            print(colorize("Waiting for " + txid + " transaction to be mined", "blue"))
+            time.sleep(5)
+        else:
+            print(colorize("Transaction is mined", "green"))
+            break
