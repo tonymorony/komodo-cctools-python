@@ -20,8 +20,8 @@ for game in pastgames_list:
 
 
 
-print(tuilib.colorize("\n*** Pastgames *** \n", "blue"))
+print(tuilib.colorize("\n*** Active games *** \n", "blue"))
 print("TXID                                  SEED")
-for game in pastgames_list:
-    pastgame_info = tuilib.rogue_game_info(rpc_connection_ac, game)
-    print(game + "                                  " + str(pastgame_info["seed"]))
+for game in activegames_list:
+    activegame_info = tuilib.rogue_game_info(rpc_connection_ac, game)
+    print(game + "                                  " + str(activegame_info["seed"]))
