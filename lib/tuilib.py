@@ -1129,12 +1129,15 @@ def rogue_newgame_singleplayer(rpc_connection):
         while True:
             while True:
                 try:
+                    rpc_connection.sendrawtransaction(last_keystroke_json["result"]["hex"])
+                except Exception as e:
+                    pass
+                try:
                     confirmations_amount = rpc_connection.getrawtransaction(last_keystroke_json["result"]["txid"], 1)["confirmations"]
                     break
                 except Exception as e:
                     print(e)
                     print("Let's wait a little bit more")
-                    rpc_connection.sendrawtransaction(last_keystroke_json["result"]["hex"])
                     time.sleep(5)
                     pass
             if confirmations_amount < 2:
