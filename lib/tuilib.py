@@ -1160,13 +1160,25 @@ def rogue_newgame_singleplayer(rpc_connection):
             is_bailout_needed = input("Do you want to make bailout now [y] or wait for one more block [n]? [y/n]: ")
             if is_bailout_needed == "y":
                 while True:
-                    bailout_info = rogue_bailout(rpc_connection, new_game_txid)
-                    if "hex" in bailout_info.keys():
-                        break
+                    while True:
+                        try:
+                            bailout_info = rogue_bailout(rpc_connection, new_game_txid)
+                        except Exception as e:
+                            pass
+                        try:
+                            confirmations_amount = rpc_connection.getrawtransaction(bailout_info["txid"], 1)["confirmations"]
+                            break
+                        except Exception as e:
+                            print(e)
+                            print("Bailout not on blockchain yet. Let's wait a little bit more")
+                            time.sleep(5)
+                            pass
+                    if confirmations_amount < 2:
+                        print("Bailout not confirmed yet! Let's wait a little")
+                        time.sleep(10)
                     else:
-                        print("bailout not broadcasted yet by some reason. Let's wait...")
-                        time.sleep(5)
-                break
+                        print("Bailout confirmed!")
+                        break
             elif is_bailout_needed == "n":
                 game_end_height = int(rpc_connection.getinfo()["blocks"])
                 while True:
