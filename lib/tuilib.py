@@ -1169,12 +1169,7 @@ def rogue_newgame_singleplayer(rpc_connection):
                         print("Bailout not on blockchain yet. Let's wait a little bit more")
                         time.sleep(20)
                         pass
-                if confirmations_amount < 2:
-                    print("Bailout not confirmed yet! Let's wait a little")
-                    time.sleep(10)
-                else:
-                    print("Bailout confirmed!")
-                    break
+                break
             elif is_bailout_needed == "n":
                 game_end_height = int(rpc_connection.getinfo()["blocks"])
                 while True:
