@@ -53,6 +53,18 @@ tuilib.check_if_tx_in_mempool(rpc_connection_ac, gateways_bind_txid)
 # export privkey for gateways deposit address from AC to KMD daemon
 deposit_address = rpc_connection_ac.gatewaysinfo(gateways_bind_txid)["deposit"]
 deposit_address_privkey = rpc_connection_ac.dumpprivkey(deposit_address)
+
+# ERROR HANDLING LOOP FOR KMD IF LOADING/REWINDING BLOCKS
+output =''
+while len(output) != 30:
+        try:
+                output = rpc_connection_kmd.getinfo()
+        except Exception as e:
+                print(e)
+                print('waiting for KMD RPC')
+                pass
+        time.sleep(15)
+
 rpc_connection_kmd.importprivkey(deposit_address_privkey)
 
 # save all params to file
