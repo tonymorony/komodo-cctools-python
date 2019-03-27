@@ -1920,16 +1920,17 @@ def warrior_trasnfer(rpc_connection):
             print(colorize("Choose y or n!", "red"))
 
 
-def check_if_config_is_here(rpc_connection, config_name):
+def check_if_config_is_here(rpc_connection, assetchain_name):
+    config_name = assetchain_name + ".conf"
     if os.path.exists(config_name):
         print(colorize("Config is already in daemon folder", "green"))
     else:
         if operating_system == 'Darwin':
-            path_to_config = os.environ['HOME'] + '/Library/Application Support/Komodo/ROGUE/' + config_name
+            path_to_config = os.environ['HOME'] + '/Library/Application Support/Komodo/' + assetchain_name + '/' + config_name
         elif operating_system == 'Linux':
-            path_to_config = os.environ['HOME'] + '/.komodo/ROGUE/' + config_name
+            path_to_config = os.environ['HOME'] + '/.komodo/' + assetchain_name + '/' + config_name
         elif operating_system == 'Win64' or operating_system == 'Windows':
-            path_to_config = '%s/komodo/ROGUE/' + config_name % os.environ['APPDATA']
+            path_to_config = '%s/komodo/' + assetchain_name + '/' + config_name % os.environ['APPDATA']
         try:
             copy(path_to_config, os.getcwd())
         except Exception as e:
