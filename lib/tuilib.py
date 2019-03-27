@@ -1042,7 +1042,7 @@ def print_multiplayer_games_list(rpc_connection):
             print("\nPlease choose R or E\n")
 
 
-def rogue_newgame_singleplayer(rpc_connection):
+def rogue_newgame_singleplayer(rpc_connection, is_game_a_rogue=True):
     try:
         new_game_txid = rpc_connection.cclib("newgame", "17", "[1]")["txid"]
         print("New singleplayer training game succesfully created. txid: " + new_game_txid)
@@ -1084,7 +1084,10 @@ def rogue_newgame_singleplayer(rpc_connection):
         game_info = rogue_game_info(rpc_connection, new_game_txid)
         start_time = time.time()
         while True:
-            subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            if is_game_a_rogue:
+                subprocess.call(["cc/rogue/rogue", str(game_info["seed"]), str(game_info["gametxid"])])
+            else:
+                subprocess.call(["cc/games/tetris", str(game_info["seed"]), str(game_info["gametxid"])])
             time_elapsed = time.time() - start_time
             if time_elapsed > 1:
                 break
