@@ -101,7 +101,7 @@ if __name__ == "__main__":
                 rpc_connection.setpubkey(valid_pubkey)
                 print(tuilib.colorize("Pubkey is succesfully set!", "green"))
             # copy ROGUE config to current daemon directory if it's not here
-            tuilib.check_if_config_is_here(rpc_connection)
+            tuilib.check_if_config_is_here(rpc_connection, "ROGUE.conf")
         except Exception:
             print(tuilib.colorize("Cant connect to ROGUE daemon RPC! Please check if daemon is up.", "pink"))
             tuilib.exit()
