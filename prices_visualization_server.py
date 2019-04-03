@@ -14,7 +14,7 @@ rpc_connection = tuilib.def_credentials("PRICES")
 server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
 
-visualization_lib.create_prices_csv(rpc_connection, "10")
+visualization_lib.create_prices_csv(rpc_connection, "300")
 
 df = pd.read_csv('prices.csv')
 
@@ -70,4 +70,4 @@ def update_graph(selected_dropdown_value):
     }
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(host = '0.0.0.0')
