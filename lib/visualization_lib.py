@@ -16,16 +16,18 @@ def create_prices_csv(rpc_connection, depth):
         for price in pair["prices"]:
             pair_prices_row = []
             pair_prices_row.append(dates[i])
-            # working with mined price now only
             pair_prices_row.append(price[0])
+            pair_prices_row.append(price[1])
+            pair_prices_row.append(price[2])
             pair_prices_row.append(pair["name"])
             i = i + 1
             prices_rows.append(pair_prices_row)
 
+
     with open('prices.csv', 'w') as f:
         filewriter = csv.writer(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        filewriter.writerow(["date", "price", "pair"])
+        filewriter.writerow(["date", "price1", "price2", "price3", "pair"])
         for row in prices_rows:
             filewriter.writerow(row)
         f.close()

@@ -51,14 +51,35 @@ app.layout = html.Div([
 def update_graph(selected_dropdown_value):
     dff = df[df['pair'] == selected_dropdown_value]
     return {
-        'data': [{
+        'data': [
+
+        {
+        'x': dff.date,
+        'y': dff.price1,
+        'line': {
+            'width': 3,
+            'shape': 'spline'
+        }
+        },
+
+        {
             'x': dff.date,
-            'y': dff.price,
+            'y': dff.price2,
             'line': {
                 'width': 3,
                 'shape': 'spline'
             }
-        }],
+        },
+
+        {
+            'x': dff.date,
+            'y': dff.price3,
+            'line': {
+                'width': 3,
+                'shape': 'spline'
+            }
+        }
+        ],
         'layout': {
             'margin': {
                 'l': 30,
