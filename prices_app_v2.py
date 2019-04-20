@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 
@@ -29,6 +29,7 @@ print(df)
 app = dash.Dash('app', server=server)
 
 app.scripts.config.serve_locally = False
+app.config['suppress_callback_exceptions'] = True
 
 pair_names = visualization_lib.get_pairs_names(rpc_connection)
 
@@ -130,7 +131,7 @@ def render_content(tab):
                 placeholder='Input bet amount...',
                 type='text',
                 value='',
-                id='betamount-input',
+                id='betamount_text',
                 style={'marginBottom': 10, 'marginTop': 15}
             ),
             html.Br(),
@@ -138,7 +139,7 @@ def render_content(tab):
                 placeholder='Input leverage...',
                 type='text',
                 value='',
-                id='leverage-input',
+                id='leverage_text',
                 style={'marginBottom': 10, 'marginTop': 10}
             ),
             html.Br(),
@@ -146,7 +147,7 @@ def render_content(tab):
                 placeholder='Input synthetic...',
                 type='text',
                 value='',
-                id='synthetic-input',
+                id='synthetic_text',
                 style={'marginBottom': 25, 'marginTop': 10}
             ),
             html.Br(),
@@ -161,6 +162,14 @@ def render_content(tab):
             html.H3('Tab content 3')
         ])
 
+
+@app.callback(Output('output-container-button', 'children'), [Input('button', 'n_clicks')],
+              [State('betamount_text', 'value'), State('leverage_text', 'value'), State('synthetic_text', 'value')])
+def on_click(n_clicks, betamount, leverage, synthetic):
+    if n_clicks > 0:
+        return rpc_connection.pricesbet(betamount, leverage, synthetic)
+    else:
+        pass
 
 def update_csv(rpc_connection):
     while True:
