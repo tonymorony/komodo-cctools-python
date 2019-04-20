@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
@@ -10,14 +12,15 @@ import os
 
 from lib import tuilib, visualization_lib
 
-rpc_connection = tuilib.def_credentials("PRICES")
+rpc_connection = tuilib.def_credentials("REKT0")
 server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
 
-visualization_lib.create_prices_csv(rpc_connection, "300")
+visualization_lib.create_prices_csv(rpc_connection, "435")
+visualization_lib.create_delayed_prices_csv(rpc_connection, "435")
 
 df = pd.read_csv('prices.csv')
-
+df2 = pd.read_csv('delayed_prices.csv')
 print(type(df))
 
 print(df)
@@ -49,7 +52,12 @@ app.layout = html.Div([
               [Input('my-dropdown', 'value')])
 
 def update_graph(selected_dropdown_value):
+    visualization_lib.create_prices_csv(rpc_connection, "580")
+    visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
+    df = pd.read_csv('prices.csv')
+    df2 = pd.read_csv('delayed_prices.csv')
     dff = df[df['pair'] == selected_dropdown_value]
+    dff2 = df2[df2['pair'] == selected_dropdown_value]
     return {
         'data': [
 
@@ -73,6 +81,14 @@ def update_graph(selected_dropdown_value):
 
         {
             'x': dff.date,
+            'y': dff.price3,
+            'line': {
+                'width': 3,
+                'shape': 'spline'
+            }
+        },
+        {
+            'x': dff2.date,
             'y': dff.price3,
             'line': {
                 'width': 3,
