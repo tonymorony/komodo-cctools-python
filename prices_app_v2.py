@@ -4,6 +4,7 @@ import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table
 
 import flask
 import pandas as pd
@@ -18,9 +19,11 @@ server.secret_key = os.environ.get('secret_key', 'secret')
 
 visualization_lib.create_prices_csv(rpc_connection, "725")
 visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
+visualization_lib.create_csv_with_bets(rpc_connection)
 
 df = pd.read_csv('prices.csv')
 df2 = pd.read_csv('delayed_prices.csv')
+df3 = pd.read_csv('betslist.csv')
 
 print(type(df))
 
@@ -154,10 +157,15 @@ def render_content(tab):
             html.Br(),
             html.Button('Submit', id='button')], style={'width': '50%', 'float': 'left'}),\
                   html.Div([html.Div(id='daemon_ouptut',
-                     children='Daemon output print', style={'marginBottom': 10, 'marginTop': 10})], style={'width': '50%', 'float': 'right'})
+                     children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
     elif tab == 'tab-2':
         return html.Div([
-            html.H3('Tab content 2')
+            dash_table.DataTable(
+                id='table',
+                columns=[{"name": i, "id": i} for i in df3.columns],
+                data=df3.to_dict("rows"),
+                sorting=True
+            )
         ])
     elif tab == 'tab-3':
         return html.Div([
@@ -167,6 +175,7 @@ def render_content(tab):
 
 @app.callback(Output('daemon_ouptut', 'children'), [Input('button', 'n_clicks')],
               [State('betamount_text', 'value'), State('leverage_text', 'value'), State('synthetic_text', 'value')])
+#TODO: have to add confirmation popup
 def on_click(n_clicks, betamount, leverage, synthetic):
     if n_clicks > 0:
         daemon_output = rpc_connection.pricesbet(betamount, leverage, synthetic)

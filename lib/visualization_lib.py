@@ -66,3 +66,35 @@ def get_pairs_names(rpc_connection):
     for pair in prices_json["pricefeeds"]:
         pairs_names.append(pair["name"])
     return pairs_names
+
+
+def create_csv_with_bets(rpc_connection):
+    priceslist = rpc_connection.priceslist()
+    bets_rows = []
+    for price in priceslist:
+        if price == "48194bab8d377a7fa0e62d5e908474dae906675395753f09969d4c4bea4a7518":
+            pass
+        else:
+            pricesinfo = rpc_connection.pricesinfo(price)
+            bets_rows_single = []
+            bets_rows_single.append(price)
+            bets_rows_single.append(pricesinfo["rekt"])
+            bets_rows_single.append(pricesinfo["profits"])
+            bets_rows_single.append(pricesinfo["costbasis"])
+            bets_rows_single.append(pricesinfo["positionsize"])
+            bets_rows_single.append(pricesinfo["equity"])
+            bets_rows_single.append(pricesinfo["addedbets"])
+            bets_rows_single.append(pricesinfo["leverage"])
+            bets_rows_single.append(pricesinfo["firstheight"])
+            bets_rows_single.append(pricesinfo["firstprice"])
+            bets_rows_single.append(pricesinfo["lastprice"])
+            bets_rows_single.append(pricesinfo["height"])
+            bets_rows.append(bets_rows_single)
+
+    with open('betslist.csv', 'w') as f:
+        filewriter = csv.writer(f, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        filewriter.writerow(["txid", "is rekt", "profits", "costbasis", "positionsize", "equity", "addedbets", "leverage", "firstheight", "firstprice", "lastprice", "height"])
+        for row in bets_rows:
+            filewriter.writerow(row)
+        f.close
