@@ -123,6 +123,7 @@ def update_graph(selected_dropdown_value):
               [Input('tabs', 'value')])
 def render_content(tab):
     if tab == 'tab-1':
+        # left side of first tab
         return html.Div([
             html.Br(),
             html.Div(id='output-container-button',
@@ -151,8 +152,9 @@ def render_content(tab):
                 style={'marginBottom': 25, 'marginTop': 10}
             ),
             html.Br(),
-            html.Button('Submit', id='button')
-        ])
+            html.Button('Submit', id='button')], style={'width': '50%', 'float': 'left'}),\
+                  html.Div([html.Div(id='daemon_ouptut',
+                     children='Daemon output print', style={'marginBottom': 10, 'marginTop': 10})], style={'width': '50%', 'float': 'right'})
     elif tab == 'tab-2':
         return html.Div([
             html.H3('Tab content 2')
@@ -163,13 +165,15 @@ def render_content(tab):
         ])
 
 
-@app.callback(Output('output-container-button', 'children'), [Input('button', 'n_clicks')],
+@app.callback(Output('daemon_ouptut', 'children'), [Input('button', 'n_clicks')],
               [State('betamount_text', 'value'), State('leverage_text', 'value'), State('synthetic_text', 'value')])
 def on_click(n_clicks, betamount, leverage, synthetic):
     if n_clicks > 0:
-        return rpc_connection.pricesbet(betamount, leverage, synthetic)
+        daemon_output = rpc_connection.pricesbet(betamount, leverage, synthetic)
+        return str(daemon_output)
     else:
         pass
+
 
 def update_csv(rpc_connection):
     while True:
