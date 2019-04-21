@@ -122,6 +122,9 @@ def update_graph(selected_dropdown_value):
         }
     }
 
+# amount of positions per page
+PAGE_SIZE = 25
+
 @app.callback(Output('tabs-content', 'children'),
               [Input('tabs', 'value')])
 def render_content(tab):
@@ -164,7 +167,11 @@ def render_content(tab):
                 id='table',
                 columns=[{"name": i, "id": i} for i in df3.columns],
                 data=df3.to_dict("rows"),
-                sorting=True
+                sorting=True,
+                pagination_settings={
+                                        'current_page': 0,
+                                        'page_size': PAGE_SIZE
+                                    }
             )
         ])
     elif tab == 'tab-3':
