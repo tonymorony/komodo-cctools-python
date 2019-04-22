@@ -123,7 +123,7 @@ def update_graph(selected_dropdown_value):
     }
 
 # amount of positions per page
-PAGE_SIZE = 25
+PAGE_SIZE = 10
 
 @app.callback(Output('tabs-content', 'children'),
               [Input('tabs', 'value')])
@@ -163,17 +163,21 @@ def render_content(tab):
                      children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
     elif tab == 'tab-2':
         return html.Div([
+            html.H5("Select position to add funding or close it"),
             dash_table.DataTable(
                 id='table',
                 columns=[{"name": i, "id": i} for i in df3.columns],
                 data=df3.to_dict("rows"),
                 sorting=True,
                 row_selectable='single',
+                selected_rows=[],
+                n_fixed_rows=1,
                 pagination_settings={
                                         'current_page': 0,
                                         'page_size': PAGE_SIZE,
                                     }
-            )
+            ),
+            html.Div(id='postion-select-container')
         ])
     elif tab == 'tab-3':
         return html.Div([
@@ -190,6 +194,20 @@ def on_click(n_clicks, betamount, leverage, synthetic):
         return str(daemon_output)
     else:
         pass
+
+
+@app.callback(
+    Output('postion-select-container','children'),
+    [Input('table', 'derived_virtual_data'),
+     Input('table', 'derived_virtual_selected_rows')])
+def update_position_selection(rows,derived_virtual_selected_rows):
+    if derived_virtual_selected_rows is None:
+        derived_virtual_selected_rows = []
+    if rows is None:
+        dff3 = df3
+    else:
+        dff3 = pd.DataFrame(rows)
+    return dff3['txid'][derived_virtual_selected_rows[0]]
 
 
 def update_csv(rpc_connection):
