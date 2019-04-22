@@ -29,7 +29,7 @@ print(type(df))
 
 print(df)
 
-app = dash.Dash('app', server=server)
+app = dash.Dash(__name__, server=server)
 
 app.scripts.config.serve_locally = False
 app.config['suppress_callback_exceptions'] = True
@@ -158,7 +158,7 @@ def render_content(tab):
                 style={'marginBottom': 25, 'marginTop': 10}
             ),
             html.Br(),
-            html.Button('Submit', id='button')], style={'width': '50%', 'float': 'left'}),\
+            html.Button('Submit', id='button', style={'marginBottom': 25})], style={'width': '50%', 'float': 'left'}),\
                   html.Div([html.Div(id='daemon_ouptut',
                      children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
     elif tab == 'tab-2':
@@ -177,7 +177,21 @@ def render_content(tab):
                                         'page_size': PAGE_SIZE,
                                     }
             ),
-            html.Div(id='postion-select-container')
+            html.Br(),
+            html.Div(id='postion-select-container', children='Please select position first'),
+            dcc.Input(
+                placeholder='Input funding...',
+                type='text',
+                value='',
+                id='funding_text',
+                style={'marginBottom': 10, 'marginTop': 10}
+            ),
+            html.Button('Add funding', id='funding-button'),
+            html.Br(),
+            html.Button('Close position', id='close-button'),
+            html.Div([html.Div(id='daemon_ouptut_position',
+                               children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})],
+                     style={'width': '50%', 'float': 'right'})
         ])
     elif tab == 'tab-3':
         return html.Div([
@@ -191,7 +205,11 @@ def render_content(tab):
 def on_click(n_clicks, betamount, leverage, synthetic):
     if n_clicks > 0:
         daemon_output = rpc_connection.pricesbet(betamount, leverage, synthetic)
-        return str(daemon_output)
+        try:
+            position_txid = rpc_connection.sendrawtransaction(daemon_output['hex'])
+            return str(daemon_output) + "\n transaction broadcasted: " + str(position_txid)
+        except KeyError:
+            return str(daemon_output) + "\n transaction not broadcasted, please check error above"
     else:
         pass
 
@@ -207,7 +225,25 @@ def update_position_selection(rows,derived_virtual_selected_rows):
         dff3 = df3
     else:
         dff3 = pd.DataFrame(rows)
-    return dff3['txid'][derived_virtual_selected_rows[0]]
+    active_row_txid = dff3['txid'][derived_virtual_selected_rows[0]]
+    return html.Div([
+        html.H5("Selected position: " + active_row_txid)
+        ]
+    )
+
+@app.callback(Output('daemon_ouptut2', 'children'), [Input('funding-button', 'n_clicks')],
+              [State('postion-select-container', 'children'),State('funding_text', 'value')])
+#TODO: have to add confirmation popup
+def on_click(n_clicks, txid, funding_amount):
+    if n_clicks > 0:
+        daemon_output = rpc_connection.pricesaddfunding(txid, funding_amount)
+        try:
+            position_txid = rpc_connection.sendrawtransaction(daemon_output['hex'])
+            return str(daemon_output) + "\n transaction broadcasted: " + str(position_txid)
+        except KeyError:
+            return str(daemon_output) + "\n transaction not broadcasted, please check error above"
+    else:
+        pass
 
 
 def update_csv(rpc_connection):
