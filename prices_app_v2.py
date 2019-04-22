@@ -168,9 +168,10 @@ def render_content(tab):
                 columns=[{"name": i, "id": i} for i in df3.columns],
                 data=df3.to_dict("rows"),
                 sorting=True,
+                row_selectable='single',
                 pagination_settings={
                                         'current_page': 0,
-                                        'page_size': PAGE_SIZE
+                                        'page_size': PAGE_SIZE,
                                     }
             )
         ])
