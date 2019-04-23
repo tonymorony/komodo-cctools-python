@@ -67,9 +67,9 @@ def get_pairs_names(rpc_connection):
         pairs_names.append(pair["name"])
     return pairs_names
 
-
-def create_csv_with_bets(rpc_connection):
-    priceslist = rpc_connection.priceslist()
+# opened bets
+def create_csv_with_bets(rpc_connection, open_or_closed):
+    priceslist = rpc_connection.mypriceslist(open_or_closed)
     bets_rows = []
     for price in priceslist:
         if price == "48194bab8d377a7fa0e62d5e908474dae906675395753f09969d4c4bea4a7518":

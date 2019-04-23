@@ -19,7 +19,7 @@ server.secret_key = os.environ.get('secret_key', 'secret')
 
 visualization_lib.create_prices_csv(rpc_connection, "725")
 visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
-visualization_lib.create_csv_with_bets(rpc_connection)
+visualization_lib.create_csv_with_bets(rpc_connection, "open")
 
 df = pd.read_csv('prices.csv')
 df2 = pd.read_csv('delayed_prices.csv')
@@ -29,7 +29,7 @@ print(type(df))
 
 print(df)
 
-app = dash.Dash(__name__, server=server)
+app = dash.Dash(__name__, server=server, static_folder='static')
 
 app.scripts.config.serve_locally = False
 app.config['suppress_callback_exceptions'] = True
@@ -171,7 +171,14 @@ def render_content(tab):
                 sorting=True,
                 row_selectable='single',
                 selected_rows=[],
-                n_fixed_rows=1,
+                style_cell={
+                    'minWidth': '0px', 'maxWidth': '320px',
+                    'whiteSpace': 'normal'
+                },
+                css=[{
+                    'selector': '.dash-cell div.dash-cell-value',
+                    'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+                }],
                 pagination_settings={
                                         'current_page': 0,
                                         'page_size': PAGE_SIZE,
@@ -188,7 +195,7 @@ def render_content(tab):
             ),
             html.Button('Add funding', id='funding-button'),
             html.Br(),
-            html.Button('Close position', id='close-button'),
+            html.Button('Close position', id='close-button', style={'marginBottom': 100}),
             html.Div([html.Div(id='daemon_ouptut_position',
                                children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})],
                      style={'width': '50%', 'float': 'right'})
