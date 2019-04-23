@@ -13,31 +13,20 @@ import os
 
 from lib import tuilib, visualization_lib
 
+# connection to assetchain
 rpc_connection = tuilib.def_credentials("REKT0")
+
 server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
 
+# pre-creating needed csv files on user side
 visualization_lib.create_prices_csv(rpc_connection, "725")
 visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
 visualization_lib.create_csv_with_bets(rpc_connection, "open")
 visualization_lib.create_csv_with_bets(rpc_connection, "closed")
 
-df = pd.read_csv('prices.csv')
-df2 = pd.read_csv('delayed_prices.csv')
-df3 = pd.read_csv('betlist.csv')
-df4 = pd.read_csv('betlist_history.csv')
-
-print(type(df))
-
-print(df)
-
-app = dash.Dash(__name__, server=server, static_folder='static')
-
-app.scripts.config.serve_locally = False
-app.config['suppress_callback_exceptions'] = True
-
+# pre-creating tickers for graph
 pair_names = visualization_lib.get_pairs_names(rpc_connection)
-
 options_arg = []
 for pair in pair_names:
     pair_arg = {}
@@ -45,6 +34,23 @@ for pair in pair_names:
     pair_arg['value'] = pair
     options_arg.append(pair_arg)
 
+# and load it into dash to draw graphs and etc
+df = pd.read_csv('prices.csv')
+df2 = pd.read_csv('delayed_prices.csv')
+df3 = pd.read_csv('betlist.csv')
+df4 = pd.read_csv('betlist_history.csv')
+
+# amount of records per table page
+PAGE_SIZE = 15
+
+# application object
+app = dash.Dash(__name__, server=server, static_folder='static')
+
+# init configuration, second param allow to make dynamic callbacks
+app.scripts.config.serve_locally = False
+app.config['suppress_callback_exceptions'] = True
+
+# static layout
 app.layout = html.Div([
     html.Title("PricesCC trading web-interface"),
     html.H4('Prices provided by Komodo PricesCC trustless oracle',  style={'marginBottom': 25, 'marginTop': 25}),
@@ -66,7 +72,7 @@ app.layout = html.Div([
     html.Div(id='tabs-content'),
 ], className="container")
 
-
+# getting data from blockchain and rendering graph
 @app.callback(Output('my-graph', 'figure'),
               [Input('my-dropdown', 'value')])
 def update_graph(selected_dropdown_value):
@@ -124,12 +130,11 @@ def update_graph(selected_dropdown_value):
         }
     }
 
-# amount of positions per page
-PAGE_SIZE = 10
-
+# tabs content rendering
 @app.callback(Output('tabs-content', 'children'),
               [Input('tabs', 'value')])
 def render_content(tab):
+    # tab 1 is bets constructor
     if tab == 'tab-1':
         # left side of first tab
         return html.Div([
@@ -163,6 +168,7 @@ def render_content(tab):
             html.Button('Submit', id='button', style={'marginBottom': 25})], style={'width': '50%', 'float': 'left'}),\
                   html.Div([html.Div(id='daemon_ouptut',
                      children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
+    # tab 2 displaying active positions with possibility to add leverage or close it
     elif tab == 'tab-2':
         return html.Div([
             html.H5("Select position to add funding or close it"),
@@ -202,6 +208,7 @@ def render_content(tab):
                                children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})],
                      style={'width': '50%', 'float': 'right'})
         ])
+    # tab 3 displaying bet history (closed bets)
     elif tab == 'tab-3':
         return html.Div([
             dash_table.DataTable(
@@ -226,7 +233,7 @@ def render_content(tab):
             )
         ])
 
-
+# bet placing button
 @app.callback(Output('daemon_ouptut', 'children'), [Input('button', 'n_clicks')],
               [State('betamount_text', 'value'), State('leverage_text', 'value'), State('synthetic_text', 'value')])
 #TODO: have to add confirmation popup
@@ -244,7 +251,7 @@ def on_click(n_clicks, betamount, leverage, synthetic):
     except TypeError:
         pass
 
-
+# callback on radio select on tab2
 @app.callback(
     Output('position-select-container','children'),
     [Input('table', 'derived_virtual_data'),
@@ -266,6 +273,7 @@ def update_position_selection(rows,derived_virtual_selected_rows):
     except Exception as e:
         pass
 
+# addfunding button callback
 @app.callback(Output('daemon_ouptut2', 'children'), [Input('funding-button', 'n_clicks')],
               [State('active_row_txid', 'children'),State('funding_text', 'value')])
 #TODO: have to add confirmation popup
@@ -279,13 +287,6 @@ def on_click(n_clicks, txid, funding_amount):
             return str(daemon_output) + "\n transaction not broadcasted, please check error above"
     else:
         pass
-
-
-def update_csv(rpc_connection):
-    while True:
-        visualization_lib.create_prices_csv(rpc_connection, "725")
-        visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
-        time.sleep(15)
 
 
 if __name__ == '__main__':
