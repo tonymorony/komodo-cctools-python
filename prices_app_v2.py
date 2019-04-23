@@ -20,10 +20,12 @@ server.secret_key = os.environ.get('secret_key', 'secret')
 visualization_lib.create_prices_csv(rpc_connection, "725")
 visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
 visualization_lib.create_csv_with_bets(rpc_connection, "open")
+visualization_lib.create_csv_with_bets(rpc_connection, "closed")
 
 df = pd.read_csv('prices.csv')
 df2 = pd.read_csv('delayed_prices.csv')
-df3 = pd.read_csv('betslist.csv')
+df3 = pd.read_csv('betlist.csv')
+df4 = pd.read_csv('betlist_history.csv')
 
 print(type(df))
 
@@ -202,7 +204,26 @@ def render_content(tab):
         ])
     elif tab == 'tab-3':
         return html.Div([
-            html.H3('Tab content 3')
+            dash_table.DataTable(
+                id='table_history',
+                columns=[{"name": i, "id": i} for i in df3.columns],
+                data=df4.to_dict("rows"),
+                sorting=True,
+                row_selectable='single',
+                selected_rows=[],
+                style_cell={
+                    'minWidth': '0px', 'maxWidth': '320px',
+                    'whiteSpace': 'normal'
+                },
+                css=[{
+                    'selector': '.dash-cell div.dash-cell-value',
+                    'rule': 'display: inline; white-space: inherit; overflow: inherit; text-overflow: inherit;'
+                }],
+                pagination_settings={
+                                        'current_page': 0,
+                                        'page_size': PAGE_SIZE,
+                                    }
+            )
         ])
 
 

@@ -90,8 +90,11 @@ def create_csv_with_bets(rpc_connection, open_or_closed):
             bets_rows_single.append(pricesinfo["lastprice"])
             bets_rows_single.append(pricesinfo["height"])
             bets_rows.append(bets_rows_single)
-
-    with open('betslist.csv', 'w') as f:
+    if open_or_closed == 'open':
+        filename = 'betlist.csv'
+    if open_or_closed == 'closed':
+        filename = 'betlist_history.csv'
+    with open(filename, 'w') as f:
         filewriter = csv.writer(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         filewriter.writerow(["txid", "is rekt", "profits", "costbasis", "positionsize", "equity", "addedbets", "leverage", "firstheight", "firstprice", "lastprice", "height"])
