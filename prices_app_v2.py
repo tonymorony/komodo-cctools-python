@@ -205,7 +205,8 @@ def render_content(tab):
             ),
             html.Button('Add funding', id='funding-button'),
             html.Br(),
-            html.Button('Close position', id='close-button', style={'marginBottom': 100}),
+            html.Button('Cashout position', id='close-button', style={'marginBottom': 100}),
+            html.Div(id='position-closing-output'),
             html.Div([html.Div(id='daemon_ouptut2',
                                children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})],
                      style={'width': '50%', 'float': 'right'})
@@ -289,6 +290,26 @@ def on_click(n_clicks, txid, funding_amount):
             return str(daemon_output) + "\n transaction broadcasted: " + str(position_txid)
         except KeyError:
             return str(daemon_output) + "\n transaction not broadcasted, please check error above"
+    else:
+        pass
+
+
+# closeposition button callback
+@app.callback(Output('position-closing-output', 'children'), [Input('close-button', 'n_clicks')],
+              [State('active_row_txid', 'children')])
+#TODO: have to add confirmation popup
+def on_click(n_clicks, txid):
+    if n_clicks > 0:
+        daemon_output = rpc_connection.pricessetcostbasis(str(txid))
+        try:
+            costbasis_txid = rpc_connection.sendrawtransaction(daemon_output['hex'])
+        finally:
+            daemon_output = rpc_connection.pricescashout(str(txid))
+            try:
+                cashout_txid = rpc_connection.sendrawtransaction(daemon_output['hex'])
+                return str(daemon_output) + "\n transaction broadcasted: " + str(cashout_txid)
+            except KeyError:
+                return str(daemon_output) + "\n transaction not broadcasted, please check error above"
     else:
         pass
 
