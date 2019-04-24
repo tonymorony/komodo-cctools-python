@@ -60,7 +60,7 @@ app.layout = html.Div([
         value='BTC_USD'),
     dcc.Loading(dcc.Graph(id='my-graph')),
     html.Br(),
-    html.H5('User balance: ' + str(rpc_connection.getbalance()) + " REKT0"),
+    html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " REKT0"),
     dcc.Tabs(id="tabs", value='tab-1', children=[
         # positions constructor, user should be able to see balance
         dcc.Tab(label='Open position', value='tab-1'),
@@ -206,7 +206,7 @@ def render_content(tab):
             html.Button('Add funding', id='funding-button'),
             html.Br(),
             html.Button('Cashout position', id='close-button', style={'marginBottom': 100}),
-            html.Div(id='position-closing-output'),
+            html.Div(id='position-closing-output', style={'width': '50%', 'float': 'right'}),
             html.Div([html.Div(id='daemon_ouptut2',
                                children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})],
                      style={'width': '50%', 'float': 'right'})
@@ -221,7 +221,6 @@ def render_content(tab):
                 columns=[{"name": i, "id": i} for i in df4.columns],
                 data=df4.to_dict("rows"),
                 sorting=True,
-                row_selectable='single',
                 selected_rows=[],
                 style_cell={
                     'minWidth': '0px', 'maxWidth': '320px',
