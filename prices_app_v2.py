@@ -53,7 +53,6 @@ app.config['suppress_callback_exceptions'] = True
 # static layout
 app.layout = html.Div([
     html.Title("PricesCC trading web-interface"),
-    html.H4('Prices provided by Komodo PricesCC trustless oracle',  style={'marginBottom': 25, 'marginTop': 25}),
     dcc.Dropdown(
         id='my-dropdown',
         options=options_arg,
@@ -125,8 +124,9 @@ def update_graph(selected_dropdown_value):
                 'l': 30,
                 'r': 20,
                 'b': 30,
-                't': 20
-            }
+                #'t': 20
+            },
+            'title': 'Prices provided by Komodo PricesCC trustless oracle'
         }
     }
 
@@ -140,13 +140,13 @@ def render_content(tab):
         return html.Div([
             html.Br(),
             html.Div(id='output-container-button',
-                     children='Enter values and press submit', style={'marginBottom': 10, 'marginTop': 10}),
+                     children='Enter values and press submit', style={'marginBottom': 5, 'marginTop': 5, 'font-size': '16px'}),
             dcc.Input(
                 placeholder='Input bet amount...',
                 type='text',
                 value='',
                 id='betamount_text',
-                style={'marginBottom': 10, 'marginTop': 15}
+                style={'marginBottom': 10, 'marginTop': 10}
             ),
             html.Br(),
             dcc.Input(
@@ -162,7 +162,7 @@ def render_content(tab):
                 type='text',
                 value='',
                 id='synthetic_text',
-                style={'marginBottom': 25, 'marginTop': 10}
+                style={'marginBottom': 15, 'marginTop': 10}
             ),
             html.Br(),
             html.Button('Submit', id='button', style={'marginBottom': 25})], style={'width': '50%', 'float': 'left'}),\
@@ -194,7 +194,6 @@ def render_content(tab):
                                         'page_size': PAGE_SIZE,
                                     }
             ),
-            html.Br(),
             html.Div(id='position-select-container', children='Please select position first'),
             dcc.Input(
                 placeholder='Input funding...',
@@ -204,7 +203,6 @@ def render_content(tab):
                 style={'marginBottom': 10, 'marginTop': 10}
             ),
             html.Button('Add funding', id='funding-button'),
-            html.Br(),
             html.Button('Cashout position', id='close-button', style={'marginBottom': 100}),
             html.Div(id='position-closing-output', style={'width': '50%', 'float': 'right'}),
             html.Div([html.Div(id='daemon_ouptut2',
