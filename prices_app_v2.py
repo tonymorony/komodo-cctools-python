@@ -47,11 +47,13 @@ PAGE_SIZE = 15
 app = dash.Dash(__name__, server=server, static_folder='static')
 
 # init configuration, second param allow to make dynamic callbacks
-app.scripts.config.serve_locally = False
+app.css.config.serve_locally = True
+app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
 # static layout
 app.layout = html.Div([
+    html.Link(href='/static/undo-redo.css', rel='stylesheet'),
     html.Title("PricesCC trading web-interface"),
     dcc.Dropdown(
         id='my-dropdown',
@@ -129,6 +131,13 @@ def update_graph(selected_dropdown_value):
             'title': 'Prices provided by Komodo PricesCC trustless oracle'
         }
     }
+
+# loading local static files from static dir
+@app.server.route('/assets/<path>')
+def static_file(path):
+    static_folder = os.path.join(os.getcwd(), 'static')
+    return send_from_directory(static_folder, path)
+
 
 # tabs content rendering
 @app.callback(Output('tabs-content', 'children'),
