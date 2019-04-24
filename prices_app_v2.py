@@ -170,6 +170,8 @@ def render_content(tab):
                      children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
     # tab 2 displaying active positions with possibility to add leverage or close it
     elif tab == 'tab-2':
+        visualization_lib.create_csv_with_bets(rpc_connection, "open")
+        df3 = pd.read_csv('betlist.csv')
         return html.Div([
             html.H5("Select position to add funding or close it"),
             dash_table.DataTable(
@@ -210,10 +212,12 @@ def render_content(tab):
         ])
     # tab 3 displaying bet history (closed bets)
     elif tab == 'tab-3':
+        visualization_lib.create_csv_with_bets(rpc_connection, "closed")
+        df4 = pd.read_csv('betlist_history.csv')
         return html.Div([
             dash_table.DataTable(
                 id='table_history',
-                columns=[{"name": i, "id": i} for i in df3.columns],
+                columns=[{"name": i, "id": i} for i in df4.columns],
                 data=df4.to_dict("rows"),
                 sorting=True,
                 row_selectable='single',
