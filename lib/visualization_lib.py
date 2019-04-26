@@ -79,16 +79,12 @@ def create_csv_with_bets(rpc_connection, open_or_closed):
             bets_rows_single = []
             bets_rows_single.append(price)
             bets_rows_single.append(pricesinfo["rekt"])
-            bets_rows_single.append(pricesinfo["profits"])
-            bets_rows_single.append(pricesinfo["costbasis"])
-            bets_rows_single.append(pricesinfo["positionsize"])
-            bets_rows_single.append(pricesinfo["equity"])
-            bets_rows_single.append(pricesinfo["addedbets"])
             bets_rows_single.append(pricesinfo["leverage"])
-            bets_rows_single.append(pricesinfo["firstheight"])
-            bets_rows_single.append(pricesinfo["firstprice"])
-            bets_rows_single.append(pricesinfo["lastprice"])
-            bets_rows_single.append(pricesinfo["height"])
+            bets_rows_single.append(pricesinfo["TotalPositionSize"])
+            bets_rows_single.append(pricesinfo["TotalProfits"])
+            bets_rows_single.append(pricesinfo["equity"])
+            bets_rows_single.append(pricesinfo["LastPrice"])
+            bets_rows_single.append(pricesinfo["LastHeight"])
             bets_rows.append(bets_rows_single)
     if open_or_closed == 'open':
         filename = 'betlist.csv'
@@ -97,7 +93,7 @@ def create_csv_with_bets(rpc_connection, open_or_closed):
     with open(filename, 'w') as f:
         filewriter = csv.writer(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        filewriter.writerow(["txid", "is rekt", "profits", "costbasis", "positionsize", "equity", "addedbets", "leverage", "firstheight", "firstprice", "lastprice", "height"])
+        filewriter.writerow(["txid", "is rekt", "leverage", "TotalPositionSize", "TotalProfits", "equity", "LastPrice", "LastHeight"])
         for row in bets_rows:
             filewriter.writerow(row)
         f.close

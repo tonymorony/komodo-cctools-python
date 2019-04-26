@@ -182,7 +182,6 @@ def render_content(tab):
         visualization_lib.create_csv_with_bets(rpc_connection, "open")
         df3 = pd.read_csv('betlist.csv')
         return html.Div([
-            html.H5("Select position to add funding or close it"),
             dash_table.DataTable(
                 id='table',
                 columns=[{"name": i, "id": i} for i in df3.columns],
@@ -191,7 +190,7 @@ def render_content(tab):
                 row_selectable='single',
                 selected_rows=[],
                 style_cell={
-                    'minWidth': '0px', 'maxWidth': '320px',
+                    'minWidth': '0px', 'maxWidth': '240px',
                     'whiteSpace': 'normal'
                 },
                 css=[{
@@ -203,7 +202,8 @@ def render_content(tab):
                                         'page_size': PAGE_SIZE,
                                     }
             ),
-            html.Div(id='position-select-container', children='Please select position first'),
+            html.H5("Select position to add funding or close it"),
+            html.Div(id='position-select-container', children='', style={'marginBottom': 10, 'marginTop': 15}),
             dcc.Input(
                 placeholder='Input funding...',
                 type='text',
