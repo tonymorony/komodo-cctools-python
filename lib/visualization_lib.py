@@ -99,6 +99,7 @@ def create_csv_with_bets(rpc_connection, open_or_closed):
         f.close
 
 
+# function checking if prices for pair or inversed pair availiable on chain
 def is_pair_availiable(rpc_connection, pair):
     is_pair_in_list = False
     is_pair_reversed = False
@@ -121,7 +122,42 @@ def is_pair_availiable(rpc_connection, pair):
     return is_pair_in_list, is_pair_reversed
 
 
-def custom_prices_generator(rpc_connection, synthetic):
-    while True:
-        pair_name = input("Input your pair name: ")
-        print(is_pair_availiable(rpc_connection,pair_name))
+# function returning list with prices for pair name if it presist in list
+# with inverted price if it inverted price, and with error if no such pair in prices call output
+def return_prices_for_synthetic(rpc_connection, synthetic, depth):
+    prices_json = rpc_connection.prices(depth)
+    timestamps = prices_json["timestamps"]
+    # at first we want to get the prices for all given pairs
+    # then we can perform any arithmetic operations over these prices
+    for operator in synthetic:
+        # checking if operator a pair name
+        if '_' in operator:
+            # checking if it possible to get price for pair
+            pair_availability = is_pair_availiable(rpc_connection, operator)
+            # no such pair in prices output
+            if not pair_availability[0] and not pair_availability[1]:
+                print("Can't get price for this pair. Aborting.")
+            # pair available in prices output
+            if pair_availability[0] and not pair_availability[1]:
+                for pair in prices_json["pricefeeds"]:
+                    if pair["name"] == operator:
+                        prices = []
+                        for price in pair["prices"]:
+                            for price_value in price:
+                                prices.append(price_value)
+                        return prices
+            # pair reversed version of some prices output pair
+            if pair_availability[0] and pair_availability[1]:
+                splitted_operator = operator.split("_")
+                reversed_operator = splitted_operator[1] + "_" + splitted_operator[0]
+                for pair in prices_json["pricefeeds"]:
+                    if pair["name"] == reversed_operator:
+                        prices = []
+                        for price in pair["prices"]:
+                            for price_value in price:
+                                prices.append(1/price_value)
+                        return prices
+
+# function trying to return CSV with prices for synthetic passed as list
+def custom_prices_generator(rpc_connection, synthetic, depth):
+    pass
