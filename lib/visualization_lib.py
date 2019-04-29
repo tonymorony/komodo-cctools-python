@@ -97,3 +97,31 @@ def create_csv_with_bets(rpc_connection, open_or_closed):
         for row in bets_rows:
             filewriter.writerow(row)
         f.close
+
+
+def is_pair_availiable(rpc_connection, pair):
+    is_pair_in_list = False
+    is_pair_reversed = False
+    # getting known pairs list
+    known_pair_names = []
+    prices_output = rpc_connection.prices("1")
+    # getting reversed version of pairname
+    try:
+        splitted_synthetic = pair.split("_")
+        reversed_synthetic = splitted_synthetic[1] + "_" + splitted_synthetic[0]
+    except Exception:
+        return is_pair_in_list, is_pair_reversed
+    for feed in prices_output["pricefeeds"]:
+        known_pair_names.append(feed["name"])
+    if pair in known_pair_names:
+        is_pair_in_list = True
+    elif reversed_synthetic in known_pair_names:
+        is_pair_in_list = True
+        is_pair_reversed = True
+    return is_pair_in_list, is_pair_reversed
+
+
+def custom_prices_generator(rpc_connection, synthetic):
+    while True:
+        pair_name = input("Input your pair name: ")
+        print(is_pair_availiable(rpc_connection,pair_name))
