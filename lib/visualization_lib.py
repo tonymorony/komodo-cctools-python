@@ -124,41 +124,82 @@ def is_pair_availiable(rpc_connection, pair):
 
 # function returning list with prices for pair name if it presist in list
 # with inverted price if it inverted price, and with error if no such pair in prices call output
-def return_prices_for_synthetic(rpc_connection, synthetic, depth):
+def return_prices_for_pair(rpc_connection, pair, depth):
     prices_json = rpc_connection.prices(depth)
     timestamps = prices_json["timestamps"]
-    # at first we want to get the prices for all given pairs
-    # then we can perform any arithmetic operations over these prices
-    for operator in synthetic:
-        # checking if operator a pair name
-        if '_' in operator:
-            # checking if it possible to get price for pair
-            pair_availability = is_pair_availiable(rpc_connection, operator)
-            # no such pair in prices output
-            if not pair_availability[0] and not pair_availability[1]:
-                print("Can't get price for this pair. Aborting.")
-            # pair available in prices output
-            if pair_availability[0] and not pair_availability[1]:
-                for pair in prices_json["pricefeeds"]:
-                    if pair["name"] == operator:
-                        prices = []
-                        for price in pair["prices"]:
-                            for price_value in price:
-                                prices.append(price_value)
-                        return prices, timestamps
-            # pair reversed version of some prices output pair
-            if pair_availability[0] and pair_availability[1]:
-                splitted_operator = operator.split("_")
-                reversed_operator = splitted_operator[1] + "_" + splitted_operator[0]
-                for pair in prices_json["pricefeeds"]:
-                    if pair["name"] == reversed_operator:
-                        prices = []
-                        for price in pair["prices"]:
-                            for price_value in price:
-                                prices.append(1/price_value)
-                        return prices, timestamps
+    # checking if it possible to get price for pair
+    pair_availability = is_pair_availiable(rpc_connection, pair)
+    # no such pair in prices output
+    if not pair_availability[0] and not pair_availability[1]:
+        print("Can't get price for this pair. Aborting.")
+    # pair available in prices output
+    if pair_availability[0] and not pair_availability[1]:
+        for pair in prices_json["pricefeeds"]:
+            if pair["name"] == pair:
+                prices = []
+                for price in pair["prices"]:
+                    for price_value in price:
+                        prices.append(price_value)
+                return prices, timestamps
+    # pair reversed version of some prices output pair
+    if pair_availability[0] and pair_availability[1]:
+        splitted_operator = pair.split("_")
+        reversed_operator = splitted_operator[1] + "_" + splitted_operator[0]
+        for pair in prices_json["pricefeeds"]:
+            if pair["name"] == reversed_operator:
+                prices = []
+                for price in pair["prices"]:
+                    for price_value in price:
+                        prices.append(1/price_value)
+                return prices, timestamps
 
 
-# function trying to return CSV with prices for synthetic passed as list
-def custom_prices_generator(rpc_connection, synthetic, depth):
+# function returning list with stacks lists
+def split_synthetic_on_stacks(rpc_connection, synthetic, depth):
+    stacks_list = []
+    stack_end = 0
+    for i in range(0, len(synthetic)):
+        if synthetic[i] == '*' or synthetic[i] == '/':
+            temp = synthetic[stack_end:(i + 1)]
+            stacks_list.append(temp)
+            stack_end = i + 1
+    return stacks_list
+
+
+def count_stack(rpc_connection, stack, depth):
+    # at first normalizing weights to 1 (normalized_weight = (1/sum(all_weights) * weight
+    weights_sum = sum(stack[0:-1:2])
+    # 2 pairs in stack case
+    if len(stack) == 5:
+        weight1 = stack[0] / weights_sum
+        prices1 = return_prices_for_pair(rpc_connection, stack[1], depth)
+        weight2 = stack[2] / weights_sum
+        prices2 = return_prices_for_pair(rpc_connection, stack[3], depth)
+        # if operator is / dividing stuff, if operator is * multiplying stuff
+        if stack[4] == "/":
+            stack_prices = [(float(prices1[0][i]) * weight1) / (float(prices2[0][i]) * weight2) for i in range(len(prices1[0]))]
+        elif stack[4] == "*":
+            stack_prices = [float(prices1[0][i]) * weight1 * float(prices2[0][i]) * weight2 for i in range(len(prices1[0]))]
+    # 3 pairs in stack case
+    elif len(stack) == 7:
+        weight1 = stack[0] / weights_sum
+        prices1 = return_prices_for_pair(rpc_connection, stack[1], depth)
+        weight2 = stack[2] / weights_sum
+        prices2 = return_prices_for_pair(rpc_connection, stack[3], depth)
+        weight3 = stack[4] / weights_sum
+        prices3 = return_prices_for_pair(rpc_connection, stack[5], depth)
+        if stack[6] == "/":
+            stack_prices = [(float(prices1[0][i]) * weight1) / (float(prices2[0][i]) * weight2) / (float(prices3[0][i]) * weight3) for i in range(len(prices1[0]))]
+        elif stack[6] == "*":
+            stack_prices = [float(prices1[0][i]) * weight1 * float(prices2[0][i]) * weight2 * float(prices3[0][i]) * weight3 for i in range(len(prices1[0]))]
+    else:
+        return "Incorrect stack!"
+    return stack_prices
+
+
+def make_csv():
+    pass
+
+
+def draw_a_grap():
     pass
