@@ -134,10 +134,10 @@ def return_prices_for_pair(rpc_connection, pair, depth):
         print("Can't get price for this pair. Aborting.")
     # pair available in prices output
     if pair_availability[0] and not pair_availability[1]:
-        for pair in prices_json["pricefeeds"]:
-            if pair["name"] == pair:
+        for feed in prices_json["pricefeeds"]:
+            if feed["name"] == pair:
                 prices = []
-                for price in pair["prices"]:
+                for price in feed["prices"]:
                     for price_value in price:
                         prices.append(price_value)
                 return prices, timestamps
@@ -167,31 +167,24 @@ def split_synthetic_on_stacks(rpc_connection, synthetic, depth):
 
 
 def count_stack(rpc_connection, stack, depth):
-    # at first normalizing weights to 1 (normalized_weight = (1/sum(all_weights) * weight
-    weights_sum = sum(stack[0:-1:2])
     # 2 pairs in stack case
-    if len(stack) == 5:
-        weight1 = stack[0] / weights_sum
-        prices1 = return_prices_for_pair(rpc_connection, stack[1], depth)
-        weight2 = stack[2] / weights_sum
-        prices2 = return_prices_for_pair(rpc_connection, stack[3], depth)
+    if len(stack) == 4:
+        prices1 = return_prices_for_pair(rpc_connection, stack[0], depth)
+        prices2 = return_prices_for_pair(rpc_connection, stack[1], depth)
         # if operator is / dividing stuff, if operator is * multiplying stuff
-        if stack[4] == "/":
-            stack_prices = [(float(prices1[0][i]) * weight1) / (float(prices2[0][i]) * weight2) for i in range(len(prices1[0]))]
-        elif stack[4] == "*":
-            stack_prices = [float(prices1[0][i]) * weight1 * float(prices2[0][i]) * weight2 for i in range(len(prices1[0]))]
+        if stack[2] == "/":
+            stack_prices = [(float(prices1[0][i])) / (float(prices2[0][i])) for i in range(len(prices1[0]))]
+        elif stack[2] == "*":
+            stack_prices = [float(prices1[0][i]) * float(prices2[0][i]) for i in range(len(prices1[0]))]
     # 3 pairs in stack case
-    elif len(stack) == 7:
-        weight1 = stack[0] / weights_sum
-        prices1 = return_prices_for_pair(rpc_connection, stack[1], depth)
-        weight2 = stack[2] / weights_sum
-        prices2 = return_prices_for_pair(rpc_connection, stack[3], depth)
-        weight3 = stack[4] / weights_sum
-        prices3 = return_prices_for_pair(rpc_connection, stack[5], depth)
-        if stack[6] == "/":
-            stack_prices = [(float(prices1[0][i]) * weight1) / (float(prices2[0][i]) * weight2) / (float(prices3[0][i]) * weight3) for i in range(len(prices1[0]))]
-        elif stack[6] == "*":
-            stack_prices = [float(prices1[0][i]) * weight1 * float(prices2[0][i]) * weight2 * float(prices3[0][i]) * weight3 for i in range(len(prices1[0]))]
+    elif len(stack) == 5:
+        prices1 = return_prices_for_pair(rpc_connection, stack[0], depth)
+        prices2 = return_prices_for_pair(rpc_connection, stack[1], depth)
+        prices3 = return_prices_for_pair(rpc_connection, stack[2], depth)
+        if stack[3] == "/":
+            stack_prices = [(float(prices1[0][i])) / (float(prices2[0][i])) / (float(prices3[0][i])) for i in range(len(prices1[0]))]
+        elif stack[3] == "*":
+            stack_prices = [float(prices1[0][i]) * float(prices2[0][i]) * float(prices3[0][i]) for i in range(len(prices1[0]))]
     else:
         return "Incorrect stack!"
     return stack_prices
