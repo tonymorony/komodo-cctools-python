@@ -16,20 +16,16 @@ rpc_connection = tuilib.def_credentials("REKT0")
 server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
 
-visualization_lib.create_prices_csv(rpc_connection, "435")
-visualization_lib.create_delayed_prices_csv(rpc_connection, "435")
+visualization_lib.make_csv_for_stack(rpc_connection, ["BTC_USD", "KMD_BTC", "*", 1], "BTC_USD*KMD_BTC", "435")
 
-df = pd.read_csv('prices.csv')
-df2 = pd.read_csv('delayed_prices.csv')
-print(type(df))
+df = pd.read_csv('BTC_USD*KMD_BTC.csv')
 
-print(df)
 
 app = dash.Dash('app', server=server)
 
 app.scripts.config.serve_locally = False
 
-pair_names = visualization_lib.get_pairs_names(rpc_connection)
+pair_names = ["BTC_USD*KMD_BTC"]
 
 options_arg = []
 for pair in pair_names:
@@ -43,7 +39,7 @@ app.layout = html.Div([
     dcc.Dropdown(
         id='my-dropdown',
         options=options_arg,
-        value='BTCUSD'
+        value='BTC_USD*KMD_BTC'
     ),
     dcc.Graph(id='my-graph')
 ], className="container")
@@ -52,12 +48,11 @@ app.layout = html.Div([
               [Input('my-dropdown', 'value')])
 
 def update_graph(selected_dropdown_value):
-    visualization_lib.create_prices_csv(rpc_connection, "580")
-    visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
-    df = pd.read_csv('prices.csv')
-    df2 = pd.read_csv('delayed_prices.csv')
+
+    visualization_lib.make_csv_for_stack(rpc_connection, ["BTC_USD", "KMD_BTC", "*", 1], "BTC_USD*KMD_BTC", "435")
+    df = pd.read_csv('BTC_USD*KMD_BTC.csv')
+
     dff = df[df['pair'] == selected_dropdown_value]
-    dff2 = df2[df2['pair'] == selected_dropdown_value]
     return {
         'data': [
 
@@ -87,14 +82,6 @@ def update_graph(selected_dropdown_value):
                 'shape': 'spline'
             }
         },
-        {
-            'x': dff2.date,
-            'y': dff.price3,
-            'line': {
-                'width': 3,
-                'shape': 'spline'
-            }
-        }
         ],
         'layout': {
             'margin': {

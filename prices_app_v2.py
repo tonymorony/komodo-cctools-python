@@ -136,7 +136,7 @@ def update_graph(selected_dropdown_value):
 @app.server.route('/assets/<path>')
 def static_file(path):
     static_folder = os.path.join(os.getcwd(), 'static')
-    return send_from_directory(static_folder, path)
+    return flask.send_from_directory(static_folder, path)
 
 
 # tabs content rendering

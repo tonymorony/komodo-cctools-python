@@ -209,7 +209,7 @@ def make_csv_for_stack(rpc_connection, stack, stack_name, depth):
         prices_rows.append(pair_prices_row)
         pair_prices_row = []
 
-    with open(stack_name +'.csv', 'w') as f:
+    with open(stack_name + '.csv', 'w') as f:
         filewriter = csv.writer(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         filewriter.writerow(["date", "price1", "price2", "price3", "pair"])
@@ -217,5 +217,6 @@ def make_csv_for_stack(rpc_connection, stack, stack_name, depth):
             filewriter.writerow(row)
         f.close()
 
-def draw_a_grap():
+
+def draw_a_graph():
     pass
