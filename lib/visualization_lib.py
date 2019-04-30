@@ -145,7 +145,7 @@ def return_prices_for_synthetic(rpc_connection, synthetic, depth):
                         for price in pair["prices"]:
                             for price_value in price:
                                 prices.append(price_value)
-                        return prices
+                        return prices, timestamps
             # pair reversed version of some prices output pair
             if pair_availability[0] and pair_availability[1]:
                 splitted_operator = operator.split("_")
@@ -156,7 +156,8 @@ def return_prices_for_synthetic(rpc_connection, synthetic, depth):
                         for price in pair["prices"]:
                             for price_value in price:
                                 prices.append(1/price_value)
-                        return prices
+                        return prices, timestamps
+
 
 # function trying to return CSV with prices for synthetic passed as list
 def custom_prices_generator(rpc_connection, synthetic, depth):
