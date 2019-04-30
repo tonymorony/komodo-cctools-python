@@ -190,9 +190,32 @@ def count_stack(rpc_connection, stack, depth):
     return stack_prices
 
 
-def make_csv():
-    pass
+def make_csv_for_stack(rpc_connection, stack, stack_name, depth):
+    stack_prices = count_stack(rpc_connection, stack, depth)
+    timestamps = rpc_connection.prices(depth)["timestamps"]
+    dates = []
+    for timestamp in timestamps:
+        dates.append(datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%dT%H:%M'))
+    prices_rows = []
+    pair_prices_row = []
+    j = 0
+    for i in range(0, len(stack_prices), 3):
+        pair_prices_row.append(dates[j])
+        j = j + 1
+        pair_prices_row.append(stack_prices[i])
+        pair_prices_row.append(stack_prices[i+1])
+        pair_prices_row.append(stack_prices[i+2])
+        pair_prices_row.append(stack_name)
+        prices_rows.append(pair_prices_row)
+        pair_prices_row = []
 
+    with open(stack_name +'.csv', 'w') as f:
+        filewriter = csv.writer(f, delimiter=',',
+                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        filewriter.writerow(["date", "price1", "price2", "price3", "pair"])
+        for row in prices_rows:
+            filewriter.writerow(row)
+        f.close()
 
 def draw_a_grap():
     pass
