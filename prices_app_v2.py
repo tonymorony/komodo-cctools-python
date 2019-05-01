@@ -12,6 +12,9 @@ import time
 import os
 
 from lib import tuilib, visualization_lib
+from os import listdir
+from os.path import isfile, join
+
 
 # connection to assetchain
 rpc_connection = tuilib.def_credentials("REKT0")
@@ -34,6 +37,14 @@ for pair in pair_names:
     pair_arg['value'] = pair
     options_arg.append(pair_arg)
 
+user_args = []
+graphs_files_list = [f for f in listdir('usergraphs') if isfile(join('usergraphs', f))]
+for file in graphs_files_list:
+    file_arg = {}
+    file_arg['label'] = file
+    file_arg['value'] = file
+    user_args.append(file_arg)
+
 # and load it into dash to draw graphs and etc
 df = pd.read_csv('prices.csv')
 df2 = pd.read_csv('delayed_prices.csv')
@@ -55,10 +66,24 @@ app.config['suppress_callback_exceptions'] = True
 app.layout = html.Div([
     html.Link(href='/static/undo-redo.css', rel='stylesheet'),
     html.Title("PricesCC trading web-interface"),
+    html.H5("Pairs from prices RPC call:"),
     dcc.Dropdown(
         id='my-dropdown',
         options=options_arg,
         value='BTC_USD'),
+    html.H5("User custom prices:"),
+    dcc.Dropdown(
+        id='user-dropdown',
+        options=user_args,
+        value=user_args[0]),
+    dcc.Input(
+                placeholder='Input synthetic for custom graph...',
+                type='text',
+                value='',
+                id='graph_synthetic',
+                style={'marginBottom': 15, 'marginTop': 10}
+            ),
+    html.Button('Build custom price', id='graph_build_button', style={'marginBottom': 25}),
     dcc.Loading(dcc.Graph(id='my-graph')),
     html.Br(),
     html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " REKT0"),
@@ -75,7 +100,7 @@ app.layout = html.Div([
 
 # getting data from blockchain and rendering graph
 @app.callback(Output('my-graph', 'figure'),
-              [Input('my-dropdown', 'value')])
+[Input('my-dropdown', 'value')])
 def update_graph(selected_dropdown_value):
     visualization_lib.create_prices_csv(rpc_connection, "725")
     visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
@@ -174,7 +199,7 @@ def render_content(tab):
                 style={'marginBottom': 15, 'marginTop': 10}
             ),
             html.Br(),
-            html.Button('Submit', id='button', style={'marginBottom': 25})], style={'width': '50%', 'float': 'left'}),\
+            html.Button('Open position', id='button', style={'marginBottom': 25})], style={'width': '50%', 'float': 'left'}),\
                   html.Div([html.Div(id='daemon_ouptut',
                      children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
     # tab 2 displaying active positions with possibility to add leverage or close it
@@ -261,6 +286,7 @@ def on_click(n_clicks, betamount, leverage, synthetic):
             pass
     except TypeError:
         pass
+
 
 # callback on radio select on tab2
 @app.callback(

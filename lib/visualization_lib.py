@@ -187,6 +187,7 @@ def count_stack(rpc_connection, stack, depth):
             stack_prices = [float(prices1[0][i]) * float(prices2[0][i]) * float(prices3[0][i]) for i in range(len(prices1[0]))]
     else:
         return "Incorrect stack!"
+    print(stack)
     return stack_prices
 
 
@@ -209,7 +210,7 @@ def make_csv_for_stack(rpc_connection, stack, stack_name, depth):
         prices_rows.append(pair_prices_row)
         pair_prices_row = []
 
-    with open(stack_name + '.csv', 'w') as f:
+    with open('usergraphs/' + stack_name, 'w') as f:
         filewriter = csv.writer(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         filewriter.writerow(["date", "price1", "price2", "price3", "pair"])
