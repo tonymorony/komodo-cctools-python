@@ -14,7 +14,21 @@ pip packages needed:
 * `pip3 install setuptools wheel slick-bitcoinrpc`
 * or `pip3 install -r requirements.txt`
 
+For prices visualisation you'll also need additonal Dash framework deps:
+
+* `pip3 install dash dash-daq flask pandas`
+
 Starting: 
+
+# Web-app interface for PricesCC
+
+To start web-app just sync REKT0 daemon first and then run:
+
+`python3 prices_app_v2.py`
+
+By default app will be availiable on port 777 (can be changed in prices_app_v2.py, as well as assetchain name)
+
+![alt text](https://i.imgur.com/hnpYaYG.png)
 
 # TUI for RogueCC
 
