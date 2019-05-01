@@ -1,4 +1,4 @@
-# Komodo Cryptoconditons Terminal User Interfaces (aka TUIs)
+# Python tools and libs for Komodo CC modules usage demonstration
 
 These tools creating for demonstration and partial automation of Komodo cryptoconditions modules testing. (RogueCC game, AssetsCC, OraclesCC, GatewaysCC, MarmaraCC, ...)
 
