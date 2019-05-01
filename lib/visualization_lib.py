@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-
+import sys
 from lib import tuilib
 
 
@@ -200,17 +200,20 @@ def make_csv_for_stack(rpc_connection, stack, stack_name, depth):
     prices_rows = []
     pair_prices_row = []
     j = 0
+    pair_name = ""
+    for element in stack:
+        pair_name = pair_name + element
     for i in range(0, len(stack_prices), 3):
         pair_prices_row.append(dates[j])
         j = j + 1
         pair_prices_row.append(stack_prices[i])
         pair_prices_row.append(stack_prices[i+1])
         pair_prices_row.append(stack_prices[i+2])
-        pair_prices_row.append(stack_name)
+        pair_prices_row.append(pair_name)
         prices_rows.append(pair_prices_row)
         pair_prices_row = []
 
-    with open('usergraphs/' + stack_name, 'w') as f:
+    with open(sys.path[0] + '/usergraphs/' + pair_name + '_user', 'w') as f:
         filewriter = csv.writer(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         filewriter.writerow(["date", "price1", "price2", "price3", "pair"])

@@ -9,7 +9,7 @@ import dash_table
 import flask
 import pandas as pd
 import time
-import os
+import os, sys
 
 from lib import tuilib, visualization_lib
 from os import listdir
@@ -98,16 +98,42 @@ app.layout = html.Div([
     html.Div(id='tabs-content'),
 ], className="container")
 
+
+# custom price creation callback, as result updating dropdown
+@app.callback(Output('user-dropdown', 'options'), [Input('graph_build_button', 'n_clicks')],
+              [State('graph_synthetic', 'value')])
+def create_custom_price(n_clicks, synthetic):
+    if n_clicks > 0:
+        synthetic_elems = synthetic.split(",")
+        synthetic_elems = list(map(str.strip, synthetic_elems))
+        visualization_lib.make_csv_for_stack(rpc_connection, synthetic_elems, synthetic.strip(), "725")
+        user_args = []
+        graphs_files_list = [f for f in listdir('usergraphs') if isfile(join('usergraphs', f))]
+        for file in graphs_files_list:
+            file_arg = {}
+            file_arg['label'] = file
+            file_arg['value'] = file
+            user_args.append(file_arg)
+        return user_args
+
 # getting data from blockchain and rendering graph
 @app.callback(Output('my-graph', 'figure'),
-[Input('my-dropdown', 'value')])
-def update_graph(selected_dropdown_value):
-    visualization_lib.create_prices_csv(rpc_connection, "725")
-    visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
-    df = pd.read_csv('prices.csv')
-    df2 = pd.read_csv('delayed_prices.csv')
-    dff = df[df['pair'] == selected_dropdown_value]
-    dff2 = df2[df2['pair'] == selected_dropdown_value]
+[Input('my-dropdown', 'value'), Input('user-dropdown', 'value')])
+def update_graph(selected_dropdown_value, user_dropdown_value):
+    # TODO: there is a not comfortable moment: when choosing user graph in dropdown - cant back to not user one (it's because of this check)
+    # so have to clear user graph selection by cross
+    if user_dropdown_value is not None and "_user" in user_dropdown_value:
+        df = pd.read_csv(sys.path[0] +'/usergraphs/'+ user_dropdown_value)
+        #print(df['pair'])
+        dff = df[df['pair'] == user_dropdown_value[:-5]]
+        #print(dff)
+    else:
+        visualization_lib.create_prices_csv(rpc_connection, "725")
+        visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
+        df = pd.read_csv('prices.csv')
+        df2 = pd.read_csv('delayed_prices.csv')
+        dff = df[df['pair'] == selected_dropdown_value]
+        dff2 = df2[df2['pair'] == selected_dropdown_value]
     return {
         'data': [
 
@@ -137,14 +163,14 @@ def update_graph(selected_dropdown_value):
                 'shape': 'spline'
             }
         },
-        {
-            'x': dff2.date,
-            'y': dff.price3,
-            'line': {
-                'width': 3,
-                'shape': 'spline'
-            }
-        }
+        # {
+        #     'x': dff2.date,
+        #     'y': dff.price3,
+        #     'line': {
+        #         'width': 3,
+        #         'shape': 'spline'
+        #     }
+        # }
         ],
         'layout': {
             'margin': {
@@ -269,7 +295,7 @@ def render_content(tab):
             )
         ])
 
-# bet placing button
+# bet placing button callback
 @app.callback(Output('daemon_ouptut', 'children'), [Input('button', 'n_clicks')],
               [State('betamount_text', 'value'), State('leverage_text', 'value'), State('synthetic_text', 'value')])
 #TODO: have to add confirmation popup
@@ -286,7 +312,6 @@ def on_click(n_clicks, betamount, leverage, synthetic):
             pass
     except TypeError:
         pass
-
 
 # callback on radio select on tab2
 @app.callback(
@@ -344,7 +369,6 @@ def on_click(n_clicks, txid):
                 return str(daemon_output) + "\n transaction not broadcasted, please check error above"
     else:
         pass
-
 
 if __name__ == '__main__':
     app.run_server(host = '0.0.0.0', port=777, debug=True)
