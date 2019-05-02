@@ -86,7 +86,6 @@ app.layout = html.Div([
     html.Button('Build custom price', id='graph_build_button', style={'marginBottom': 25}),
     dcc.Loading(dcc.Graph(id='my-graph')),
     html.Br(),
-    html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " REKT0"),
     dcc.Tabs(id="tabs", value='tab-1', children=[
         # positions constructor, user should be able to see balance
         dcc.Tab(label='Open position', value='tab-1'),
@@ -199,6 +198,7 @@ def render_content(tab):
         # left side of first tab
         return html.Div([
             html.Br(),
+            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " REKT0"),
             html.Div(id='output-container-button',
                      children='Enter values and press submit', style={'marginBottom': 5, 'marginTop': 5, 'font-size': '16px'}),
             dcc.Input(
@@ -233,6 +233,7 @@ def render_content(tab):
         visualization_lib.create_csv_with_bets(rpc_connection, "open")
         df3 = pd.read_csv('betlist.csv')
         return html.Div([
+            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " REKT0"),
             dash_table.DataTable(
                 id='table',
                 columns=[{"name": i, "id": i} for i in df3.columns],
