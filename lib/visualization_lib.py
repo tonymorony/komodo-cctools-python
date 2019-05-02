@@ -79,6 +79,11 @@ def create_csv_with_bets(rpc_connection, open_or_closed):
             bets_rows_single = []
             bets_rows_single.append(price)
             bets_rows_single.append(pricesinfo["rekt"])
+            expression = pricesinfo["expression"].split(",")
+            adopted_expression = ""
+            for element in expression:
+                adopted_expression = adopted_expression + element
+            bets_rows_single.append(adopted_expression)
             bets_rows_single.append(pricesinfo["leverage"])
             bets_rows_single.append(pricesinfo["TotalPositionSize"])
             bets_rows_single.append(pricesinfo["TotalProfits"])
@@ -93,7 +98,7 @@ def create_csv_with_bets(rpc_connection, open_or_closed):
     with open(filename, 'w') as f:
         filewriter = csv.writer(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        filewriter.writerow(["txid", "is rekt", "leverage", "TotalPositionSize", "TotalProfits", "equity", "LastPrice", "LastHeight"])
+        filewriter.writerow(["txid", "is rekt", "expression", "leverage", "TotalPositionSize", "TotalProfits", "equity", "LastPrice", "LastHeight"])
         for row in bets_rows:
             filewriter.writerow(row)
         f.close
