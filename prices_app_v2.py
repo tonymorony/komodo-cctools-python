@@ -15,9 +15,10 @@ from lib import tuilib, visualization_lib
 from os import listdir
 from os.path import isfile, join
 
+AC_NAME = "BETSTEST"
 
 # connection to assetchain
-rpc_connection = tuilib.def_credentials("REKT0")
+rpc_connection = tuilib.def_credentials(AC_NAME)
 
 server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
@@ -198,7 +199,7 @@ def render_content(tab):
         # left side of first tab
         return html.Div([
             html.Br(),
-            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " REKT0"),
+            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " " + AC_NAME),
             html.Div(id='output-container-button',
                      children='Enter values and press submit', style={'marginBottom': 5, 'marginTop': 5, 'font-size': '16px'}),
             dcc.Input(
@@ -233,7 +234,7 @@ def render_content(tab):
         visualization_lib.create_csv_with_bets(rpc_connection, "open")
         df3 = pd.read_csv('betlist.csv')
         return html.Div([
-            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " REKT0"),
+            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " " + AC_NAME),
             dash_table.DataTable(
                 id='table',
                 columns=[{"name": i, "id": i} for i in df3.columns],
