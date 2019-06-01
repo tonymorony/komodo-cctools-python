@@ -15,7 +15,7 @@ from lib import tuilib, visualization_lib
 from os import listdir
 from os.path import isfile, join
 
-AC_NAME = "BETSTEST"
+AC_NAME = "CFEKBET1"
 
 # connection to assetchain
 rpc_connection = tuilib.def_credentials(AC_NAME)
@@ -24,8 +24,8 @@ server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
 
 # pre-creating needed csv files on user side
-visualization_lib.create_prices_csv(rpc_connection, "725")
-visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
+visualization_lib.create_prices_csv(rpc_connection, "300")
+visualization_lib.create_delayed_prices_csv(rpc_connection, "155")
 visualization_lib.create_csv_with_bets(rpc_connection, "open")
 visualization_lib.create_csv_with_bets(rpc_connection, "closed")
 
@@ -128,8 +128,8 @@ def update_graph(selected_dropdown_value, user_dropdown_value):
         dff = df[df['pair'] == user_dropdown_value[:-5]]
         #print(dff)
     else:
-        visualization_lib.create_prices_csv(rpc_connection, "725")
-        visualization_lib.create_delayed_prices_csv(rpc_connection, "580")
+        visualization_lib.create_prices_csv(rpc_connection, "300")
+        visualization_lib.create_delayed_prices_csv(rpc_connection, "155")
         df = pd.read_csv('prices.csv')
         df2 = pd.read_csv('delayed_prices.csv')
         dff = df[df['pair'] == selected_dropdown_value]
