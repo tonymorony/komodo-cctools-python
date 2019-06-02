@@ -28,10 +28,10 @@ def config(filename, section):
             config_params[param[0]] = param[1]
     return config_params
 
-auth = config('dash.ini','auth')
+auth_data = config('dash.ini','auth')
 
 VALID_USERNAME_PASSWORD_PAIRS = [
-    [ auth['user'], auth['pass'] ]
+    [ auth_data['user'], auth_data['pass'] ]
 ]
 
 AC_NAME = "CFEKBET1"
