@@ -16,7 +16,7 @@ pip packages needed:
 
 For prices visualisation you'll also need additonal Dash framework deps:
 
-* `pip3 install dash dash-daq flask pandas`
+* `pip3 install dash dash-daq flask pandas dash-auth==1.2.0`
 
 Starting: 
 
