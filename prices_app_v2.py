@@ -5,6 +5,8 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
+import dash_auth
+import configparser
 
 import flask
 import pandas as pd
@@ -14,6 +16,23 @@ import os, sys
 from lib import tuilib, visualization_lib
 from os import listdir
 from os.path import isfile, join
+
+def config(filename, section):
+    parser = configparser.RawConfigParser()
+    conf_file = (os.path.join(os.getcwd(),filename))
+    parser.read(conf_file)
+    config_params = {}
+    if parser.has_section(section):
+        params = parser.items(section)
+        for param in params:
+            config_params[param[0]] = param[1]
+    return config_params
+
+auth = config('dash.ini','auth')
+
+VALID_USERNAME_PASSWORD_PAIRS = [
+    [ auth['user'], auth['pass'] ]
+]
 
 AC_NAME = "CFEKBET1"
 
@@ -57,6 +76,10 @@ PAGE_SIZE = 15
 
 # application object
 app = dash.Dash(__name__, server=server, static_folder='static')
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
 
 # init configuration, second param allow to make dynamic callbacks
 app.css.config.serve_locally = True
