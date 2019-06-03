@@ -8,9 +8,6 @@ import dash_table
 import dash_auth
 import configparser
 
-import qrcode
-import qrcode.image.svg
-
 import flask
 import pandas as pd
 import time
@@ -19,23 +16,6 @@ import os, sys
 from lib import tuilib, visualization_lib
 from os import listdir
 from os.path import isfile, join
-
-def make_qr(qr_data, img_name='qrcode', method='basic'):
-    if method == 'basic':
-        # Simple factory, just a set of rects.
-        factory = qrcode.image.svg.SvgImage
-    elif method == 'fragment':
-        # Fragment factory (also just a set of rects)
-        factory = qrcode.image.svg.SvgFragmentImage
-    elif method == 'path':
-        # Combined path factory, fixes white space that may occur when zooming
-        factory = qrcode.image.svg.SvgPathImage
-    # Set data to qrcode
-    img = qrcode.make(qr_data, image_factory = factory)
-    # Save svg file somewhere
-    filename = "static/"+img_name+".svg"
-    img.save(filename)
-    return filename
 
 def config(filename, section):
     parser = configparser.RawConfigParser()
@@ -58,8 +38,6 @@ AC_NAME = "CFEKBET1"
 
 # connection to assetchain
 rpc_connection = tuilib.def_credentials(AC_NAME)
-
-account_address = rpc_connection.getaccountaddress('""')
 
 server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
@@ -139,8 +117,6 @@ app.layout = html.Div([
         dcc.Tab(label='Active positions', value='tab-2'),
         # history with closed positions
         dcc.Tab(label='Closed positions (history)', value='tab-3'),
-        # Account deposit / withdraw
-        dcc.Tab(label='Manage Account', value='tab-4'),
         ]),
     html.Div(id='tabs-content'),
 ], className="container")
@@ -243,17 +219,10 @@ def static_file(path):
 def render_content(tab):
     # tab 1 is bets constructor
     if tab == 'tab-1':
-        balance = rpc_connection.getbalance()
-        unconfirmed = rpc_connection.getunconfirmedbalance()
-        if unconfirmed > 0:
-            bal_string = str(balance)+" "+AC_NAME+" ("+str(unconfirmed)+" unconfirmed)"
-        else:
-            bal_string = str(balance)
         # left side of first tab
         return html.Div([
             html.Br(),
-            html.H5('User balance: ' + bal_string),
-            html.H5('Address: ' + account_address),
+            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " " + AC_NAME),
             html.Div(id='output-container-button',
                      children='Enter values and press submit', style={'marginBottom': 5, 'marginTop': 5, 'font-size': '16px'}),
             dcc.Input(
@@ -281,21 +250,14 @@ def render_content(tab):
             ),
             html.Br(),
             html.Button('Open position', id='button', style={'marginBottom': 25})], style={'width': '50%', 'float': 'left'}),\
-                  html.Div([html.Div(id='daemon_output',
+                  html.Div([html.Div(id='daemon_ouptut',
                      children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
     # tab 2 displaying active positions with possibility to add leverage or close it
     elif tab == 'tab-2':
-        balance = rpc_connection.getbalance()
-        unconfirmed = rpc_connection.getunconfirmedbalance()
-        if unconfirmed > 0:
-            bal_string = str(balance)+" "+AC_NAME+" ("+str(unconfirmed)+" unconfirmed)"
-        else:
-            bal_string = str(balance)
         visualization_lib.create_csv_with_bets(rpc_connection, "open")
         df3 = pd.read_csv('betlist.csv')
         return html.Div([
-            html.H5('User balance: ' + bal_string),
-            html.H5('Address: ' + account_address),
+            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " " + AC_NAME),
             dash_table.DataTable(
                 id='table',
                 columns=[{"name": i, "id": i} for i in df3.columns],
@@ -328,7 +290,7 @@ def render_content(tab):
             html.Button('Add funding', id='funding-button'),
             html.Button('Cashout position', id='close-button', style={'marginBottom': 100}),
             html.Div(id='position-closing-output', style={'width': '50%', 'float': 'right'}),
-            html.Div([html.Div(id='daemon_output2',
+            html.Div([html.Div(id='daemon_ouptut2',
                                children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})],
                      style={'width': '50%', 'float': 'right'})
         ])
@@ -357,44 +319,9 @@ def render_content(tab):
                                     }
             )
         ])
-    # tab 4 deposit/withdraw funds
-    elif tab == 'tab-4':
-        #visualization_lib.create_csv_with_accounttx(rpc_connection, "closed")
-        #df4 = pd.read_csv('account_history.csv')
-        balance = rpc_connection.getbalance()
-        unconfirmed = rpc_connection.getunconfirmedbalance()
-        if unconfirmed > 0:
-            bal_string = str(balance)+" "+AC_NAME+" ("+str(unconfirmed)+" unconfirmed)"
-        else:
-            bal_string = str(balance)
-        return html.Div([
-            html.Br(),
-            html.H5('Scan QR Code or copy address to send funds',style={'margin': 'auto'}),
-            html.Img(id='qr_img', src=make_qr(account_address),style={'margin': 'auto'}),
-            html.H5('User balance: ' + bal_string,style={'margin': 'auto'}),
-            html.H5('Address: ' + account_address,style={'margin': 'auto'}),
-            dcc.Input(
-                placeholder='Input withdrawl address',
-                type='text',
-                value='',
-                id='withdraw_address',
-                style={'marginBottom': 10, 'marginTop': 10}
-            ),
-            dcc.Input(
-                placeholder='Input withdrawl amount...',
-                type='text',
-                value='',
-                id='withdraw_amount',
-                style={'marginBottom': 10, 'marginTop': 10}
-            ),
-            html.Br(),
-            html.Button('Withdraw', id='withdraw-button', style={'marginBottom': 25})], style={'width': '50%', 'float': 'left'}),\
-                  html.Div([html.Div(id='daemon_output4',
-                     children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
-
 
 # bet placing button callback
-@app.callback(Output('daemon_output', 'children'), [Input('button', 'n_clicks')],
+@app.callback(Output('daemon_ouptut', 'children'), [Input('button', 'n_clicks')],
               [State('betamount_text', 'value'), State('leverage_text', 'value'), State('synthetic_text', 'value')])
 #TODO: have to add confirmation popup
 def on_click(n_clicks, betamount, leverage, synthetic):
@@ -434,7 +361,7 @@ def update_position_selection(rows,derived_virtual_selected_rows):
         pass
 
 # addfunding button callback
-@app.callback(Output('daemon_output2', 'children'), [Input('funding-button', 'n_clicks')],
+@app.callback(Output('daemon_ouptut2', 'children'), [Input('funding-button', 'n_clicks')],
               [State('active_row_txid', 'children'),State('funding_text', 'value')])
 #TODO: have to add confirmation popup
 def on_click(n_clicks, txid, funding_amount):
@@ -468,26 +395,5 @@ def on_click(n_clicks, txid):
     else:
         pass
 
-# withdraw button callback
-@app.callback(Output('daemon_output4', 'children'), [Input('withdraw-button', 'n_clicks')],
-              [State('withdraw_address', 'value'),State('withdraw_amount', 'value')])
-#TODO: have to add confirmation popup
-def on_click(n_clicks, withdraw_address, withdraw_amount):
-    if n_clicks > 0:
-        if rpc_connection.validateaddress(withdraw_address)['isvalid'] is True:
-            if withdraw_amount.isnumeric() and float(withdraw_amount) > 0.001 and float(withdraw_amount) < rpc_connection.getbalance():
-                try:
-                    daemon_output = rpc_connection.sendtoaddress(withdraw_address, str(withdraw_amount), '""', '""', True)
-                    return "Transaction broadcasted: " + str(daemon_output)
-                except KeyError:
-                    return str(daemon_output) + "\n transaction not broadcasted, please check error above"
-                    pass
-            else:
-                return "Invalid Amount! Try again?"
-        else:
-            return "Invalid Address! Try again?"
-    else:
-        pass
-    print(daemon_output)
 if __name__ == '__main__':
     app.run_server(host = '0.0.0.0', port=777, debug=True)
