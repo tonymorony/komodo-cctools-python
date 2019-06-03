@@ -39,6 +39,8 @@ AC_NAME = "CFEKBET1"
 # connection to assetchain
 rpc_connection = tuilib.def_credentials(AC_NAME)
 
+account_address = rpc_connection.getaccountaddress('""')
+
 server = flask.Flask('app')
 server.secret_key = os.environ.get('secret_key', 'secret')
 
@@ -219,10 +221,17 @@ def static_file(path):
 def render_content(tab):
     # tab 1 is bets constructor
     if tab == 'tab-1':
+        balance = rpc_connection.getbalance()
+        unconfirmed = rpc_connection.getunconfirmedbalance()
+        if unconfirmed > 0:
+            bal_string = str(balance)+" "+AC_NAME+" ("+str(unconfirmed)+" unconfirmed)"
+        else:
+            bal_string = str(balance)
         # left side of first tab
         return html.Div([
             html.Br(),
-            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " " + AC_NAME),
+            html.H5('User balance: ' + bal_string),
+            html.H5('Address: ' + account_address),
             html.Div(id='output-container-button',
                      children='Enter values and press submit', style={'marginBottom': 5, 'marginTop': 5, 'font-size': '16px'}),
             dcc.Input(
@@ -254,10 +263,17 @@ def render_content(tab):
                      children='Daemon output print', style={'marginBottom': 10, 'marginTop': 15})], style={'width': '50%', 'float': 'right'})
     # tab 2 displaying active positions with possibility to add leverage or close it
     elif tab == 'tab-2':
+        balance = rpc_connection.getbalance()
+        unconfirmed = rpc_connection.getunconfirmedbalance()
+        if unconfirmed > 0:
+            bal_string = str(balance)+" "+AC_NAME+" ("+str(unconfirmed)+" unconfirmed)"
+        else:
+            bal_string = str(balance)
         visualization_lib.create_csv_with_bets(rpc_connection, "open")
         df3 = pd.read_csv('betlist.csv')
         return html.Div([
-            html.H5('User balance: ' + str(rpc_connection.getinfo()['balance']) + " " + AC_NAME),
+            html.H5('User balance: ' + bal_string),
+            html.H5('Address: ' + account_address),
             dash_table.DataTable(
                 id='table',
                 columns=[{"name": i, "id": i} for i in df3.columns],
