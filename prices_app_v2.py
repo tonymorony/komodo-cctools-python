@@ -15,7 +15,7 @@ from lib import tuilib, visualization_lib
 from os import listdir
 from os.path import isfile, join
 
-AC_NAME = "BETSTEST"
+AC_NAME = "CFEKBET1"
 
 # connection to assetchain
 rpc_connection = tuilib.def_credentials(AC_NAME)
