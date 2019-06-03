@@ -375,14 +375,14 @@ def render_content(tab):
             html.H5('User balance: ' + bal_string,style={'margin': 'auto'}),
             html.H5('Address: ' + account_address,style={'margin': 'auto'}),
             dcc.Input(
-                placeholder='Input withdrawl address',
+                placeholder='Input withdrawal address',
                 type='text',
                 value='',
                 id='withdraw_address',
                 style={'marginBottom': 10, 'marginTop': 10}
             ),
             dcc.Input(
-                placeholder='Input withdrawl amount...',
+                placeholder='Input withdrawal amount...',
                 type='text',
                 value='',
                 id='withdraw_amount',
