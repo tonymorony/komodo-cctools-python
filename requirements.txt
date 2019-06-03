@@ -9,7 +9,7 @@ wheel==0.32.3
 dash==0.43.0
 dash-auth==1.2.0
 dash-core-components==0.48.0
-dash-daq==0.1.0
+dash-daq==0.1.5
 dash-html-components==0.16.0
 dash-renderer==0.24.0
 dash-table==3.7.0

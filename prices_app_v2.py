@@ -122,7 +122,7 @@ app.layout = html.Div([
     dcc.Dropdown(
         id='user-dropdown',
         options=user_args,
-        value=user_args[0]),
+        value=user_args[0]["value"]),
     dcc.Input(
                 placeholder='Input synthetic for custom graph...',
                 type='text',
@@ -151,7 +151,7 @@ app.layout = html.Div([
 @app.callback(Output('user-dropdown', 'options'), [Input('graph_build_button', 'n_clicks')],
               [State('graph_synthetic', 'value')])
 def create_custom_price(n_clicks, synthetic):
-    if n_clicks > 0:
+    if n_clicks is not None and n_clicks > 0:
         synthetic_elems = synthetic.split(",")
         synthetic_elems = list(map(str.strip, synthetic_elems))
         visualization_lib.make_csv_for_stack(rpc_connection, synthetic_elems, synthetic.strip(), "725")
@@ -491,4 +491,4 @@ def on_click(n_clicks, withdraw_address, withdraw_amount):
         pass
     print(daemon_output)
 if __name__ == '__main__':
-    app.run_server(host = '0.0.0.0', port=777, debug=True)
+    app.run_server(host = '0.0.0.0', port=777)
