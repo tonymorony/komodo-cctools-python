@@ -21,7 +21,7 @@ for i in range(nspv_clients_to_start):
 for i in range(nspv_clients_to_start):
     subprocess.call(['./komodod', '-ac_name=ILN', '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                      '-rpcport=' + str(7000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                     '-ac_supply=10000000000', '-ac_cc=2', '-nSPV=1', '-addnode=5.9.102.210', '-listen=0', '-daemon'])
+                     '-ac_supply=10000000000', '-ac_cc=2', '-nSPV=1', '-connect=5.9.102.210', '-listen=0', '-daemon'])
 
 time.sleep(2)
 
