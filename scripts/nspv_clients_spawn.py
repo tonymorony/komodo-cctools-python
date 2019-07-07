@@ -32,5 +32,8 @@ for i in range(nspv_clients_to_start):
 
 while True:
     for i in range(nspv_clients_to_start):
-        nspv_getinfo_output = globals()['proxy_%s' % i].nspv_getinfo()
-        print(nspv_getinfo_output)
+        try:
+            nspv_getinfo_output = globals()['proxy_%s' % i].nspv_getinfo()
+            print(nspv_getinfo_output)
+        except Exception as e:
+            print(e)
