@@ -7,6 +7,7 @@ from slickrpc import Proxy
 # init params
 nspv_clients_to_start = 500
 ac_name = 'ILN'
+node = '192.168.0.106'
 
 # pre-creating separate folders
 for i in range(nspv_clients_to_start):
@@ -17,18 +18,19 @@ for i in range(nspv_clients_to_start):
         conf.write("rpcpassword=test" + '\n')
         conf.write("rpcport=" + str(7000 + i) + '\n')
 
-#start numnodes daemons, changing folder name and port
+# start numnodes daemons, changing folder name and port
 for i in range(nspv_clients_to_start):
-    subprocess.call(['./komodod', '-ac_name=ILN', '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
+    subprocess.call(['./komodod', '-ac_name=' + ac_name,
+                     '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                      '-rpcport=' + str(7000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                     '-ac_supply=10000000000', '-ac_cc=2', '-nSPV=1', '-connect=5.9.102.210', '-listen=0', '-daemon'])
+                     '-ac_supply=10000000000', '-ac_cc=2', '-nSPV=1', '-connect=' + node, '-listen=0', '-daemon'])
 
 time.sleep(2)
 
-#creating rpc proxies for all nodes
+# creating rpc proxies for all nodes
 for i in range(nspv_clients_to_start):
     rpcport = 7000 + i
-    globals()['proxy_%s' % i] = Proxy("http://%s:%s@127.0.0.1:%d"%("test", "test", int(rpcport)))
+    globals()['proxy_%s' % i] = Proxy("http://%s:%s@127.0.0.1:%d" % ("test", "test", int(rpcport)))
 
 while True:
     for i in range(nspv_clients_to_start):
