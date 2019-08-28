@@ -12,7 +12,6 @@ import requests
 # init params
 nspv_clients_to_start = 100
 ac_name = 'ILN'
-node = '192.168.0.106'
 userpass = 'uerpass'
 
 
@@ -27,13 +26,15 @@ def nspv_getpeerinfo(node_ip, user_pass):
 def main():
     # start numnodes libnspv daemons, changing port
     for i in range(nspv_clients_to_start):
-        subprocess.call(['./nspv', ac_name, '-p', str(7000 + i)])
+        command = ['./nspv', ac_name, '-p', str(7000 + i)]
+        # subprocess.call(['./nspv', ac_name, '-p', str(7000 + i)])
+        subprocess.Popen(command, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 
     time.sleep(2)
 
     while True:
         for i in range(nspv_clients_to_start):
-            nodeip = node + str(7000 + i)
+            nodeip = 'http://127.0.0.1' + ":" + str(7000 + i)
             try:
                 nspv_getinfo_output = nspv_getpeerinfo(nodeip, userpass)
                 print(nspv_getinfo_output)
