@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+from time import gmtime, strftime
+from lib import tuilib
+
+rpc_connection = tuilib.def_credentials("LABS")
+address = "RAC25VsXmwjgyvkw3yaPYrgfsSXKxD51WE"
+time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+balance = rpc_connection.getbalance()
+
+if int(balance) > 10:
+    txid = rpc_connection.sendtoaddress(address, "10")
+    print("Sent 10 LABS. txid:" + txid + " Current time:" + time)
+else:
+   print("Current balance: " + str(balance) + " Time: " + time)
