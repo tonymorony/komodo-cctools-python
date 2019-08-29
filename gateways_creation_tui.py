@@ -20,7 +20,7 @@ menuItems = [
     {"Check mempool": tuilib.print_mempool},
     {"Create token": tuilib.token_create_tui},
     {"Create oracle": tuilib.oracle_create_tui},
-    {"Create fund": tuilib.oracle_fund_tui},
+    {"Fund Oracle": tuilib.oracle_fund_tui},
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
     {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Bind Gateway": tuilib.gateways_bind_tui},
