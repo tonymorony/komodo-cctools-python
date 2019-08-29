@@ -18,7 +18,7 @@ menuItems = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
     {"Create oracle": tuilib.oracle_create_tui},
-    {"Create fund": tuilib.oracle_fund_tui},
+    {"Fund oracle": tuilib.oracle_fund_tui},
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
     {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Upload file to oracle": tuilib.convert_file_oracle_D},
