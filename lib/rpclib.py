@@ -73,6 +73,9 @@ def oracles_create(rpc_connection, name, description, data_type):
     oracles_hex = rpc_connection.oraclescreate(name, description, data_type)
     return oracles_hex
 
+def oracles_fund(rpc_connection, oracle_id):
+    oracles_fund_hex = rpc_connection.oraclesfund(oracle_id)
+    return oracles_fund_hex
 
 def oracles_register(rpc_connection, oracle_id, data_fee):
     oracles_register_hex = rpc_connection.oraclesregister(oracle_id, data_fee)

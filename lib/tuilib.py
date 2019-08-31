@@ -189,6 +189,41 @@ def oracle_create_tui(rpc_connection):
                 input("Press [Enter] to continue...")
                 break
 
+def oracle_fund_tui(rpc_connection):
+    try:
+        print(colorize("Oracles created from this instance by TUI: \n", "blue"))
+        with open("oracles_list", "r") as file:
+            for oracle in file:
+                print(oracle)
+        print(colorize('_' * 65, "blue"))
+        print("\n")
+    except FileNotFoundError:
+        print("Seems like a no oracles created from this instance yet\n")
+        pass
+    while True:
+        try:
+            oracle_id = input("Input txid of oracle you want to register to: ")
+        except KeyboardInterrupt:
+            break   
+        oracle_fund_hex = rpclib.oracles_fund(rpc_connection, oracle_id)
+        if oracle_fund_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "pink"))
+            print(oracle_fund_hex)
+            print("\n")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                oracle_fund_txid = rpclib.sendrawtransaction(rpc_connection, oracle_fund_hex['hex'])
+            except KeyError:
+                print(oracle_fund_hex)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                print(colorize("Oracle fund transaction broadcasted: " + oracle_fund_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
 
 def oracle_register_tui(rpc_connection):
     #TODO: have an idea since blackjoker new RPC call
