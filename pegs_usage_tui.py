@@ -4,14 +4,17 @@ from lib import rpclib, tuilib
 import os, time
 
 header = "\
- _____       _                               _____  _____ \n\
-|  __ \     | |                             /  __ \/  __ \\\n\
-| |  \/ __ _| |_ _____      ____ _ _   _ ___| /  \/| /  \/\n\
-| | __ / _` | __/ _ \ \ /\ / / _` | | | / __| |    | |    \n\
-| |_\ \ (_| | ||  __/\ V  V / (_| | |_| \__ \ \__/\| \__/\\\n\
- \____/\__,_|\__\___| \_/\_/ \__,_|\__, |___/\____/ \____/\n\
-                                    __/ |                 \n\
-                                   |___/                  \n"
+______                 _____  _____ \n\
+| ___ \               /  __ \/  __ \\\n\
+| |_/ /___  _____  ___| /  \/| /  \/\n\
+|  __// _ \|  _  |/ __| |    | |    \n\
+| |  |  __/| |_| |\__ \ \__/\| \__/\\\n\
+\_|   \___|\___  |/___/\____/ \____/\n\
+             __/ |                 \n\
+            |___/                 \n"
+
+       
+       
 
 menuItems = [
     {"Check connection to assetchain": tuilib.getinfo_tui},
@@ -19,10 +22,9 @@ menuItems = [
     {"Check connection to KMD": tuilib.getinfo_tui},
     {"Connect to KMD daemon": tuilib.rpc_kmd_connection_tui},
     {"View assetchain Gateway Info": tuilib.gateway_info_tui},
-    {"Send KMD gateway deposit transaction": tuilib.gateways_send_kmd},
-    {"Execute gateways deposit": tuilib.gateways_deposit_tui},
-    {"Execute gateways claim": tuilib.gateways_claim_tui},
-    {"Execute gateways withdrawal": tuilib.gateways_withdrawal_tui},
+    {"Prepare KMD Gateway deposit transaction": tuilib.gateways_send_kmd},
+    {"Execute Gateways deposit": tuilib.gateways_deposit_tui},
+    {"Execute Pegs funding": tuilib.gateways_withdrawal_tui},
     {"Exit": exit}
 ]
 
@@ -30,7 +32,7 @@ def main():
     while True:
         os.system('clear')
         print(tuilib.colorize(header, 'pink'))
-        print(tuilib.colorize('CLI version 0.2\n', 'green'))
+        print(tuilib.colorize('CLI version 0.1 by Thor Mennet\n', 'green'))
         for item in menuItems:
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
         choice = input(">> ")

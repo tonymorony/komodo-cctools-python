@@ -185,6 +185,19 @@ def oracle_create_tui(rpc_connection):
                 file = open("oracles_list", "a")
                 file.writelines(oracle_txid + "\n")
                 file.close()
+                print(colorize("Confirming oracle creation txid\n", "blue"))
+                check_if_tx_in_mempool(rpc_connection, oracle_txid)
+                try:
+                    print(colorize("Initializing with oraclesfund\n", "blue"))
+                    oraclesfund_hex = rpclib.oracles_fund(rpc_connection, oracle_txid)
+                except KeyError:
+                    print(oracle_txid)
+                    print("Error")
+                    input("Press [Enter] to continue...")
+                    break
+                finally:
+                    oraclesfund_txid = rpclib.sendrawtransaction(rpc_connection, oraclesfund_hex['hex'])
+                    check_if_tx_in_mempool(rpc_connection, oraclesfund_txid)
                 print(colorize("Entry added to oracles_list file!\n", "green"))
                 input("Press [Enter] to continue...")
                 break
@@ -1997,4 +2010,46 @@ def check_if_tx_in_mempool(rpc_connection, txid):
             time.sleep(5)
         else:
             print(colorize("Transaction is mined", "green"))
+            break
+
+def gateway_info_tui(rpc_connection):
+    while True:
+        print(colorize("\nGateways created on this assetchain: \n", "blue"))
+        gateways_list = rpc_connection.gatewayslist()
+        i = 1
+        for gateway in gateways_list:
+            print("["+str(i)+"] "+gateway)
+            i += 1
+        print(colorize('_' * 65, "blue"))
+        print("\n")
+        if len(gateways_list) == 0:
+            print("Seems like a no gateways created on this assetchain yet!\n")
+            input("Press [Enter] to continue...")
+            break
+        while True:
+            gw_selected = input("Select Gateway Bind TXID: ")
+            try:
+                bind_txid = gateways_list[int(gw_selected)-1]
+                break
+            except:
+                print("Invalid selection, must be number between 1 and "+str(len(gateways_list)))
+                pass
+        try:    
+            info = rpc_connection.gatewaysinfo(bind_txid)
+            print(colorize("Gateways Bind TXID         ["+str(bind_txid)+"]", 'green'))
+            print(colorize("Gateways Oracle TXID       ["+str(info['oracletxid'])+"]", 'green'))
+            print(colorize("Gateways Token TXID        ["+str(info['tokenid'])+"]", 'green'))
+            print(colorize("Gateways Coin              ["+str(info['coin'])+"]", 'green'))
+            print(colorize("Gateways Pubkeys           ["+str(info['pubkeys'])+"]", 'green'))
+            print(colorize("Gateways Deposit Address   ["+str(info['deposit'])+"]", 'green'))
+            print(colorize("Gateways Total Supply      ["+str(info['totalsupply'])+"]", 'green'))
+            print(colorize("Gateways Remaining Supply  ["+str(info['remaining'])+"]", 'green'))
+            print(colorize("Gateways Issued Supply     ["+str(info['issued'])+"]", 'green'))
+            input("Press [Enter] to continue...")
+            break
+        except Exception as e:
+            print(info)
+            print(e)
+            print("Something went wrong. Please check your input")
+            input("Press [Enter] to continue...")
             break
