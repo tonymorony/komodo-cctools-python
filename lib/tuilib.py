@@ -512,7 +512,11 @@ def operationstatus_to_txid(rpc_connection, zstatus):
     operation_json = rpc_connection.z_getoperationstatus(sending_block)
     operation_dump = json.dumps(operation_json)
     operation_dict = json.loads(operation_dump)[0]
-    txid = operation_dict['result']['txid']
+    try:
+        txid = operation_dict['result']['txid']
+    except Exception as e:
+        print(e)
+        print(operation_dict)
     return txid
 
 

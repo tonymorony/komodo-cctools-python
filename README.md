@@ -54,7 +54,7 @@ Have files uploader/downloader functionality - also there is a AWS branch for AW
 
 `python3 gateways_usage_tui.py`
 
-At the moment raw version of manual gateway how-to guide can be found here: https://docs.komodoplatform.com/cc/contracts/gateways/scenarios/tutorial.html I advice to read it before you start use this tool to understand the flow.
+At the moment raw version of manual gateway how-to guide can be found here: https://docs.komodoplatform.com/basic-docs/antara/antara-tutorials/gateways-module-tutorial.html#tutorial I advice to read it before you start use this tool to understand the flow.
 
 # TUI for MarmaraCC
 
