@@ -117,13 +117,13 @@ def gateways_bind(rpc_connection, *args):
 
 def gateways_deposit(rpc_connection, gateway_id, height, coin_name,\
                      coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount):
-    gateways_deposit_hex = rpc_connection.gatewaysdeposit(gateway_id, height, coin_name,\
-                     coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
+    gateways_deposit_hex = rpc_connection.gatewaysdeposit(gateway_id, str(height), coin_name,\
+                     coin_txid, str(claim_vout), deposit_hex, proof, dest_pub, str(amount))
     return gateways_deposit_hex
 
 
 def gateways_claim(rpc_connection, gateway_id, coin_name, deposit_txid, dest_pub, amount):
-    gateways_claim_hex = rpc_connection.gatewaysclaim(gateway_id, coin_name, deposit_txid, dest_pub, amount)
+    gateways_claim_hex = rpc_connection.gatewaysclaim(gateway_id, coin_name, deposit_txid, dest_pub, str(amount))
     return gateways_claim_hex
 
 

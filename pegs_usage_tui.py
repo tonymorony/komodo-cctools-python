@@ -22,9 +22,14 @@ menuItems = [
     {"Check connection to KMD": tuilib.getinfo_tui},
     {"Connect to KMD daemon": tuilib.rpc_kmd_connection_tui},
     {"View assetchain Gateway Info": tuilib.gateway_info_tui},
-    {"Prepare KMD Gateway deposit transaction": tuilib.gateways_send_kmd},
-    {"Execute Gateways deposit": tuilib.gateways_deposit_tui},
-    {"Execute Pegs funding": tuilib.gateways_withdrawal_tui},
+    {"Deposit KMD in Gateway and claim Tokens": tuilib.gateways_deposit_claim_tokens},
+    {"Execute Pegs funding": tuilib.pegs_fund_tui},
+    {"Execute Pegs get": tuilib.pegs_get_tui},
+    {"Check Pegs info": tuilib.pegsinfo_tui},
+    {"Check Pegs account history": tuilib.pegs_accounthistory_tui},
+    {"Check Pegs account info": tuilib.pegs_accountinfo_tui},
+    {"Check Pegs addresses": tuilib.pegs_addresses_tui},
+    {"Check Pegs worst accounts": tuilib.pegs_worstaccounts_tui},
     {"Exit": exit}
 ]
 
@@ -54,17 +59,7 @@ def main():
                         print("Please connect to KMD daemon first!")
                         input("Press [Enter] to continue...")
                         break
-            elif list(menuItems[int(choice)].keys())[0] == "Send KMD gateway deposit transaction":
-                while True:
-                    try:
-                        list(menuItems[int(choice)].values())[0](rpc_connection_kmd)
-                        break
-                    except Exception as e:
-                        print(e)
-                        print("Please connect to KMD daemon first!")
-                        input("Press [Enter] to continue...")
-                        break
-            elif list(menuItems[int(choice)].keys())[0] == "Execute gateways deposit":
+            elif list(menuItems[int(choice)].keys())[0] == "Deposit KMD in Gateway and claim Tokens":
                 while True:
                     try:
                         list(menuItems[int(choice)].values())[0](rpc_connection, rpc_connection_kmd)
