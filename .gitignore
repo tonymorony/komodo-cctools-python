@@ -1,3 +1,5 @@
 connection.json
+kmd_connection.json
 oracles_list
+deposits_list
 __pycache__/
