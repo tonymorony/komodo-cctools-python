@@ -185,6 +185,19 @@ def oracle_create_tui(rpc_connection):
                 file = open("oracles_list", "a")
                 file.writelines(oracle_txid + "\n")
                 file.close()
+                print(colorize("Confirming oracle creation txid\n", "blue"))
+                check_if_tx_in_mempool(rpc_connection, oracle_txid)
+                try:
+                    print(colorize("Initializing with oraclesfund\n", "blue"))
+                    oraclesfund_hex = rpclib.oracles_fund(rpc_connection, oracle_txid)
+                except KeyError:
+                    print(oracle_txid)
+                    print("Error")
+                    input("Press [Enter] to continue...")
+                    break
+                finally:
+                    oraclesfund_txid = rpclib.sendrawtransaction(rpc_connection, oraclesfund_hex['hex'])
+                    check_if_tx_in_mempool(rpc_connection, oraclesfund_txid)
                 print(colorize("Entry added to oracles_list file!\n", "green"))
                 input("Press [Enter] to continue...")
                 break
@@ -476,67 +489,99 @@ def operationstatus_to_txid(rpc_connection, zstatus):
     operation_json = rpc_connection.z_getoperationstatus(sending_block)
     operation_dump = json.dumps(operation_json)
     operation_dict = json.loads(operation_dump)[0]
-    try:
-        txid = operation_dict['result']['txid']
-    except Exception as e:
-        print(e)
-        print(operation_dict)
+    txid = operation_dict['result']['txid']
     return txid
 
 
-def gateways_send_kmd(rpc_connection):
-     # TODO: have to handle CTRL+C on text input
-     print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "pink"))
-     print("Your addresses with balances: ")
-     list_address_groupings = rpc_connection.listaddressgroupings()
-     for address in list_address_groupings:
-         print(str(address) + "\n")
-     sendaddress = input("Input address from which you transfer KMD: ")
-     recepient1 = input("Input address which belongs to pubkey which will receive tokens: ")
-     amount1 = 0.0001
-     recepient2 = input("Input gateway deposit address: ")
-     file = open("deposits_list", "a")
-     #have to show here deposit addresses for gateways created by user
-     amount2 = input("Input how many KMD you want to deposit on this gateway: ")
-     operation = z_sendmany_twoaddresses(rpc_connection, sendaddress, recepient1, amount1, recepient2, amount2)
-     print("Operation proceed! " + str(operation) + " Let's wait 2 seconds to get txid")
-     # trying to avoid pending status of operation
-     time.sleep(2)
-     txid = operationstatus_to_txid(rpc_connection, operation)
-     file.writelines(txid + "\n")
-     file.close()
-     print(colorize("KMD Transaction ID: " + str(txid) + " Entry added to deposits_list file", "green"))
-     input("Press [Enter] to continue...")
-
-
-def gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo):
+def gateways_send_kmd(rpc_connection, gw_deposit_addr=''):
+    # TODO: have to handle CTRL+C on text input
+    print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "pink"))
+    print("Your addresses with balances: ")
+    sendaddress = select_address(rpc_connection)
+    amount1 = 0.0001
+    if gw_deposit_addr == '':
+       gw_deposit_addr = input("Input gateway deposit address: ")
     while True:
-        bind_txid = input("Input your gateway bind txid: ")
-        coin_name = input("Input your external coin ticker (e.g. KMD): ")
-        coin_txid = input("Input your deposit txid: ")
-        dest_pub = input("Input pubkey which claim deposit: ")
-        amount = input("Input amount of your deposit: ")
-        height = rpc_connection_komodo.getrawtransaction(coin_txid, 1)["height"]
-        deposit_hex = rpc_connection_komodo.getrawtransaction(coin_txid, 1)["hex"]
+        gw_recipient_addr = input("Input Gateway recipient address (linked to pubkey which will receive tokens): ")
+        if gw_deposit_addr == gw_recipient_addr:
+            print("Gateway recipient address must be different to Gateway address! Try again.")
+        else:
+            break
+    file = open("deposits_list", "a")
+    #have to show here deposit addresses for gateways created by user
+    gw_deposit_amount = float(input("Input how many KMD you want to deposit on this gateway: "))
+    operation = z_sendmany_twoaddresses(rpc_connection, sendaddress, gw_recipient_addr,
+                                     amount1, gw_deposit_addr, gw_deposit_amount)
+    print("Operation proceed! " + str(operation) + " Let's wait 2 seconds to get txid")
+    # trying to avoid pending status of operation
+    time.sleep(2)
+    gw_sendmany_txid = operationstatus_to_txid(rpc_connection, operation)
+    file.writelines(gw_sendmany_txid + "\n")
+    file.close()
+    check_if_tx_in_mempool(rpc_connection, gw_sendmany_txid)
+    print(colorize("KMD Transaction ID: " + str(gw_sendmany_txid) + " Entry added to deposits_list file", "green"))
+    input("Press [Enter] to continue...")
+    return gw_sendmany_txid, gw_recipient_addr, gw_deposit_amount
+
+
+def gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo,
+                        bind_txid='', coin_name='', coin_txid='', amount='',
+                        recipient_addr=''):
+    while True:
+        if bind_txid == '':
+            bind_txid = input("Input your gateway bind txid: ")
+        if coin_name == '':
+            coin_name = input("Input your external coin ticker (e.g. KMD): ")
+        if coin_txid == '':
+            coin_txid = input("Input your deposit txid: ")
+        if recipient_addr == '':
+            dest_pub = input("Input pubkey of gateways deposit recipient address: ")
+        else:
+            dest_pub = input("Input pubkey of gateways deposit recipient address ("+recipient_addr+"): ")
+        if amount == '':
+            amount = input("Input amount of your deposit: ")
+        raw_tx_info = rpc_connection_komodo.getrawtransaction(coin_txid, 1)
+        height = raw_tx_info["height"]
+        last_ntx_height = raw_tx_info['last_notarized_height']
+        while last_ntx_height < height:
+            print("Waiting 60 sec for deposit txid to be notarized...")
+            print("Deposit txid height ["+str(height)+"] vs last notarization height ["+str(last_ntx_height)+"]")
+            time.sleep(60)
+            raw_tx_info = rpc_connection_komodo.getrawtransaction(coin_txid, 1)
+            height = raw_tx_info["height"]
+            last_ntx_height = raw_tx_info['last_notarized_height']
+        deposit_hex = raw_tx_info["hex"]
         claim_vout = "0"
         proof_sending_block = "[\"{}\"]".format(coin_txid)
         proof = rpc_connection_komodo.gettxoutproof(json.loads(proof_sending_block))
-        deposit_hex = rpclib.gateways_deposit(rpc_connection_assetchain, bind_txid, str(height), coin_name, \
+        deposit_hex = rpclib.gateways_deposit(rpc_connection_assetchain, bind_txid, height, coin_name, \
                          coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
-        print(deposit_hex)
         deposit_txid = rpclib.sendrawtransaction(rpc_connection_assetchain, deposit_hex["hex"])
+        check_if_tx_in_mempool(rpc_connection_assetchain, deposit_txid)
         print("Done! Gateways deposit txid is: " + deposit_txid + " Please not forget to claim your deposit!")
         input("Press [Enter] to continue...")
-        break
-
-
-def gateways_claim_tui(rpc_connection):
+        return deposit_txid, dest_pub
+        
+def gateways_claim_tui(rpc_connection, bind_txid='', coin_name='', deposit_txid='',
+                       dest_pub='', amount=''):
     while True:
-        bind_txid = input("Input your gateway bind txid: ")
-        coin_name = input("Input your external coin ticker (e.g. KMD): ")
-        deposit_txid = input("Input your gatewaysdeposit txid: ")
-        dest_pub = input("Input pubkey which claim deposit: ")
-        amount = input("Input amount of your deposit: ")
+        if bind_txid == '':
+            bind_txid = input("Input your gateway bind txid: ")
+        if coin_name == '':
+            coin_name = input("Input your external coin ticker (e.g. KMD): ")
+        if deposit_txid == '':
+            deposit_txid = input("Input your gateways deposit txid: ")
+        if dest_pub == '':
+            dest_pub = input("Input pubkey which claim deposit: ")
+        ac_info = rpc_connection.getinfo()
+        if dest_pub != ac_info['pubkey']:
+            print("Error: Destination pubkey must be used to launch daemon!")
+            print("Destination pubkey: "+dest_pub)
+            print("Daemon pubkey: "+ac_info['pubkey'])
+            input("Press [Enter] to continue...")
+            break
+        if amount == '':
+            amount = input("Input amount of your deposit: ")
         claim_hex = rpclib.gateways_claim(rpc_connection, bind_txid, coin_name, deposit_txid, dest_pub, amount)
         try:
             claim_txid = rpclib.sendrawtransaction(rpc_connection, claim_hex["hex"])
@@ -546,8 +591,10 @@ def gateways_claim_tui(rpc_connection):
             input("Press [Enter] to continue...")
             break
         else:
+            check_if_tx_in_mempool(rpc_connection, claim_txid)
             print("Succesfully claimed! Claim transaction id: " + claim_txid)
             input("Press [Enter] to continue...")
+            return claim_txid
             break
 
 
@@ -2002,3 +2049,315 @@ def check_if_tx_in_mempool(rpc_connection, txid):
         else:
             print(colorize("Transaction is mined", "green"))
             break
+
+def gateway_info_tui(rpc_connection, gw_index=''):
+    if gw_index == '':
+        while True:
+            print(colorize("\nGateways created on this assetchain: \n", "blue"))
+            gateways_list = rpc_connection.gatewayslist()
+            if len(gateways_list) == 0:
+                print("Seems like a no gateways created on this assetchain yet!\n")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                i = 1
+                for gateway in gateways_list:
+                    print("["+str(i)+"] "+gateway)
+                    i += 1
+                print(colorize('_' * 65, "blue"))
+                print("\n")
+                gw_selected = input("Select Gateway Bind TXID: ")
+                gw_index = int(gw_selected)-1
+                try:
+                    bind_txid = gateways_list[gw_index]
+                    break
+                except:
+                    print("Invalid selection, must be number between 1 and "+str(len(gateways_list)))
+                    pass
+    else:
+        while True:
+            try:
+                bind_txid = gateways_list[gw_index]
+                break
+            except:
+                print("Invalid gateway index, select manually...")
+                gateway_info_tui(rpc_connection)
+                pass
+    try:    
+        info = rpc_connection.gatewaysinfo(bind_txid)
+        print(colorize("Gateways Bind TXID         ["+str(bind_txid)+"]", 'green'))
+        print(colorize("Gateways Oracle TXID       ["+str(info['oracletxid'])+"]", 'green'))
+        print(colorize("Gateways Token TXID        ["+str(info['tokenid'])+"]", 'green'))
+        print(colorize("Gateways Coin              ["+str(info['coin'])+"]", 'green'))
+        print(colorize("Gateways Pubkeys           ["+str(info['pubkeys'])+"]", 'green'))
+        print(colorize("Gateways Deposit Address   ["+str(info['deposit'])+"]", 'green'))
+        print(colorize("Gateways Total Supply      ["+str(info['totalsupply'])+"]", 'green'))
+        print(colorize("Gateways Remaining Supply  ["+str(info['remaining'])+"]", 'green'))
+        print(colorize("Gateways Issued Supply     ["+str(info['issued'])+"]", 'green'))
+        input("Press [Enter] to continue...")
+        return gw_index
+    except Exception as e:
+        print(info)
+        print(e)
+        print("Something went wrong. Please check your input")
+        input("Press [Enter] to continue...")
+
+def gateways_deposit_claim_tokens(rpc_connection_assetchain, rpc_connection_komodo):
+    selected_gateway = gateway_info_tui(rpc_connection_assetchain)
+    gateways_list = rpc_connection_assetchain.gatewayslist()
+    bind_txid = gateways_list[selected_gateway]
+    gw_info = rpc_connection_assetchain.gatewaysinfo(bind_txid)
+    gw_sendmany = gateways_send_kmd(rpc_connection_komodo, gw_info['deposit'])
+    gw_sendmany_txid = gw_sendmany[0]
+    gw_recipient_addr = gw_sendmany[1]
+    gw_deposit_amount = gw_sendmany[2]
+    deposit_info = gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo,
+                        bind_txid, gw_info['coin'], gw_sendmany_txid, gw_deposit_amount,
+                        gw_recipient_addr)
+    deposit_txid = deposit_info[0]
+    dest_pub = deposit_info[1]
+    claim_txid = gateways_claim_tui(rpc_connection_assetchain, bind_txid, gw_info['coin'],
+                 deposit_txid, dest_pub, gw_deposit_amount)
+    tokenbalance = rpc_connection_assetchain.tokenbalance(gw_info['tokenid'])
+    print("Gateway transfer complete!")
+    print(colorize("Deposit TXID         ["+str(bind_txid)+"]", 'green'))
+    print(colorize("Claim TXID           ["+str(bind_txid)+"]", 'green'))
+    print(colorize("Token Balance        ["+str(bind_txid)+"]", 'green'))
+
+
+def pegs_fund_tui(rpc_connection, token_txid, amount):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            token_txid = select_tokenid(rpc_connection)
+            tokenbalance = rpc_connection.tokenbalance(token_txid)
+            amount = int(input("Set pegs funding amount ("+str(tokenbalance)+" available): "))
+        except KeyboardInterrupt:
+            break
+        else:
+            fund_hex = rpclib.pegs_fund(rpc_connection, pegs_txid, token_txid, amount)
+        if fund_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "pink"))
+            print(fund_hex)
+            print("\n")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                pegsfund_txid = rpclib.sendrawtransaction(rpc_connection,
+                                                       fund_hex['hex'])
+            except KeyError:
+                print(pegsfund_txid)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            finally:
+                print(colorize("Pegs Fund transaction broadcasted: " + pegsfund_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+
+
+def pegs_get_tui(rpc_connection, pegs_txid, token_txid, amount):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            token_txid = select_tokenid(rpc_connection)
+            tokenbalance = rpc_connection.tokenbalance(token_txid)
+            amount = input("Set pegs get amount: ")
+        except KeyboardInterrupt:
+            break
+        else:
+            pegsget_hex = rpclib.pegs_fund(rpc_connection, pegs_txid, token_txid, amount)
+        if fund_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "pink"))
+            print(pegsget_hex)
+            print("\n")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                pegsget_txid = rpclib.sendrawtransaction(rpc_connection,
+                                                       pegsget_hex['hex'])
+            except KeyError:
+                print(pegsget_hex)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            finally:
+                print(colorize("Pegs Get transaction broadcasted: " +pegsget_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+
+# pegs_txid = 5ccdff0d29f2f47fb1e349c1ff9ae17977a58763abacf693cd27e98b38fad3f3
+def pegsinfo_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            info = rpc_connection.pegsinfo(pegs_txid)
+            if info['result'] == "success":
+                if len(info['info']) > 0:
+                    for item in info['info']:
+                        print("Token: "+item['token'])
+                        print("Total deposit: "+str(item['total deposit']))
+                        print("Total debt: "+str(item['total debt']))
+                        print("Ratio : "+str(item['total ratio']))
+                print("Global ratio: "+info['global ratio'])
+            else:
+                print("Something went wrong.")
+                print(info)
+                input("Press [Enter] to continue...")
+                break
+        except KeyError:
+            print(info)
+            print("Error")
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+def pegs_accounthistory_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            history = rpc_connection.pegsaccounthistory(pegs_txid)
+            if history['result'] == "success":
+                if len(history['acount history']) > 0:
+                    for item in history['acount history']:
+                        print("Action: "+item['action'])
+                        print("Amount: "+str(item['amount']))
+                        print("Account TXID: "+item['accounttxid'])
+                        print("Token: "+item['token'])
+                        print("Deposit: "+str(item['deposit']))
+                        print("Debt: "+str(item['debt']))
+            else:
+                print("Something went wrong.")
+                print(history)
+                input("Press [Enter] to continue...")
+                break
+        except KeyError:
+            print(history)
+            print("Error")
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+
+def pegs_accountinfo_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            info = rpc_connection.pegsaccountinfo(pegs_txid)
+            if info['result'] == "success":
+                if len(info['account info']) > 0:
+                    for item in info['account info']:
+                        print("Token: "+item['token'])
+                        print("Deposit: "+str(item['deposit']))
+                        print("Debt: "+str(item['debt']))
+                        print("Ratio "+item['ratio'])
+            else:
+                print("Something went wrong.")
+                print(info)
+                input("Press [Enter] to continue...")
+                break
+        except KeyError:
+            print(info)
+            print("Error")
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+def pegs_addresses_tui(rpc_connection):
+    while True:
+        try:
+            address = rpc_connection.pegsaddress()
+            if address['result'] == "success":
+                print("PegsCCAddress: "+address['PegsCCAddress'])
+                print("PegsCCBalance: "+str(address['PegsCCBalance']))
+                print("PegsNormalAddress: "+address['PegsNormalAddress'])
+                print("PegsNormalBalance: "+address['PegsNormalBalance'])
+                print("PegsCCTokensAddress: "+address['PegsCCTokensAddress'])
+                print("myCCAddress(Pegs): "+address['myCCAddress(Pegs)'])
+                print("myCCbalance(Pegs): "+str(address['myCCbalance(Pegs)']))
+                print("myaddress: "+address['myaddress'])
+                print("mybalance: "+str(address['mybalance']))
+            else:
+                print("Something went wrong.")
+                print(address)
+                input("Press [Enter] to continue...")
+                break
+        except KeyError:
+            print(address)
+            print("Error")
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+
+
+def pegs_worstaccounts_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            worst = rpc_connection.pegsworstaccounts(pegs_txid)
+            if worst['result'] == "success":
+                if len(worst['KMD']) > 0:
+                    for item in worst['KMD']:
+                        print("Account TXID: "+item['accounttxid'])
+                        print("Deposit: "+str(item['deposit']))
+                        print("Debt: "+str(item['debt']))
+                        print("Ratio "+item['ratio'])
+        except KeyError:
+            print(worst)
+            print("Key Error: "+str(KeyError))
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+
+def select_address(rpc_connection):
+    list_address_groupings = rpc_connection.listaddressgroupings()
+    addresses = []
+    for address_list in list_address_groupings:
+        for address in address_list:
+            if address[1] > 0:
+                addresses.append([address[0],address[1]])
+    i = 1
+    for address in addresses:
+        print("["+str(i)+"] "+address[0]+" (balance: "+str(address[1])+")")
+        i +=1
+    while True:
+        address_index = int(input("Select Address: "))-1
+        try:
+            sendaddress = addresses[address_index][0]
+            return sendaddress
+        except:
+            print("Invalid selection, must be number between 1 and "+str(len(gateways_list)))
+            pass
+    
+def select_tokenid(rpc_connection):
+    token_list = rpc_connection.tokenlist()
+    tokenids = []
+    i = 1
+    for tokenid in tokenids:
+        token_info = rpc_connection.tokeninfo()
+        print("["+str(i)+"] "+token_info['tokenid']+" | "+token_info['name'] \
+             +" | "+token_info['description']+" | Supply: "+str(token_info['supply'])+" |")
+        i +=1
+    while True:
+        index = int(input("Select Token Contract: "))-1
+        try:
+            token_txid = tokenids[index]
+            return token_txid
+        except:
+            print("Invalid selection, must be number between 1 and "+str(len(token_list)))
+            pass
+    

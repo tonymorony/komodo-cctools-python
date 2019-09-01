@@ -4,14 +4,17 @@ from lib import rpclib, tuilib
 import os, time
 
 header = "\
- _____       _                               _____  _____ \n\
-|  __ \     | |                             /  __ \/  __ \\\n\
-| |  \/ __ _| |_ _____      ____ _ _   _ ___| /  \/| /  \/\n\
-| | __ / _` | __/ _ \ \ /\ / / _` | | | / __| |    | |    \n\
-| |_\ \ (_| | ||  __/\ V  V / (_| | |_| \__ \ \__/\| \__/\\\n\
- \____/\__,_|\__\___| \_/\_/ \__,_|\__, |___/\____/ \____/\n\
-                                    __/ |                 \n\
-                                   |___/                  \n"
+______                 _____  _____ \n\
+| ___ \               /  __ \/  __ \\\n\
+| |_/ /___  _____  ___| /  \/| /  \/\n\
+|  __// _ \|  _  |/ __| |    | |    \n\
+| |  |  __/| |_| |\__ \ \__/\| \__/\\\n\
+\_|   \___|\___  |/___/\____/ \____/\n\
+             __/ |                 \n\
+            |___/                 \n"
+
+       
+       
 
 menuItems = [
     {"Check connection to assetchain": tuilib.getinfo_tui},
@@ -19,10 +22,14 @@ menuItems = [
     {"Check connection to KMD": tuilib.getinfo_tui},
     {"Connect to KMD daemon": tuilib.rpc_kmd_connection_tui},
     {"View assetchain Gateway Info": tuilib.gateway_info_tui},
-    {"Send KMD gateway deposit transaction": tuilib.gateways_send_kmd},
-    {"Execute gateways deposit": tuilib.gateways_deposit_tui},
-    {"Execute gateways claim": tuilib.gateways_claim_tui},
-    {"Execute gateways withdrawal": tuilib.gateways_withdrawal_tui},
+    {"Deposit KMD in Gateway and claim Tokens": tuilib.gateways_deposit_claim_tokens},
+    {"Execute Pegs funding": tuilib.pegs_fund_tui},
+    {"Execute Pegs get": tuilib.pegs_get_tui},
+    {"Check Pegs info": tuilib.pegsinfo_tui},
+    {"Check Pegs account history": tuilib.pegs_accounthistory_tui},
+    {"Check Pegs account info": tuilib.pegs_accountinfo_tui},
+    {"Check Pegs addresses": tuilib.pegs_addresses_tui},
+    {"Check Pegs worst accounts": tuilib.pegs_worstaccounts_tui},
     {"Exit": exit}
 ]
 
@@ -30,7 +37,7 @@ def main():
     while True:
         os.system('clear')
         print(tuilib.colorize(header, 'pink'))
-        print(tuilib.colorize('CLI version 0.2\n', 'green'))
+        print(tuilib.colorize('CLI version 0.1 by Thor Mennet\n', 'green'))
         for item in menuItems:
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
         choice = input(">> ")
@@ -52,17 +59,7 @@ def main():
                         print("Please connect to KMD daemon first!")
                         input("Press [Enter] to continue...")
                         break
-            elif list(menuItems[int(choice)].keys())[0] == "Send KMD gateway deposit transaction":
-                while True:
-                    try:
-                        list(menuItems[int(choice)].values())[0](rpc_connection_kmd)
-                        break
-                    except Exception as e:
-                        print(e)
-                        print("Please connect to KMD daemon first!")
-                        input("Press [Enter] to continue...")
-                        break
-            elif list(menuItems[int(choice)].keys())[0] == "Execute gateways deposit":
+            elif list(menuItems[int(choice)].keys())[0] == "Deposit KMD in Gateway and claim Tokens":
                 while True:
                     try:
                         list(menuItems[int(choice)].values())[0](rpc_connection, rpc_connection_kmd)

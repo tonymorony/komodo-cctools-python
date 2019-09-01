@@ -117,16 +117,38 @@ def gateways_bind(rpc_connection, *args):
 
 def gateways_deposit(rpc_connection, gateway_id, height, coin_name,\
                      coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount):
-    gateways_deposit_hex = rpc_connection.gatewaysdeposit(gateway_id, height, coin_name,\
-                     coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
+    gateways_deposit_hex = rpc_connection.gatewaysdeposit(gateway_id, str(height), coin_name,\
+                     coin_txid, str(claim_vout), deposit_hex, proof, dest_pub, str(amount))
     return gateways_deposit_hex
 
 
 def gateways_claim(rpc_connection, gateway_id, coin_name, deposit_txid, dest_pub, amount):
-    gateways_claim_hex = rpc_connection.gatewaysclaim(gateway_id, coin_name, deposit_txid, dest_pub, amount)
+    gateways_claim_hex = rpc_connection.gatewaysclaim(gateway_id, coin_name, deposit_txid, dest_pub, str(amount))
     return gateways_claim_hex
 
 
 def gateways_withdraw(rpc_connection, gateway_id, coin_name, withdraw_pub, amount):
     gateways_withdraw_hex = rpc_connection.gatewayswithdraw(gateway_id, coin_name, withdraw_pub, amount)
     return gateways_withdraw_hex
+
+def gateways_list(rpc_connection):
+    gateways_list = rpc_connection.gatewayslist()
+    return gateways_list
+
+def pegs_fund(rpc_connection, pegs_txid, token_txid, amount):
+    pegsfund_hex = rpc_connection.pegsfund(pegs_txid, token_txid, str(amount))
+    if 'hex' in pegsfund_hex:
+        pegsfund_txid = rpc_connection.sendrawtransaction(pegsfund_hex['hex'])
+        return pegsfund_txid
+    else:
+        print("Something went wrong.")
+        print(pegsfund_hex)
+
+def pegs_get(rpc_connection, pegs_txid, token_txid, amount):
+    pegsget_hex = rpc_connection.pegsget(pegs_txid, token_txid, str(amount))
+    if 'hex' in pegsget_hex:
+        pegsget_txid = rpc_connection.sendrawtransaction(pegsget_hex['hex'])
+        return pegsget_hex
+    else:
+        print("Something went wrong.")
+        print(pegsget_hex)
