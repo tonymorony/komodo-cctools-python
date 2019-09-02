@@ -2320,12 +2320,24 @@ def pegs_worstaccounts_tui(rpc_connection):
             pegs_txid = input("Enter Pegs TXID: ")
             worst = rpc_connection.pegsworstaccounts(pegs_txid)
             if worst['result'] == "success":
-                if len(worst['KMD']) > 0:
-                    for item in worst['KMD']:
-                        print("Account TXID: "+item['accounttxid'])
-                        print("Deposit: "+str(item['deposit']))
-                        print("Debt: "+str(item['debt']))
-                        print("Ratio "+item['ratio'])
+                if 'KMD' in worst:
+                    if len(worst['KMD']) > 0:
+                        for item in worst['KMD']:
+                            print("Account TXID: "+item['accounttxid'])
+                            print("Deposit: "+str(item['deposit']))
+                            print("Debt: "+str(item['debt']))
+                            print("Ratio "+item['ratio'])
+                else:
+                    print("No accounts at risk of liquidation at the moment.")
+                    info = rpc_connection.pegsinfo(pegs_txid)
+                    if info['result'] == "success":
+                        if len(info['info']) > 0:
+                            for item in info['info']:
+                                print("Token: "+item['token'])
+                                print("Total deposit: "+str(item['total deposit']))
+                                print("Total debt: "+str(item['total debt']))
+                                print("Ratio : "+str(item['total ratio']))
+                        print("Global ratio: "+info['global ratio'])
         except KeyError:
             print(worst)
             print("Key Error: "+str(KeyError))
