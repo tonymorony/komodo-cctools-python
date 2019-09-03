@@ -98,6 +98,20 @@ def def_credentials(chain):
 
     return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
 
+def readme_tui(readme):
+    with open(readme, 'r') as f:
+        i = 0
+        for line in f:
+            print(line)
+            i += 1
+            if i == 20:
+                userinput = input(colorize("\nPress [Enter] to continue, or [X] to exit\n", "blue"))
+                if userinput == 'x' or userinput == 'x':
+                    break
+                else:
+                    i = 0
+        input(colorize("\nPress [Enter] to return to the menu\n", "blue"))
+    f.close()
 
 def getinfo_tui(rpc_connection):
 
