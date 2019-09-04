@@ -98,6 +98,20 @@ def def_credentials(chain):
 
     return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
 
+def readme_tui(readme):
+    with open(readme, 'r') as f:
+        i = 0
+        for line in f:
+            print(line)
+            i += 1
+            if i == 20:
+                userinput = input(colorize("\nPress [Enter] to continue, or [X] to exit\n", "blue"))
+                if userinput == 'x' or userinput == 'x':
+                    break
+                else:
+                    i = 0
+        input(colorize("\nPress [Enter] to return to the menu\n", "blue"))
+    f.close()
 
 def getinfo_tui(rpc_connection):
 
@@ -2125,17 +2139,18 @@ def gateways_deposit_claim_tokens(rpc_connection_assetchain, rpc_connection_komo
     print(colorize("Token Balance        ["+str(bind_txid)+"]", 'green'))
 
 
-def pegs_fund_tui(rpc_connection, token_txid, amount):
+def pegs_fund_tui(rpc_connection):
     while True:
         try:
             pegs_txid = input("Enter Pegs TXID: ")
             token_txid = select_tokenid(rpc_connection)
-            tokenbalance = rpc_connection.tokenbalance(token_txid)
+            tokenbalance = rpc_connection.tokenbalance(token_txid)['balance']/100000000
             amount = int(input("Set pegs funding amount ("+str(tokenbalance)+" available): "))
         except KeyboardInterrupt:
             break
         else:
             fund_hex = rpclib.pegs_fund(rpc_connection, pegs_txid, token_txid, amount)
+            print(fund_hex)
         if fund_hex['result'] == "error":
             print(colorize("\nSomething went wrong!\n", "pink"))
             print(fund_hex)
@@ -2157,18 +2172,30 @@ def pegs_fund_tui(rpc_connection, token_txid, amount):
                 break
 
 
-def pegs_get_tui(rpc_connection, pegs_txid, token_txid, amount):
+def pegs_get_tui(rpc_connection):
     while True:
         try:
             pegs_txid = input("Enter Pegs TXID: ")
             token_txid = select_tokenid(rpc_connection)
-            tokenbalance = rpc_connection.tokenbalance(token_txid)
+            info = rpc_connection.pegsaccountinfo(pegs_txid)
+            if info['result'] == "success":
+                if len(info['account info']) > 0:
+                    for item in info['account info']:
+                        print("Token: "+item['token'])
+                        print("Deposit: "+str(item['deposit']))
+                        print("Debt: "+str(item['debt']))
+                        print("Ratio "+item['ratio'])
+            else:
+                print("Something went wrong.")
+                print(info)
+                input("Press [Enter] to continue...")
+                break
             amount = input("Set pegs get amount: ")
         except KeyboardInterrupt:
             break
         else:
-            pegsget_hex = rpclib.pegs_fund(rpc_connection, pegs_txid, token_txid, amount)
-        if fund_hex['result'] == "error":
+            pegsget_hex = rpclib.pegs_get(rpc_connection, pegs_txid, token_txid, amount)
+        if pegsget_hex['result'] == "error":
             print(colorize("\nSomething went wrong!\n", "pink"))
             print(pegsget_hex)
             print("\n")
@@ -2222,22 +2249,22 @@ def pegs_accounthistory_tui(rpc_connection):
             pegs_txid = input("Enter Pegs TXID: ")
             history = rpc_connection.pegsaccounthistory(pegs_txid)
             if history['result'] == "success":
-                if len(history['acount history']) > 0:
-                    for item in history['acount history']:
+                if len(history['account history']) > 0:
+                    for item in history['account history']:
+                        print("-----------------------")
                         print("Action: "+item['action'])
                         print("Amount: "+str(item['amount']))
                         print("Account TXID: "+item['accounttxid'])
                         print("Token: "+item['token'])
                         print("Deposit: "+str(item['deposit']))
                         print("Debt: "+str(item['debt']))
-            else:
-                print("Something went wrong.")
-                print(history)
-                input("Press [Enter] to continue...")
-                break
+                    print("-----------------------")
+
+#[{'action': 'fund', 'amount': 100000000, 'accounttxid': '1e9409af6e391f996de434a3f86d765df43251d61cc1e720fa9a6457078d0f61', 'token': 'KMD', 'deposit': 100000000, 'debt': 0}, {'action': 'get', 'amount': 50000000, 'accounttxid': '752ef21dfbe313f229a4a396554b3ee0630ea2b4cc3264bd1cbdbe22bbf190e8', 'token': 'KMD', 'deposit': 100000000, 'debt': 50000000}]}
+
         except KeyError:
             print(history)
-            print("Error")
+            print("Key Error: "+str(KeyError))
             input("Press [Enter] to continue...")
             break
         finally:
@@ -2307,12 +2334,24 @@ def pegs_worstaccounts_tui(rpc_connection):
             pegs_txid = input("Enter Pegs TXID: ")
             worst = rpc_connection.pegsworstaccounts(pegs_txid)
             if worst['result'] == "success":
-                if len(worst['KMD']) > 0:
-                    for item in worst['KMD']:
-                        print("Account TXID: "+item['accounttxid'])
-                        print("Deposit: "+str(item['deposit']))
-                        print("Debt: "+str(item['debt']))
-                        print("Ratio "+item['ratio'])
+                if 'KMD' in worst:
+                    if len(worst['KMD']) > 0:
+                        for item in worst['KMD']:
+                            print("Account TXID: "+item['accounttxid'])
+                            print("Deposit: "+str(item['deposit']))
+                            print("Debt: "+str(item['debt']))
+                            print("Ratio "+item['ratio'])
+                else:
+                    print("No accounts at risk of liquidation at the moment.")
+                    info = rpc_connection.pegsinfo(pegs_txid)
+                    if info['result'] == "success":
+                        if len(info['info']) > 0:
+                            for item in info['info']:
+                                print("Token: "+item['token'])
+                                print("Total deposit: "+str(item['total deposit']))
+                                print("Total debt: "+str(item['total debt']))
+                                print("Ratio : "+str(item['total ratio']))
+                        print("Global ratio: "+info['global ratio'])
         except KeyError:
             print(worst)
             print("Key Error: "+str(KeyError))
@@ -2347,15 +2386,15 @@ def select_tokenid(rpc_connection):
     token_list = rpc_connection.tokenlist()
     tokenids = []
     i = 1
-    for tokenid in tokenids:
-        token_info = rpc_connection.tokeninfo()
+    for tokenid in token_list:
+        token_info = rpc_connection.tokeninfo(tokenid)
         print("["+str(i)+"] "+token_info['tokenid']+" | "+token_info['name'] \
              +" | "+token_info['description']+" | Supply: "+str(token_info['supply'])+" |")
         i +=1
     while True:
         index = int(input("Select Token Contract: "))-1
         try:
-            token_txid = tokenids[index]
+            token_txid = token_list[index]
             return token_txid
         except:
             print("Invalid selection, must be number between 1 and "+str(len(token_list)))
