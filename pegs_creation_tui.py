@@ -20,6 +20,7 @@ ______                 _____  _____ \n\
 menuItems = [
     {"Pegs Creation Readme": tuilib.readme_tui},
     {"Create a Pegs assetchain": tuilib.pegs_create_tui},
+ #   {"Run oraclefeed": tuilib.oraclefeed_tui},
     {"Exit": exit}
 ]
 
