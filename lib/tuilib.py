@@ -2518,7 +2518,7 @@ def spawn_oraclefeed(dest_chain, kmd_path, oracle_txid, pubkey, bind_txid):
     oraclefeed_build_log = str(dest_chain)+"_oraclefeed_build.log"
     oraclefeed_build = open(oraclefeed_build_log,'w+')
     print("Building oraclefeed ")
-    subprocess.Popen(["gcc", kmd_path+"/cc/dapps/oraclefeed.c", "-lm", "-o", "oraclefeed"], stdout=oraclefeed_build, stderr=oraclefeed_build, universal_newlines=True)
+    subprocess.Popen(["gcc", kmd_path+"/cc/dapps/oraclefeed.c", "-lm", "-o", kmd_path+"/oraclefeed"], stdout=oraclefeed_build, stderr=oraclefeed_build, universal_newlines=True)
     oraclefeed_log = str(dest_chain)+"_oraclefeed.log"
     oraclefeed_output = open(oraclefeed_log,'w+')
     print("running oraclefeed ")
