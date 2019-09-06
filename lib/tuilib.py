@@ -2367,47 +2367,32 @@ def select_tokenid(rpc_connection):
         print("["+str(i)+"] "+token_info['tokenid']+" | "+token_info['name'] \
              +" | "+token_info['description']+" | Supply: "+str(token_info['supply'])+" |")
         i +=1
-    while True:
-        index = int(input("Select Token Contract: "))-1
-        try:
-            token_txid = token_list[index]
-            return token_txid
-        except:
-            print("Invalid selection, must be number between 1 and "+str(len(token_list)))
-            pass
+    validate_selection("Select Token Contract: ", token_list)
 
 def select_oracleid(rpc_connection):
     oracle_list = rpc_connection.oracleslist()
+    if len(oracles_list) == 0:
+        print(colorize("No oracles on this smart chain!", "red"))
+        exit(1)
     i = 1
     for oracleid in oracle_list:
         info = rpc_connection.oraclesinfo(oracleid)
         print("["+str(i)+"] "+info['txid']+" | "+info['name'] \
              +" | "+info['description']+" | "+str(info['format'])+" |")
         i +=1
-    while True:
-        index = int(input("Select Oracle: "))-1
-        try:
-            oracle_txid = oracle_list[index]
-            return oracle_txid
-        except:
-            print("Invalid selection, must be number between 1 and "+str(len(oracle_list)))
-            pass
+    validate_selection("Select Oracle: ", oracle_list)
 
 def select_gateway(rpc_connection):
     gw_list = rpc_connection.gatewayslist()
+    if len(gw_list) == 0:
+        print(colorize("No gateways on this smart chain!", "red"))
+        exit(1)
     i = 1
     for gw in gw_list:
         info = rpc_connection.gatewaysinfo(gw)
         print("["+str(i)+"] "+info['txid']+" | "+info['coin']+" |")
         i +=1
-    while True:
-        index = int(input("Select Gateway: "))-1
-        try:
-            gw_txid = gw_list[index]
-            return gw_txid
-        except:
-            print("Invalid selection, must be number between 1 and "+str(len(gw_list)))
-            pass
+    validate_selection("Select Gateway: ", gw_list)
 
 
 def select_oracle_publisher(rpc_connection, oracletxid):
@@ -2426,14 +2411,8 @@ def select_oracle_publisher(rpc_connection, oracletxid):
             +" | Funds "+publisher['funds']+" | Datafee: "+str(publisher['datafee'])+" |"
             print(colorize(row, "blue"))
         i +=1
-    while True:
-        index = int(input("Select Oracle Publisher to subscribe to: "))-1
-        try:
-            publisher = publisher_list[index]
-            return publisher
-        except:
-            print("Invalid selection, must be number between 1 and "+str(len(oracle_list)))
-            pass
+        validate_selection("Select Oracle Publisher to subscribe to: ", publisher_list)
+
 
 def pegs_create_tui():
     paramlist = ["-ac_supply=5000", "-ac_reward=800000000",
@@ -2488,8 +2467,8 @@ def pegs_create_tui():
         print(colorize("The Pegs Contract has been created successfully!", 'green'))
         info = primary_rpc.gatewaysinfo(bind_txid)
         with open(cwd+"/"+coin+"_pegsinfo.json", "w+") as file:
-            file.write('{\n"Pegs_Launch_Parameters:"'+" ".join(paramlist)+'",\n')
-            file.write('"Oraclefeed_Launch_Parameters:"'+oraclefeed_launch_str+'",\n')
+            file.write('{\n"Pegs_Launch_Parameters":"'+" ".join(paramlist)+'",\n')
+            file.write('"Oraclefeed_Launch_Parameters":"'+oraclefeed_launch_str+'",\n')
             file.write('"Pegs_Creation_TXID":"'+str(pegs_txid)+'",\n')
             file.write('"Gateways_Bind_TXID":"'+str(bind_txid)+'",\n')
             file.write('"Oracle_TXID":"'+str(info['oracletxid'])+'",\n')
@@ -2527,15 +2506,44 @@ def spawn_oraclefeed(dest_chain, kmd_path, oracle_txid, pubkey, bind_txid):
     print(colorize("IMPORTANT: The oraclefeed must be running at all times for the Pegs contract to work!", "red"))
     oraclefeed_launch_str = str(kmd_path+"/oraclefeed "+dest_chain+" "+oracle_txid+" "+pubkey+" Ihh "+bind_txid+" "+kmd_path+"/komodo-cli")
     print(colorize("Launch it with "+oraclefeed_launch_str, "blue"))
+    input("Press [Enter] to continue...")
     return oraclefeed_launch_str
 
-def oraclefeed_tui(dest_chain='', kmd_path='', oracle_txid='', pubkey='', bind_txid=''):
-    dest_chain = 'PEGGY'
-    rpc = def_credentials(dest_chain)
-    kmd_path = '/home/smk762/Mixa84/komodo/src'
-    oracletxid = select_oracleid(rpc)
-    pubkey = rpc.getinfo()['pubkey']
-    bind_txid = select_gateway(rpc)
+def oraclefeed_tui(jsonfile=''):
+    if jsonfile == '':
+        choice = input("select json file from list? (y/n)")
+        if choice == 'y' or choice == 'Y':
+            jsonfile = select_file(cwd, 'json')
+    if jsonfile == '':
+        while True:
+            try:
+                dest_chain = input('Enter name of Pegs chain')
+                rpc = def_credentials(dest_chain)
+            except:
+                print(colorize(dest_chain+" conf file does not exist! Try again.", "red"))
+                break
+        while True:
+            kmd_path = input("Input komodod path (e.g. /home/user/komodo/src): ")
+            if not os.path.isfile(kmd_path+'/komodod'):
+                print("komodod not found in "+kmd_path+"! Try again.")
+            else:
+                break
+        oracletxid = select_oracleid(rpc)
+        pubkey = rpc.getinfo()['pubkey']
+        bind_txid = select_gateway(rpc)
+    else:
+        try:
+            with open(jsonfile, 'r') as f:
+                oraclefeed_json = json.loads(f.read())
+            oraclefeed_params = oraclefeed_json['Oraclefeed_Launch_Parameters'].split(" ")
+            kmd_path = oraclefeed_params[0].replace("oraclefeed","")
+            dest_chain = oraclefeed_params[1]
+            oracle_txid = oraclefeed_params[2]
+            pubkey = oraclefeed_params[3]
+            bind_txid = oraclefeed_params[5]
+        except Exception as e:
+            print("Something wrong with json file.")
+            print(e)
     spawn_oraclefeed(dest_chain, kmd_path, oracle_txid, pubkey, bind_txid)
 
 def get_commit_hash(repo_path):
@@ -2629,3 +2637,32 @@ def spawn_chain_pair(coin, kmd_path, paramlist):
     print("Primary balance: "+str(balance))
     print("Secondary balance: "+str(balance2))
     return primary_rpc, secondary_rpc
+
+def select_file(path, ext=''):
+    file_list = []
+    with os.scandir(path) as ls:
+        for item in ls:
+            if item.is_file():
+                filename = str(item.name)
+                if ext == '':
+                    file_list.append(filename)
+                    interrogative = "Select a file: "
+                elif filename.endswith(ext):
+                    file_list.append(filename)
+                    interrogative = "Select "+ext+" file: "
+    i = 1
+    for file in file_list:
+        print("["+str(i)+"] "+file)
+        i += 1
+    selected = validate_selection(interrogative, file_list)
+    return selected
+
+def validate_selection(interrogative, selection_list):
+    while True:
+        index = int(input(interrogative))-1
+        try:
+            selected = selection_list[index]
+            return selected
+        except:
+            print("Invalid selection, must be number between 1 and "+str(len(selection_list)))
+            pass
