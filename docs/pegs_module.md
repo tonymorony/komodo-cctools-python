@@ -1,14 +1,26 @@
 ## tl;dr ##
 
-Step 1 - Create Tokens
-Step 2 - Create an Oracle, register as a publisher and subscribe.
-Step 3 - Bind the Tokens and Oracles into a Gateway
-Step 4 - Create a Pegs Contract
-Step 5 - Stop the Pegs chain, and restart with `earlytxid` launch parameter
-Step 6 - Run the Oraclefeed app to maintain the Gateway and monitor deposits / withdrawls.
-Step X - Use a different node and pubkey to deposit source coins into the Gateway from the external chain, claim tokens on the Pegs chain, and open a Pegs account _(use the Pegs Usage TUI)._
+Note: Build Komodo using the https://github.com/Mixa84/komodo/tree/pegsCC repo, and set  `export CONFIGURE_FLAGS='CPPFLAGS=-DTESTMODE'`
 
-_[ For full tutorial and Pegs command line RPC methods info, see http://developers.komodo.com/ ]_
+The Pegs Creation TUI will perform the steps below:
+1 - Create Tokens
+2 - Create an Oracle, register as a publisher and subscribe.
+3 - Bind the Tokens and Oracles into a Gateway
+4 - Create a Pegs Contract
+5 - Stop the Pegs chain, and restart with `earlytxid` launch parameter
+6 - Run the Oraclefeed app to maintain the Gateway and monitor deposits / withdrawls.
+
+To interact with an existing Pegs Contract, use the Pegs Usage TUI. Use a different node and pubkey! To create a pegs account, follow the steps below:
+
+1 - Execute a gateways deposit from the source chain (e.g. KMD)
+2 - Wait for the deposit to be notarised (which is validated by the Oraclefeed dapp)
+3 - Claim your tokens on the Pegs chain
+4 - Use `pegsfund` to deposit the tokens into the Pegs contract
+5 - Use `pegsget` to convert the deposited tokens into the pegged asset tokens
+
+More infomation at https://github.com/Mixa84/komodo/wiki/Pegs-CC
+
+[ A full tutorial with Pegs command line RPC methods info, will be added to http://developers.komodo.com/ soon]
 
 PegCC builds upon on the existing Antara modules Tokens, Gateways, Prices and Oracles.
 Tokens are created, and transmitted across chains using Gateways for use within the Pegs chain.

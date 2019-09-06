@@ -18,7 +18,7 @@ ______                 _____  _____ \n\
        
 
 menuItems = [
-    {"Pegs Creation Readme": tuilib.readme_tui},
+    {"Pegs Module Readme": tuilib.readme_tui},
     {"Create a Pegs assetchain": tuilib.pegs_create_tui},
     {"Run oraclefeed": tuilib.oraclefeed_tui},
     {"Exit": exit}
@@ -36,8 +36,8 @@ def main():
             if int(choice) < 0:
                 raise ValueError
             # Call the matching function
-            if list(menuItems[int(choice)].keys())[0] == "Pegs Creation Readme":
-                list(menuItems[int(choice)].values())[0]('docs/pegscreate.md')
+            if list(menuItems[int(choice)].keys())[0] == "Pegs Module Readme":
+                list(menuItems[int(choice)].values())[0]('docs/pegs_module.md')
             else:
                 list(menuItems[int(choice)].values())[0]()
         except (ValueError, IndexError):
