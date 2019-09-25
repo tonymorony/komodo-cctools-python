@@ -168,9 +168,7 @@ antaraMenu = [
     {"Gateways Usage": gw_use},
     {"Pegs Creation": pegs_create},
     {"Pegs Usage": pegs_usage},
-    {"Assets": oracles},
     {"Payments": payments},
-    {"Tokens": oracles},
     {"Exit": exit}
 ]
 

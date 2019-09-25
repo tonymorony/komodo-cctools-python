@@ -39,8 +39,8 @@ def colorize(string, color):
 def rpc_connection_tui():
     # TODO: possible to save multiply entries from successfull sessions and ask user to choose then
     while True:
-        restore_choice = input("Do you want to use connection details from previous session? [y/n]: ")
-        if restore_choice == "y":
+        restore_choice = input("[U]se cached connection details, [S]elect smartchain, or [E]nter manually? [U/S/E]: ")
+        if restore_choice == "U" or restore_choice == "u":
             try:
                 with open("connection.json", "r") as file:
                     connection_json = json.load(file)
@@ -49,9 +49,20 @@ def rpc_connection_tui():
                     rpc_port = connection_json["rpc_port"]
                     rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
             except FileNotFoundError:
-                print(colorize("You do not have cached connection details. Please select n for connection setup", "red"))
+                print(colorize("You do not have cached connection details. Please select [E] for connection setup, or [S] to select a smartchain", "red"))
             break
-        elif restore_choice == "n":
+        elif restore_choice == "S" or restore_choice == "s":
+            chain = select_ac()
+            rpc_info = rpclib.get_rpc_details(chain)
+            connection_details = {"rpc_user": rpc_info[0],
+                                  "rpc_password": rpc_info[1],
+                                  "rpc_port": rpc_info[2]}
+            connection_json = json.dumps(connection_details)
+            with open("connection.json", "w+") as file:
+                file.write(connection_json)
+            rpc_connection = rpclib.rpc_connect(rpc_info[0], rpc_info[1], int(rpc_info[2]))
+            break
+        elif restore_choice == "E" or restore_choice == "e":
             rpc_user = input("Input your rpc user: ")
             rpc_password = input("Input your rpc password: ")
             rpc_port = input("Input your rpc port: ")
@@ -64,41 +75,9 @@ def rpc_connection_tui():
             rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
             break
         else:
-            print(colorize("Please input y or n", "red"))
+            print(colorize("Please input u/U, s/S or e/E ", "red"))
     return rpc_connection
 
-
-def def_credentials(chain):
-    rpcport ='';
-    operating_system = platform.system()
-    if operating_system == 'Darwin':
-        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
-    elif operating_system == 'Linux':
-        ac_dir = os.environ['HOME'] + '/.komodo'
-    elif operating_system == 'Win64' or operating_system == 'Windows':
-        ac_dir = '%s/komodo/' % os.environ['APPDATA']
-    if chain == 'KMD':
-        coin_config_file = str(ac_dir + '/komodo.conf')
-    else:
-        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
-    with open(coin_config_file, 'r') as f:
-        for line in f:
-            l = line.rstrip()
-            if re.search('rpcuser', l):
-                rpcuser = l.replace('rpcuser=', '')
-            elif re.search('rpcpassword', l):
-                rpcpassword = l.replace('rpcpassword=', '')
-            elif re.search('rpcport', l):
-                rpcport = l.replace('rpcport=', '')
-    if len(rpcport) == 0:
-        if chain == 'KMD':
-            rpcport = 7771
-        else:
-            print("rpcport not in conf file, exiting")
-            print("check "+coin_config_file)
-            exit(1)
-
-    return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
 
 def readme_tui(readme):
     with open(readme, 'r') as f:
@@ -2442,7 +2421,7 @@ def oraclefeed_tui(jsonfile=''):
         while True:
             try:
                 dest_chain = input('Enter name of Pegs chain')
-                rpc = def_credentials(dest_chain)
+                rpc = rpclib.def_credentials(dest_chain)
             except:
                 print(colorize(dest_chain+" conf file does not exist! Try again.", "red"))
                 break
@@ -2495,7 +2474,7 @@ def launch_chain(coin, kmd_path, params, pubkey=''):
         print("Waiting for "+coin+" to start...")
         loop += 1
         try:
-            pegs_rpc = def_credentials(coin)
+            pegs_rpc = rpclib.def_credentials(coin)
             coin_info = pegs_rpc.getinfo()
             print(coin_info)
             started = 1
@@ -2566,8 +2545,9 @@ def spawn_chain_pair(coin, kmd_path, paramlist):
 
 def payments_info(rpc_connection):
     payments_txid = select_payments(rpc_connection)
-    info = rpc_connection.paymentsinfo(payments_txid)
-    print(info)
+    if payments_txid != 'back to menu':
+        info = rpc_connection.paymentsinfo(payments_txid)
+        print(info)
 
 def payments_create(rpc_connection):
     pass
@@ -2590,6 +2570,25 @@ def validate_selection(interrogative, selection_list):
             print("Invalid selection, must be number between 1 and "+str(len(selection_list)))
             pass
 
+def select_ac():
+    while True:
+        dir_list = next(os.walk(home+"/.komodo"))[1]
+        ac_list = []
+        row = ''
+        i = 1
+        for folder in dir_list:
+            if folder not in ['notarisations', 'blocks', 'database', 'chainstate']:
+                ac_list.append(folder)
+                if i < 10:
+                    row += " ["+str(i)+"] "+'{:^14}'.format(folder)
+                else:
+                    row += "["+str(i)+"] "+'{:^14}'.format(folder)
+                if len(row) > 64:
+                    print(row)
+                    row = ''
+                i += 1
+        selection = validate_selection("Select Smart Chain: ", ac_list)
+        return selection
 
 def select_address(rpc_connection):
     list_address_groupings = rpc_connection.listaddressgroupings()
