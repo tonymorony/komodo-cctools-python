@@ -2338,82 +2338,6 @@ def pegs_worstaccounts_tui(rpc_connection):
             break
 
 
-def select_address(rpc_connection):
-    list_address_groupings = rpc_connection.listaddressgroupings()
-    addresses = []
-    for address_list in list_address_groupings:
-        for address in address_list:
-            if address[1] > 0:
-                addresses.append([address[0],address[1]])
-    i = 1
-    for address in addresses:
-        print("["+str(i)+"] "+address[0]+" (balance: "+str(address[1])+")")
-        i +=1
-    while True:
-        address_index = int(input("Select Address: "))-1
-        try:
-            sendaddress = addresses[address_index][0]
-            return sendaddress
-        except:
-            print("Invalid selection, must be number between 1 and "+str(len(gateways_list)))
-            pass
-    
-def select_tokenid(rpc_connection):
-    token_list = rpc_connection.tokenlist()
-    tokenids = []
-    i = 1
-    for tokenid in token_list:
-        token_info = rpc_connection.tokeninfo(tokenid)
-        print("["+str(i)+"] "+token_info['tokenid']+" | "+token_info['name'] \
-             +" | "+token_info['description']+" | Supply: "+str(token_info['supply'])+" |")
-        i +=1
-    validate_selection("Select Token Contract: ", token_list)
-
-def select_oracleid(rpc_connection):
-    oracle_list = rpc_connection.oracleslist()
-    if len(oracles_list) == 0:
-        print(colorize("No oracles on this smart chain!", "red"))
-        exit(1)
-    i = 1
-    for oracleid in oracle_list:
-        info = rpc_connection.oraclesinfo(oracleid)
-        print("["+str(i)+"] "+info['txid']+" | "+info['name'] \
-             +" | "+info['description']+" | "+str(info['format'])+" |")
-        i +=1
-    validate_selection("Select Oracle: ", oracle_list)
-
-def select_gateway(rpc_connection):
-    gw_list = rpc_connection.gatewayslist()
-    if len(gw_list) == 0:
-        print(colorize("No gateways on this smart chain!", "red"))
-        exit(1)
-    i = 1
-    for gw in gw_list:
-        info = rpc_connection.gatewaysinfo(gw)
-        print("["+str(i)+"] "+info['txid']+" | "+info['coin']+" |")
-        i +=1
-    validate_selection("Select Gateway: ", gw_list)
-
-
-def select_oracle_publisher(rpc_connection, oracletxid):
-    info = rpc_connection.oraclesinfo(oracletxid)
-    publisher_list = []
-    i = 1
-    for publisher in info['registered']:
-        publisher_list.append(publisher['publisher'])
-        info = rpc_connection.oraclesinfo(oracleid)
-        if info['publisher'] == rpc_connection.getinfo()['pubkey']:
-            row = "["+str(i)+"] "+publisher['publisher']+" (your pubkey)" \
-            +" | Funds "+publisher['funds']+" | Datafee: "+str(publisher['datafee'])+" |"
-            print(colorize(row, "green"))
-        else: 
-            row = "["+str(i)+"] "+publisher['publisher'] \
-            +" | Funds "+publisher['funds']+" | Datafee: "+str(publisher['datafee'])+" |"
-            print(colorize(row, "blue"))
-        i +=1
-        validate_selection("Select Oracle Publisher to subscribe to: ", publisher_list)
-
-
 def pegs_create_tui():
     paramlist = ["-ac_supply=5000", "-ac_reward=800000000",
                  "-ac_sapling=1", "-addnode=localhost", "-ac_snapshot=1440",
@@ -2638,6 +2562,128 @@ def spawn_chain_pair(coin, kmd_path, paramlist):
     print("Secondary balance: "+str(balance2))
     return primary_rpc, secondary_rpc
 
+# Payments Module
+
+def payments_info(rpc_connection):
+    payments_txid = select_payments(rpc_connection)
+    info = rpc_connection.paymentsinfo(payments_txid)
+    print(info)
+
+def payments_create(rpc_connection):
+    pass
+def payments_fund(rpc_connection):
+    pass
+def payments_merge(rpc_connection):
+    pass
+def payments_release(rpc_connection):
+    pass
+
+# Selection menus and validation
+
+def validate_selection(interrogative, selection_list):
+    while True:
+        index = int(input(interrogative))-1
+        try:
+            selected = selection_list[index]
+            return selected
+        except:
+            print("Invalid selection, must be number between 1 and "+str(len(selection_list)))
+            pass
+
+
+def select_address(rpc_connection):
+    list_address_groupings = rpc_connection.listaddressgroupings()
+    addresses = []
+    for address_list in list_address_groupings:
+        for address in address_list:
+            if address[1] > 0:
+                addresses.append([address[0],address[1]])
+    i = 1
+    for address in addresses:
+        print("["+str(i)+"] "+address[0]+" (balance: "+str(address[1])+")")
+        i +=1
+    while True:
+        address_index = int(input("Select Address: "))-1
+        try:
+            sendaddress = addresses[address_index][0]
+            return sendaddress
+        except:
+            print("Invalid selection, must be number between 1 and "+str(len(gateways_list)))
+            pass
+    
+def select_tokenid(rpc_connection):
+    token_list = rpc_connection.tokenlist()
+    tokenids = []
+    i = 1
+    for tokenid in token_list:
+        token_info = rpc_connection.tokeninfo(tokenid)
+        print("["+str(i)+"] "+token_info['tokenid']+" | "+token_info['name'] \
+             +" | "+token_info['description']+" | Supply: "+str(token_info['supply'])+" |")
+        i +=1
+    selection = validate_selection("Select Token Contract: ", token_list)
+    return selection
+
+def select_oracleid(rpc_connection):
+    oracle_list = rpc_connection.oracleslist()
+    if len(oracles_list) == 0:
+        print(colorize("No oracles on this smart chain!", "red"))
+        exit(1)
+    i = 1
+    for oracleid in oracle_list:
+        info = rpc_connection.oraclesinfo(oracleid)
+        print("["+str(i)+"] "+info['txid']+" | "+info['name'] \
+             +" | "+info['description']+" | "+str(info['format'])+" |")
+        i +=1
+    selection = validate_selection("Select Oracle: ", oracle_list)
+    return selection
+
+def select_gateway(rpc_connection):
+    gw_list = rpc_connection.gatewayslist()
+    if len(gw_list) == 0:
+        print(colorize("No gateways on this smart chain!", "red"))
+        exit(1)
+    i = 1
+    for gw in gw_list:
+        info = rpc_connection.gatewaysinfo(gw)
+        print("["+str(i)+"] "+info['txid']+" | "+info['coin']+" |")
+        i +=1
+    selection = validate_selection("Select Gateway: ", gw_list)
+    return selection
+
+def select_payments(rpc_connection):
+    payments_list = rpc_connection.paymentslist()['createtxids']
+    if len(payments_list) == 0:
+        print(colorize("No Payments contracts on this smart chain!", "red"))
+        input("Press [Enter] to continue...")
+        return 'back to menu'
+    i = 1
+    for txid in payments_list:
+        info = rpc_connection.paymentsinfo(txid)
+        print("["+str(i)+"] "+info['txid']+" | "+info['elegiblefunds']+" | "+info['totalfunds']+" |")
+        i +=1
+    selection = validate_selection("Select Payments contract: ", payments_list)
+    return selection
+
+
+def select_oracle_publisher(rpc_connection, oracletxid):
+    info = rpc_connection.oraclesinfo(oracletxid)
+    publisher_list = []
+    i = 1
+    for publisher in info['registered']:
+        publisher_list.append(publisher['publisher'])
+        info = rpc_connection.oraclesinfo(oracleid)
+        if info['publisher'] == rpc_connection.getinfo()['pubkey']:
+            row = "["+str(i)+"] "+publisher['publisher']+" (your pubkey)" \
+            +" | Funds "+publisher['funds']+" | Datafee: "+str(publisher['datafee'])+" |"
+            print(colorize(row, "green"))
+        else: 
+            row = "["+str(i)+"] "+publisher['publisher'] \
+            +" | Funds "+publisher['funds']+" | Datafee: "+str(publisher['datafee'])+" |"
+            print(colorize(row, "blue"))
+        i +=1
+    selected = validate_selection("Select Oracle Publisher to subscribe to: ", publisher_list)
+    return selected
+
 def select_file(path, ext=''):
     file_list = []
     with os.scandir(path) as ls:
@@ -2656,13 +2702,3 @@ def select_file(path, ext=''):
         i += 1
     selected = validate_selection(interrogative, file_list)
     return selected
-
-def validate_selection(interrogative, selection_list):
-    while True:
-        index = int(input(interrogative))-1
-        try:
-            selected = selection_list[index]
-            return selected
-        except:
-            print("Invalid selection, must be number between 1 and "+str(len(selection_list)))
-            pass
