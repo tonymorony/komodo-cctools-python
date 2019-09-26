@@ -49,36 +49,55 @@ def rpc_connection_tui():
             try:
                 with open("connection.json", "r") as file:
                     connection_json = json.load(file)
+                    chain = connection_json["chain"]
                     rpc_user = connection_json["rpc_user"]
                     rpc_password = connection_json["rpc_password"]
                     rpc_port = connection_json["rpc_port"]
                     rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+                try:
+                    ac_name = rpc_connection.getinfo()['name']
+                    break
+                except:
+                    print("Connection failed! Is "+chain+" running?")
+                    pass
             except FileNotFoundError:
                 print(colorize("You do not have cached connection details. Please select [E] for connection setup, or [S] to select a smartchain", "red"))
-            break
         elif restore_choice == "S" or restore_choice == "s":
             chain = select_ac()
             rpc_info = rpclib.get_rpc_details(chain)
-            connection_details = {"rpc_user": rpc_info[0],
+            connection_details = {"chain": chain,
+                                  "rpc_user": rpc_info[0],
                                   "rpc_password": rpc_info[1],
                                   "rpc_port": rpc_info[2]}
             connection_json = json.dumps(connection_details)
             with open("connection.json", "w+") as file:
                 file.write(connection_json)
             rpc_connection = rpclib.rpc_connect(rpc_info[0], rpc_info[1], int(rpc_info[2]))
-            break
+            try:
+                ac_name = rpc_connection.getinfo()['name']
+                break
+            except:
+                print("Connection failed! Is "+chain+" running?")
+                pass
         elif restore_choice == "E" or restore_choice == "e":
+            chain = input("Input smartchain name: ")
             rpc_user = input("Input your rpc user: ")
             rpc_password = input("Input your rpc password: ")
             rpc_port = input("Input your rpc port: ")
-            connection_details = {"rpc_user": rpc_user,
+            connection_details = {"chain": chain,
+                                  "rpc_user": rpc_user,
                                   "rpc_password": rpc_password,
                                   "rpc_port": rpc_port}
             connection_json = json.dumps(connection_details)
             with open("connection.json", "w+") as file:
                 file.write(connection_json)
             rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
-            break
+            try:
+                ac_name = rpc_connection.getinfo()['name']
+                break
+            except:
+                print("Connection failed! Is "+chain+" running?")
+                pass
         else:
             print(colorize("Please input u/U, s/S or e/E ", "red"))
     return rpc_connection
