@@ -18,15 +18,17 @@ oracles['menu'] = [
     # TODO: data publisher / converter for different types
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
+    {"View oracle info": tuilib.oracles_info},
     {"Create oracle": tuilib.oracle_create_tui},
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
     {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Upload file to oracle": tuilib.convert_file_oracle_D},
     {"Display list of files uploaded to this AC": tuilib.display_files_list},
     {"Download files from oracle": tuilib.files_downloader},
-    {"Exit": tuilib.exit}
+    {"Return to Antara modules menu": tuilib.exit_main},
+    {"Exit TUI": tuilib.exit}
 ]
-oracles['author'] = '"Welcome to the OraclesCC TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
+oracles['author'] = 'Welcome to the OraclesCC TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
 
 pegs_usage = {}
 pegs_usage['header'] = "\
@@ -54,9 +56,10 @@ pegs_usage['menu'] = [
     {"Check Pegs account info": tuilib.pegs_accountinfo_tui},
     {"Check Pegs addresses": tuilib.pegs_addresses_tui},
     {"Check Pegs worst accounts": tuilib.pegs_worstaccounts_tui},
-    {"Exit": tuilib.exit}
+    {"Return to Antara modules menu": tuilib.exit_main},
+    {"Exit TUI": tuilib.exit}
 ]
-pegs_usage['author'] = '"Welcome to the Pegs Usage TUI!\n"CLI version 0.2 by Thorn Mennet\n'
+pegs_usage['author'] = 'Welcome to the Pegs Usage TUI!\n"CLI version 0.2 by Thorn Mennet\n'
 
 pegs_create = {}
 pegs_create['header'] = "\
@@ -73,9 +76,10 @@ pegs_create['menu'] = [
     {"Pegs Module Readme": tuilib.readme_tui},
     {"Create a Pegs assetchain": tuilib.pegs_create_tui},
     {"Run oraclefeed": tuilib.oraclefeed_tui},
-    {"Exit": tuilib.exit}
+    {"Return to Antara modules menu": tuilib.exit_main},
+    {"Exit TUI": tuilib.exit}
 ]
-pegs_create['author'] = '"Welcome to the Pegs Creation TUI!\n"CLI version 0.2 by Thorn Mennet\n'
+pegs_create['author'] = 'Welcome to the Pegs Creation TUI!\n"CLI version 0.2 by Thorn Mennet\n'
 
 
 
@@ -99,9 +103,10 @@ gw_create['menu'] = [
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
     {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Bind Gateway": tuilib.gateways_bind_tui},
-    {"Exit": tuilib.exit}
+    {"Return to Antara modules menu": tuilib.exit_main},
+    {"Exit TUI": tuilib.exit}
 ]
-gw_create['author'] = '"Welcome to the Gateways Creation TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
+gw_create['author'] = 'Welcome to the Gateways Creation TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
 
 
 gw_use = {}
@@ -125,9 +130,10 @@ gw_use['menu'] = [
     {"Execute gateways deposit": tuilib.gateways_deposit_tui},
     {"Execute gateways claim": tuilib.gateways_claim_tui},
     {"Execute gateways withdrawal": tuilib.gateways_withdrawal_tui},
-    {"Exit": tuilib.exit}
+    {"Return to Antara modules menu": tuilib.exit_main},
+    {"Exit TUI": tuilib.exit}
 ]
-gw_use['author'] = '"Welcome to the Gateways Creation TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
+gw_use['author'] = 'Welcome to the Gateways Creation TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
 
 payments = {}
 payments['header'] = "\
@@ -169,34 +175,38 @@ antara['menu'] = [
     {"Pegs Creation": pegs_create},
     {"Pegs Usage": pegs_usage},
     {"Payments": payments},
-    {"Exit": tuilib.exit}
+    {"Exit TUI": tuilib.exit}
 ]
-antara['author'] = tuilib.colorize("Welcome to the Antara Modules TUI!\nPlease provide smartchain RPC connection details for initialization\n", "blue")
+antara['author'] = "Welcome to the Antara Modules TUI!\nCLI version 0.2 by Anton Lysakov & Thorn Mennet\n"
 
 
 
 ac_rpc_options = []
+main_menu_options = ["Oracles", "Gateways Creation", "Gateways Usage", "Pegs Creation", "Pegs Usage", "Payments"]
 kmd_ac_rpc_options = ["Deposit KMD in Gateway and claim Tokens"]
 kmd_rpc_options = ["Check connection to KMD", "Send KMD gateway deposit transaction", "Execute gateways deposit"]
 kmd_connect_options = ["Connect to KMD daemon"]
-no_param_options = ["Exit"]
+no_param_options = ["Exit TUI"]
+# TODO: add more readme docs
 docs_options = ["Pegs Module Readme"]
 readme_files = ['docs/pegs_module.md']
 def submenu(menu):
     menuItems = menu['menu']
     while True:
         os.system('clear')
-        print(tuilib.colorize(menu['header'], 'pink'))
-        print(tuilib.colorize(menu['author'], 'pink'))
+        print(tuilib.colorize(menu['header'], 'blue'))
+        print(tuilib.colorize(menu['author'], 'green'))
         for item in menuItems:
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
         choice = input(">> ")
         try:
+            if int(choice) < 0:
+                raise ValueError
             if list(menuItems[int(choice)].keys())[0] == "Return to Antara modules menu":
                 submenu(antara)
-            elif int(choice) < 0:
-                raise ValueError
-            if list(menuItems[int(choice)].keys())[0] in no_param_options:
+            elif list(menuItems[int(choice)].keys())[0] in main_menu_options:
+                submenu(list(menuItems[int(choice)].values())[0])
+            elif list(menuItems[int(choice)].keys())[0] in no_param_options:
                 list(menuItems[int(choice)].values())[0]()
             elif list(menuItems[int(choice)].keys())[0] in docs_options:
                 index = docs_options.index(list(menuItems[int(choice)].keys())[0])
@@ -231,8 +241,8 @@ def main():
     menuItems = antara['menu']
     while True:
         os.system('clear')
-        print(tuilib.colorize(antara['header'], 'pink'))
-        print(antara['author'])
+        print(tuilib.colorize(antara['header'], 'blue'))
+        print(tuilib.colorize(antara['author'], 'green'))
         for item in menuItems:
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
         choice = input(">> ")
@@ -240,7 +250,7 @@ def main():
             if int(choice) < 0:
                 raise ValueError
             # Call the matching function
-            if list(menuItems[int(choice)].keys())[0] == "Exit":
+            if list(menuItems[int(choice)].keys())[0] == "Exit TUI":
                 list(menuItems[int(choice)].values())[0]()
             else:
                 submenu(list(menuItems[int(choice)].values())[0])
@@ -273,11 +283,20 @@ if __name__ == "__main__":
             pass
         else:
             print(tuilib.colorize("Succesfully connected to "+chain+" smartchain!\n", "green"))
-            time.sleep(2)
+            time.sleep(1.6)
             with (open("lib/logo.txt", "r")) as logo:
                 for line in logo:
-                    print(line, end='')
+                    parts = line.split(' ')
+                    row = ''
+                    for part in parts:
+                        if part.find('.') == -1:
+                            row += tuilib.colorize(part, 'blue')
+                        else:
+                            row += tuilib.colorize(part, 'black')
+                    print(row, end='')
+                    #print(line, end='')
                     time.sleep(0.04)
-                print("\n")
+                time.sleep(0.4)
+            print("\n")
             break
     main()

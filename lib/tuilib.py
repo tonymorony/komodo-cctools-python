@@ -26,9 +26,14 @@ def colorize(string, color):
 
     colors = {
         'blue': '\033[94m',
+        'cyan': '\033[96m',
+        'yellow': '\033[93m',
         'magenta': '\033[95m',
         'green': '\033[92m',
-        'red': '\033[91m'
+        'red': '\033[91m',
+        'black': '\033[30m',
+        'grey': '\033[90m',
+        'pink': '\033[95m'        
     }
     if color not in colors:
         return string
@@ -145,11 +150,15 @@ def token_create_tui(rpc_connection, name='', supply='', description=''):
                 return token_txid
 
 
+def oracles_info(rpc_connection):
+    oracle_txid = select_oracle_txid(rpc_connection)
+    if oracle_txid != 'back to menu':
+        info = rpc_connection.oraclesinfo(oracle_txid)
+        print(info)
+        input("Press [Enter] to continue...")
+
+
 def oracle_create_tui(rpc_connection, name='', description='', oracle_data_type=''):
-    oracles_data_types = ["Ihh -> height, blockhash, merkleroot\ns -> <256 char string\nS -> <65536 char string\nd -> <256 binary data\nD -> <65536 binary data",
-                "c -> 1 byte signed little endian number, C unsigned\nt -> 2 byte signed little endian number, T unsigned",
-                "i -> 4 byte signed little endian number, I unsigned\nl -> 8 byte signed little endian number, L unsigned",
-                "h -> 32 byte hash\n"]
     while True:
         try:
             if name == '':
@@ -157,10 +166,7 @@ def oracle_create_tui(rpc_connection, name='', description='', oracle_data_type=
             if description == '':
                 description = input("Set your oracle description: ")
             if oracle_data_type == '':
-                print(colorize("\nAvailiable data types:\n", "blue"))
-                for oracles_type in oracles_data_types:
-                    print(str(oracles_type))
-                oracle_data_type = input("Set your oracle type (e.g. Ihh): ")
+                oracle_data_type = select_oracleType()
         except KeyboardInterrupt:
             break
         else:
@@ -181,9 +187,6 @@ def oracle_create_tui(rpc_connection, name='', description='', oracle_data_type=
                 break
             finally:
                 print(colorize("Oracle creation transaction broadcasted: " + oracle_txid, "green"))
-                file = open("oracles_list", "a")
-                file.writelines(oracle_txid + "\n")
-                file.close()
                 print(colorize("Confirming oracle creation txid\n", "blue"))
                 check_if_tx_in_mempool(rpc_connection, oracle_txid)
                 try:
@@ -197,7 +200,6 @@ def oracle_create_tui(rpc_connection, name='', description='', oracle_data_type=
                 finally:
                     oraclesfund_txid = rpclib.sendrawtransaction(rpc_connection, oraclesfund_hex['hex'])
                     check_if_tx_in_mempool(rpc_connection, oraclesfund_txid)
-                print(colorize("Entry added to oracles_list file!\n", "green"))
                 input("Press [Enter] to continue...")
                 return oracle_txid
 
@@ -243,7 +245,7 @@ def oracle_register_tui(rpc_connection, oracle_txid='', data_fee=''):
     while True:
         try:
             if oracle_txid == '':
-                oracle_txid = select_oracleid(rpc_connection)
+                oracle_txid = select_oracle_txid(rpc_connection)
             if data_fee == '':
                 data_fee = input("Set publisher datafee (e.g. 0.001): ")
         except KeyboardInterrupt:
@@ -278,7 +280,7 @@ def oracle_subscription_utxogen(rpc_connection, oracle_txid='', publisher_id='',
     # TODO: have an idea since blackjoker new RPC call
     # grab all list and printout only or which owner match with node pubkey
     if oracle_txid == '':
-        oracle_txid = select_oracleid(rpc_connection)
+        oracle_txid = select_oracle_txid(rpc_connection)
     while True:
         try:
             if publisher_id == '':
@@ -327,7 +329,7 @@ def gateways_bind_tui(rpc_connection, token_id='', token_supply='', oracle_txid=
                 try:
                     oracle_name = rpclib.oracles_info(rpc_connection, oracle_txid)["name"]
                 except KeyError:
-                    print(colorize("Not valid oracleid. Please try again.", "red"))
+                    print(colorize("Not valid oracle_txid. Please try again.", "red"))
                     input("Press [Enter] to continue...")
                 while True:
                     if coin_name == '':
@@ -2049,7 +2051,7 @@ def gateway_info_tui(rpc_connection, gw_index=''):
     try:    
         info = rpc_connection.gatewaysinfo(bind_txid)
         print(colorize("Gateways Bind TXID         ["+str(bind_txid)+"]", 'green'))
-        print(colorize("Gateways Oracle TXID       ["+str(info['oracletxid'])+"]", 'green'))
+        print(colorize("Gateways Oracle TXID       ["+str(info['oracle_txid'])+"]", 'green'))
         print(colorize("Gateways Token TXID        ["+str(info['tokenid'])+"]", 'green'))
         print(colorize("Gateways Coin              ["+str(info['coin'])+"]", 'green'))
         print(colorize("Gateways Pubkeys           ["+str(info['pubkeys'])+"]", 'green'))
@@ -2377,7 +2379,7 @@ def pegs_create_tui():
             file.write('"Oraclefeed_Launch_Parameters":"'+oraclefeed_launch_str+'",\n')
             file.write('"Pegs_Creation_TXID":"'+str(pegs_txid)+'",\n')
             file.write('"Gateways_Bind_TXID":"'+str(bind_txid)+'",\n')
-            file.write('"Oracle_TXID":"'+str(info['oracletxid'])+'",\n')
+            file.write('"Oracle_TXID":"'+str(info['oracle_txid'])+'",\n')
             file.write('"Token_TXID":"'+str(info['tokenid'])+'",\n')
             file.write('"Coin":"'+str(info['coin'])+'",\n')
             file.write('"Pubkeys":"'+str(info['pubkeys'])+'",\n')
@@ -2386,7 +2388,7 @@ def pegs_create_tui():
         print("Pegs Launch Parameters: "+' '.join(paramlist))
         print("Pegs Creation TXID         ["+str(bind_txid)+"]")
         print("Gateways Bind TXID         ["+str(bind_txid)+"]")
-        print("Oracle TXID                ["+str(info['oracletxid'])+"]")
+        print("Oracle TXID                ["+str(info['oracle_txid'])+"]")
         print("Token TXID                 ["+str(info['tokenid'])+"]")
         print("Coin                       ["+str(info['coin'])+"]")
         print("Pubkeys                    ["+str(info['pubkeys'])+"]")
@@ -2435,7 +2437,7 @@ def oraclefeed_tui(jsonfile=''):
                 print("komodod not found in "+kmd_path+"! Try again.")
             else:
                 break
-        oracletxid = select_oracleid(rpc)
+        oracle_txid = select_oracle_txid(rpc)
         pubkey = rpc.getinfo()['pubkey']
         bind_txid = select_gateway(rpc)
     else:
@@ -2571,6 +2573,8 @@ def payments_create(rpc_connection, locked_blocks='', min_release='', opret_list
     try:
         txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
         print(colorize("Payments Create Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
         input("Press [Enter] to continue...")
         return txid
     except Exception as e:
@@ -2592,6 +2596,8 @@ def payments_fund(rpc_connection, createtxid='', amount='', useopret=0):
     try:
         txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
         print(colorize("Payments Fund Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
         input("Press [Enter] to continue...")
         return txid
     except Exception as e:
@@ -2608,6 +2614,8 @@ def payments_merge(rpc_connection, createtxid=''):
     try:
         txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
         print(colorize("Payments Merge Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
         input("Press [Enter] to continue...")
         return txid
     except Exception as e:
@@ -2630,6 +2638,8 @@ def payments_release(rpc_connection, createtxid='', amount='', skip_min=0):
     try:
         txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
         print(colorize("Payments Release Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
         input("Press [Enter] to continue...")
         return txid
     except Exception as e:
@@ -2660,6 +2670,8 @@ def payments_txidopret(rpc_connection, allocation='', pubkey='', destopret=''):
     try:
         txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
         print(colorize("OPRET TXID: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
         input("Press [Enter] to continue...")
         return txid
     except Exception as e:
@@ -2732,20 +2744,72 @@ def select_tokenid(rpc_connection):
     selection = validate_selection("Select Token Contract: ", token_list)
     return selection
 
-def select_oracleid(rpc_connection):
+def select_oracle_txid(rpc_connection):
     oracle_list = rpc_connection.oracleslist()
-    if len(oracles_list) == 0:
+    if len(oracle_list) == 0:
         print(colorize("No oracles on this smart chain!", "red"))
         input("Press [Enter] to continue...")
         return 'back to menu'
     i = 1
-    for oracleid in oracle_list:
-        info = rpc_connection.oraclesinfo(oracleid)
-        print("["+str(i)+"] "+info['txid']+" | "+info['name'] \
-             +" | "+info['description']+" | "+str(info['format'])+" |")
+    header = "|"+'{:^6}'.format("[#]")+"|" \
+            +'{:^66}'.format("ORACLE TXID")+"|" \
+            +'{:^32}'.format("NAME")+"|" \
+            +'{:^75}'.format("DESCRIPTION")+"|" \
+            +'{:^6}'.format("TYPE")+"|" 
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
+    for oracle_txid in oracle_list:
+        info = rpc_connection.oraclesinfo(oracle_txid)
+        row = "|"+'{:^6}'.format("["+str(i)+"]")+"|" \
+            +'{:^66}'.format(info['txid'])+"|" \
+            +'{:^32}'.format(info['name'])+"|" \
+            +'{:^75}'.format(info['description'])+"|" \
+            +'{:^6}'.format(info['format'])+"|" 
+        print(" "+row)
         i +=1
+    print(" "+table_dash)
     selection = validate_selection("Select Oracle: ", oracle_list)
     return selection
+
+def select_oracleType():
+    oracles_data_types = [
+        { "type":"Ihh", "desc":"height, blockhash, merkleroot (used by oraclefeed dapp)" },
+        { "type":"s", "desc":"String less than 256 bytes" },
+        { "type":"S", "desc":"String, less than 65563 bytes" },
+        { "type":"d", "desc":"Binary less than 256 bytes" },
+        { "type":"D", "desc":"Binary, less than 65563 bytes" },
+        { "type":"c", "desc":"1 byte little endian number (signed)" },
+        { "type":"C", "desc":"1 byte little endian number (unsigned)" },
+        { "type":"t", "desc":"2 byte little endian number (signed)" },
+        { "type":"T", "desc":"2 byte little endian number (unsigned)" },
+        { "type":"i", "desc":"4 byte little endian number (signed)" },
+        { "type":"I", "desc":"4 byte little endian number (unsigned)" },
+        { "type":"l", "desc":"8 byte little endian number (signed)" },
+        { "type":"L", "desc":"8 byte little endian number (unsigned)" },
+        { "type":"h", "desc":"32 byte hash" }
+    ]
+    i = 1
+    type_list = []
+    header = "|"+'{:^6}'.format("[#]")+"|" \
+            +'{:^6}'.format("TYPE")+"|" \
+            +'{:^57}'.format("DESCRIPTION")+"|" 
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
+    for option in oracles_data_types:
+        type_list.append(option['type'])
+        row = "|"+'{:^6}'.format("["+str(i)+"]")+"|" \
+            +'{:^6}'.format(option['type'])+"|" \
+            +'{:^57}'.format(option['desc'])+"|" 
+        print(" "+row)
+        i += 1
+    print(" "+table_dash)
+    selection = validate_selection("Select Oracle Data Type: ", type_list)
+    return selection
+        
 
 def select_gateway(rpc_connection):
     gw_list = rpc_connection.gatewayslist()
@@ -2801,21 +2865,41 @@ def select_payments(rpc_connection):
     return selection
 
 
-def select_oracle_publisher(rpc_connection, oracletxid):
-    info = rpc_connection.oraclesinfo(oracletxid)
+def select_oracle_publisher(rpc_connection, oracle_txid):
+    info = rpc_connection.oraclesinfo(oracle_txid)
     publisher_list = []
     i = 1
+    if len(info['registered']) == 0:
+        print(colorize("No publishers registered on this oracle!", "red"))
+        input("Press [Enter] to continue...")
+        return 'back to menu'
+    i = 1
+    header = "|"+'{:^5}'.format("[#]")+"|" \
+            +'{:^68}'.format("PUBLISHER (green = your pubkey")+"|" \
+            +'{:^36}'.format("BATON ADDRESS")+"|" \
+            +'{:^14}'.format("FUNDS")+"|" \
+            +'{:^14}'.format("DATAFEE")+"|" 
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
     for publisher in info['registered']:
         publisher_list.append(publisher['publisher'])
-        info = rpc_connection.oraclesinfo(oracleid)
-        if info['publisher'] == rpc_connection.getinfo()['pubkey']:
-            row = "["+str(i)+"] "+publisher['publisher']+" (your pubkey)" \
-            +" | Funds "+publisher['funds']+" | Datafee: "+str(publisher['datafee'])+" |"
-            print(colorize(row, "green"))
+        info = rpc_connection.oraclesinfo(oracle_txid)
+        if publisher['publisher'] == rpc_connection.getinfo()['pubkey']:
+            row = "|"+'{:^5}'.format("["+str(i)+"]")+"|" \
+                    +'{:^68}'.format(publisher['publisher'])+"|" \
+                    +'{:^36}'.format(publisher['baton'])+"|" \
+                    +'{:^14}'.format(str(publisher['funds'])[:12])+"|" \
+                    +'{:^14}'.format(str(publisher['datafee'])[:12])+"|" 
+            print(colorize(" "+row, "green"))
         else: 
-            row = "["+str(i)+"] "+publisher['publisher'] \
-            +" | Funds "+publisher['funds']+" | Datafee: "+str(publisher['datafee'])+" |"
-            print(colorize(row, "blue"))
+            row = "|"+'{:^5}'.format("["+str(i)+"]")+"|" \
+                    +'{:^68}'.format(publisher['publisher'])+"|" \
+                    +'{:^36}'.format(publisher['baton'])+"|" \
+                    +'{:^14}'.format(str(publisher['funds'])[:12])+"|" \
+                    +'{:^14}'.format(str(publisher['datafee'])[:12])+"|" 
+            print(colorize(" "+row, "blue"))
         i +=1
     selected = validate_selection("Select Oracle Publisher to subscribe to: ", publisher_list)
     return selected
