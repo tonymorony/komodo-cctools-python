@@ -17,6 +17,7 @@ ______                 _____  _____ \n\
        
 
 menuItems = [
+    {"Pegs Module Readme": tuilib.readme_tui},
     {"Check connection to assetchain": tuilib.getinfo_tui},
     {"Check assetchain mempool": tuilib.print_mempool},
     {"Check connection to KMD": tuilib.getinfo_tui},
@@ -47,6 +48,8 @@ def main():
             # Call the matching function
             if list(menuItems[int(choice)].keys())[0] == "Exit":
                 list(menuItems[int(choice)].values())[0]()
+            elif list(menuItems[int(choice)].keys())[0] == "Pegs Module Readme":
+                list(menuItems[int(choice)].values())[0]('docs/pegs_module.md')
             # We have to call KMD specific functions with connection to KMD daemon
             elif list(menuItems[int(choice)].keys())[0] == "Connect to KMD daemon":
                 rpc_connection_kmd = list(menuItems[int(choice)].values())[0]()
