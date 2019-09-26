@@ -4,15 +4,6 @@ from lib import rpclib, tuilib
 import os
 import time
 
-header = "\
-                 _                       _____                      _       _           _           __  __           _       _           \n\
-     /\         | |                     / ____|                    | |     | |         (_)         |  \/  |         | |     | |          \n\
-    /  \   _ __ | |_ __ _ _ __ __ _    | (___  _ __ ___   __ _ _ __| |_ ___| |__   __ _ _ _ __     | \  / | ___   __| |_   _| | ___  ___ \n\
-   / /\ \ | '_ \| __/ _` | '__/ _` |    \___ \| '_ ` _ \ / _` | '__| __/ __| '_ \ / _` | | '_ \    | |\/| |/ _ \ / _` | | | | |/ _ \/ __| \n\
-  / ____ \| | | | || (_| | | | (_| |    ____) | | | | | | (_| | |  | || (__| | | | (_| | | | | |   | |  | | (_) | (_| | |_| | |  __/\__ \ \n\
- /_/    \_\_| |_|\__\__,_|_|  \__,_|   |_____/|_| |_| |_|\__,_|_|   \__\___|_| |_|\__,_|_|_| |_|   |_|  |_|\___/ \__,_|\__,_|_|\___||___/ \n"
-
-
 oracles = {}
 oracles['header'] = "\
                  _                       ____                 _               __  __           _       _       \n\
@@ -33,7 +24,7 @@ oracles['menu'] = [
     {"Upload file to oracle": tuilib.convert_file_oracle_D},
     {"Display list of files uploaded to this AC": tuilib.display_files_list},
     {"Download files from oracle": tuilib.files_downloader},
-    {"Exit": exit}
+    {"Exit": tuilib.exit}
 ]
 oracles['author'] = '"Welcome to the OraclesCC TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
 
@@ -63,7 +54,7 @@ pegs_usage['menu'] = [
     {"Check Pegs account info": tuilib.pegs_accountinfo_tui},
     {"Check Pegs addresses": tuilib.pegs_addresses_tui},
     {"Check Pegs worst accounts": tuilib.pegs_worstaccounts_tui},
-    {"Exit": exit}
+    {"Exit": tuilib.exit}
 ]
 pegs_usage['author'] = '"Welcome to the Pegs Usage TUI!\n"CLI version 0.2 by Thorn Mennet\n'
 
@@ -82,7 +73,7 @@ pegs_create['menu'] = [
     {"Pegs Module Readme": tuilib.readme_tui},
     {"Create a Pegs assetchain": tuilib.pegs_create_tui},
     {"Run oraclefeed": tuilib.oraclefeed_tui},
-    {"Exit": exit}
+    {"Exit": tuilib.exit}
 ]
 pegs_create['author'] = '"Welcome to the Pegs Creation TUI!\n"CLI version 0.2 by Thorn Mennet\n'
 
@@ -108,7 +99,7 @@ gw_create['menu'] = [
     {"Register as publisher for oracle": tuilib.oracle_register_tui},
     {"Subscribe on oracle (+UTXO generator)": tuilib.oracle_subscription_utxogen},
     {"Bind Gateway": tuilib.gateways_bind_tui},
-    {"Exit": exit}
+    {"Exit": tuilib.exit}
 ]
 gw_create['author'] = '"Welcome to the Gateways Creation TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
 
@@ -134,7 +125,7 @@ gw_use['menu'] = [
     {"Execute gateways deposit": tuilib.gateways_deposit_tui},
     {"Execute gateways claim": tuilib.gateways_claim_tui},
     {"Execute gateways withdrawal": tuilib.gateways_withdrawal_tui},
-    {"Exit": exit}
+    {"Exit": tuilib.exit}
 ]
 gw_use['author'] = '"Welcome to the Gateways Creation TUI!\n"CLI version 0.2 by Anton Lysakov & Thorn Mennet\n'
 
@@ -152,25 +143,37 @@ payments['header'] = "\
 payments['menu'] = [
     {"Check current connection": tuilib.getinfo_tui},
     {"Check mempool": tuilib.print_mempool},
-    {"View Payments contract info": tuilib.payments_info},
+    {"View Payments contracts": tuilib.payments_info},
     {"Create Payments contract": tuilib.payments_create},
     {"Fund Payments contract": tuilib.payments_fund},
-    {"Merge funds in Payments contract": tuilib.payments_merge},
-    {"Release funds in Payments contract": tuilib.payments_release},
-    {"Exit": exit}
+    {"Merge Payments contract funds": tuilib.payments_merge},
+    {"Release Payments contract funds": tuilib.payments_release},
+    {"Return to Antara modules menu": tuilib.exit_main},
+    {"Exit TUI": tuilib.exit}
 ]
-payments['author'] = '"Welcome to the Gateways Creation TUI!\n"CLI version 0.2 by Thorn Mennet\n'
+payments['author'] = '"Welcome to the Payments Module TUI!\n"CLI version 0.2 by Thorn Mennet\n'
 
+antara = {}
+antara['header'] = "\
+                 _                       _____                      _       _           _           __  __           _       _           \n\
+     /\         | |                     / ____|                    | |     | |         (_)         |  \/  |         | |     | |          \n\
+    /  \   _ __ | |_ __ _ _ __ __ _    | (___  _ __ ___   __ _ _ __| |_ ___| |__   __ _ _ _ __     | \  / | ___   __| |_   _| | ___  ___ \n\
+   / /\ \ | '_ \| __/ _` | '__/ _` |    \___ \| '_ ` _ \ / _` | '__| __/ __| '_ \ / _` | | '_ \    | |\/| |/ _ \ / _` | | | | |/ _ \/ __| \n\
+  / ____ \| | | | || (_| | | | (_| |    ____) | | | | | | (_| | |  | || (__| | | | (_| | | | | |   | |  | | (_) | (_| | |_| | |  __/\__ \ \n\
+ /_/    \_\_| |_|\__\__,_|_|  \__,_|   |_____/|_| |_| |_|\__,_|_|   \__\___|_| |_|\__,_|_|_| |_|   |_|  |_|\___/ \__,_|\__,_|_|\___||___/ \n"
 
-antaraMenu = [
+antara['menu'] = [
     {"Oracles": oracles},
     {"Gateways Creation": gw_create},
     {"Gateways Usage": gw_use},
     {"Pegs Creation": pegs_create},
     {"Pegs Usage": pegs_usage},
     {"Payments": payments},
-    {"Exit": exit}
+    {"Exit": tuilib.exit}
 ]
+antara['author'] = tuilib.colorize("Welcome to the Antara Modules TUI!\nPlease provide smartchain RPC connection details for initialization\n", "blue")
+
+
 
 ac_rpc_options = []
 kmd_ac_rpc_options = ["Deposit KMD in Gateway and claim Tokens"]
@@ -189,7 +192,9 @@ def submenu(menu):
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
         choice = input(">> ")
         try:
-            if int(choice) < 0:
+            if list(menuItems[int(choice)].keys())[0] == "Return to Antara modules menu":
+                submenu(antara)
+            elif int(choice) < 0:
                 raise ValueError
             if list(menuItems[int(choice)].keys())[0] in no_param_options:
                 list(menuItems[int(choice)].values())[0]()
@@ -223,11 +228,11 @@ def submenu(menu):
             pass
 
 def main():
-    menuItems = antaraMenu
+    menuItems = antara['menu']
     while True:
         os.system('clear')
-        print(tuilib.colorize(header, 'pink'))
-        print(tuilib.colorize('CLI version 0.2 by Thorn Mennet\n', 'green'))
+        print(tuilib.colorize(antara['header'], 'pink'))
+        print(antara['author'])
         for item in menuItems:
             print(tuilib.colorize("[" + str(menuItems.index(item)) + "] ", 'blue') + list(item.keys())[0])
         choice = input(">> ")
@@ -258,9 +263,8 @@ if __name__ == "__main__":
                 rpc_connection.setpubkey(valid_pubkey)
                 print(tuilib.colorize("Pubkey is succesfully set!", "green"))
         except Exception as e:
-            print("no RPC: "+str(e))
             try:
-                print(tuilib.colorize("Welcome to the Antara TUI!\nPlease provide smartchain RPC connection details for initialization", "blue"))
+                print(antara['author'])
                 rpc_connection = tuilib.rpc_connection_tui()
             except Exception as e:
                 print(e)
@@ -269,6 +273,7 @@ if __name__ == "__main__":
             pass
         else:
             print(tuilib.colorize("Succesfully connected to "+chain+" smartchain!\n", "green"))
+            time.sleep(2)
             with (open("lib/logo.txt", "r")) as logo:
                 for line in logo:
                     print(line, end='')

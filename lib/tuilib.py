@@ -1937,6 +1937,9 @@ def top_warriors_rating(rpc_connection):
 def exit():
     sys.exit()
 
+def exit_main():
+    return 'back to Antara modules menu'
+
 
 def warrior_trasnfer(rpc_connection):
     print(colorize("Your brave warriors: \n", "blue"))
@@ -2394,7 +2397,8 @@ def pegs_create_tui():
         return pegs_txid
     else:
         print(colorize("Pegs TXID failed!        ["+str(result)+"]", 'red'))
-        exit(1)
+        input("Press [Enter] to continue...")
+        return 'back to menu'
     
 def spawn_oraclefeed(dest_chain, kmd_path, oracle_txid, pubkey, bind_txid):
     oraclefeed_build_log = str(dest_chain)+"_oraclefeed_build.log"
@@ -2546,17 +2550,123 @@ def spawn_chain_pair(coin, kmd_path, paramlist):
 def payments_info(rpc_connection):
     payments_txid = select_payments(rpc_connection)
     if payments_txid != 'back to menu':
-        info = rpc_connection.paymentsinfo(payments_txid)
+        info = rpc_connection.paymentsinfo('[\"{}\"]'.format(payments_txid))
         print(info)
+        input("Press [Enter] to continue...")
 
-def payments_create(rpc_connection):
-    pass
-def payments_fund(rpc_connection):
-    pass
-def payments_merge(rpc_connection):
-    pass
-def payments_release(rpc_connection):
-    pass
+def payments_create(rpc_connection, locked_blocks='', min_release='', opret_list=[]):
+    if locked_blocks == '':
+        locked_blocks = int(input("How many blocks to lock before release possible?"))
+    if min_release == '':
+        min_release = int(input("Minimum release amount?"))
+    # Get txidopret list
+    if len(opret_list) == 0:
+        num_recipients = int(input("How many recipients?"))
+        for i in range(num_recipients):
+            opret_txid = payments_txidopret(rpc_connection)
+            opret_list.append(opret_txid)
+    opret_params = str(opret_list).strip('[]')
+    params = "[{},{},{}]".format(locked_blocks, min_release, opret_params)
+    raw_hex = rpc_connection.paymentscreate(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Create Txid: "+txid, 'green'))
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+def payments_fund(rpc_connection, createtxid='', amount='', useopret=0):
+    if createtxid == '':
+        createtxid = select_payments(rpc_connection)
+    if amount == '':
+        amount = float(input("Amount of funds to send: "))
+    if useopret == 1:
+        params = "[\"{}\",{},{}]".format(createtxid, amount, useopret)
+    else:
+        params = "[\"{}\",{}]".format(createtxid, amount)
+    raw_hex = rpc_connection.paymentsfund(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Fund Txid: "+txid, 'green'))
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+def payments_merge(rpc_connection, createtxid=''):
+    if createtxid == '':
+        createtxid = select_payments(rpc_connection)
+    params = "[\"{}\"]".format(createtxid)
+    raw_hex = rpc_connection.paymentsmerge(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Merge Txid: "+txid, 'green'))
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+
+def payments_release(rpc_connection, createtxid='', amount='', skip_min=0):
+    if createtxid == '':
+        createtxid = select_payments(rpc_connection)
+    if amount == '':
+        amount = float(input("Amount of funds to release: "))
+    if skip_min == 1:
+        params = "[\"{}\",{},{}]".format(createtxid, amount, skip_min)
+    else:
+        params = "[\"{}\",{}]".format(createtxid, amount)
+    raw_hex = rpc_connection.paymentsrelease(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Release Txid: "+txid, 'green'))
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+
+def payments_txidopret(rpc_connection, allocation='', pubkey='', destopret=''):
+    if pubkey == '':
+        pubkey = input("Recipient pubkey: ")
+    scriptPubKey = "21"+pubkey+"ac"
+    if allocation == '':
+        allocation = input("Allocation: ")
+    if destopret == '':
+        add_destopret = input("Do you want to add destination OPRET data? (y/n): ")
+        if add_destopret == 'y' or add_destopret == 'Y':
+            destopret = input("Enter destination OPRET data: ")
+            params = "[{},\"{}\",\"{}\"]".format(allocation, scriptPubKey, destopret)
+        else:
+            params = "[{},\"{}\"]".format(allocation, scriptPubKey)
+    elif destopret is False:
+        params = "[{},\"{}\"]".format(allocation, scriptPubKey)
+    else:
+        params = "[{},\"{}\",\"{}\"]".format(allocation, scriptPubKey, destopret)
+    raw_hex = rpc_connection.paymentstxidopret(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("OPRET TXID: "+txid, 'green'))
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
 
 # Selection menus and validation
 
@@ -2626,7 +2736,8 @@ def select_oracleid(rpc_connection):
     oracle_list = rpc_connection.oracleslist()
     if len(oracles_list) == 0:
         print(colorize("No oracles on this smart chain!", "red"))
-        exit(1)
+        input("Press [Enter] to continue...")
+        return 'back to menu'
     i = 1
     for oracleid in oracle_list:
         info = rpc_connection.oraclesinfo(oracleid)
@@ -2640,7 +2751,8 @@ def select_gateway(rpc_connection):
     gw_list = rpc_connection.gatewayslist()
     if len(gw_list) == 0:
         print(colorize("No gateways on this smart chain!", "red"))
-        exit(1)
+        input("Press [Enter] to continue...")
+        return 'back to menu'
     i = 1
     for gw in gw_list:
         info = rpc_connection.gatewaysinfo(gw)
@@ -2656,10 +2768,35 @@ def select_payments(rpc_connection):
         input("Press [Enter] to continue...")
         return 'back to menu'
     i = 1
+    header = "|"+'{:^5}'.format("[#]")+"|" \
+            +'{:^66}'.format("Transaction Hash")+"|" \
+            +'{:^16}'.format("Eligible Funds")+"|" \
+            +'{:^13}'.format("Total Funds")+"|" \
+            +'{:^20}'.format("Min Release Amount")+"|" \
+            +'{:^20}'.format("Min Release Height")+"|" \
+            +'{:^23}'.format("Blocks Until Eligible")+"|" \
+            +'{:^7}'.format("UTXOs")+"|"
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
+    block_height = rpc_connection.getblockcount()
     for txid in payments_list:
-        info = rpc_connection.paymentsinfo(txid)
-        print("["+str(i)+"] "+info['txid']+" | "+info['elegiblefunds']+" | "+info['totalfunds']+" |")
-        i +=1
+        info = rpc_connection.paymentsinfo('[\"{}\"]'.format(txid))
+        blocks_until_eligible = info['min_release_height'] - block_height
+        if blocks_until_eligible < 1:
+            blocks_until_eligible = colorize('{:^23}'.format("Eligible"), 'green')
+        row = "|"+'{:^5}'.format("["+str(i)+"]")+"|" \
+             +'{:^66}'.format(txid)+"|" \
+             +'{:^16}'.format(str(info['elegiblefunds']))+"|" \
+             +'{:^13}'.format(str(info['totalfunds']))+"|" \
+             +'{:^20}'.format(str(info['minrelease']))+"|" \
+             +'{:^20}'.format(str(info['min_release_height']))+"|" \
+             +'{:^23}'.format(str(blocks_until_eligible))+"|" \
+             +'{:^7}'.format(str(info['utxos']))+"|"
+        print(" "+row)
+        i += 1
+    print(" "+table_dash)
     selection = validate_selection("Select Payments contract: ", payments_list)
     return selection
 
