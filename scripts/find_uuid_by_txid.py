@@ -32,7 +32,7 @@ def find_uuid_by_txhash(dirpath, txhash):
         events = d.get('events')
         for event in events:
             try:
-                tx = event.get('event').get('data').get('transaction').get('tx_hash')
+                tx = event.get('event').get('data').get('tx_hash')
                 if tx == txhash:
                     return swap_uuid
                 else:
