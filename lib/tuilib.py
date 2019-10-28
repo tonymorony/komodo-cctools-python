@@ -2070,7 +2070,7 @@ def gateway_info_tui(rpc_connection, gw_index=''):
     try:    
         info = rpc_connection.gatewaysinfo(bind_txid)
         print(colorize("Gateways Bind TXID         ["+str(bind_txid)+"]", 'green'))
-        print(colorize("Gateways Oracle TXID       ["+str(info['oracle_txid'])+"]", 'green'))
+        print(colorize("Gateways Oracle TXID       ["+str(info['oracletxid'])+"]", 'green'))
         print(colorize("Gateways Token TXID        ["+str(info['tokenid'])+"]", 'green'))
         print(colorize("Gateways Coin              ["+str(info['coin'])+"]", 'green'))
         print(colorize("Gateways Pubkeys           ["+str(info['pubkeys'])+"]", 'green'))
