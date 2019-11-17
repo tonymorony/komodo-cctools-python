@@ -53,9 +53,10 @@ if __name__ == "__main__":
         try:
             print(tuilib.colorize("Welcome to the MarmaraCC TUI!\n"
                                   "Please provide asset chain RPC connection details for initialization", "blue"))
-            rpc_connection = tuilib.def_credentials(chain)
-            rpclib.getinfo(rpc_connection)
-        except Exception:
+            rpc_connection = rpclib.def_credentials(chain)
+            rpc_connection.getinfo(rpc_connection)
+        except Exception as e:
+            print(e)
             print(tuilib.colorize("Cant connect to RPC! Please re-check credentials.", "pink"))
         else:
             print(tuilib.colorize("Succesfully connected!\n", "green"))
