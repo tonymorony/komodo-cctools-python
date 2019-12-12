@@ -2375,7 +2375,7 @@ def pegs_create_tui():
     selfsend_txid = primary_rpc.sendtoaddress(primary_addr, int(balance)/2)
     check_if_tx_in_mempool(primary_rpc, selfsend_txid)
     token_txid = token_create_tui(primary_rpc, external_coin, token_supply, external_coin+"_tether")
-    oracle_txid = oracle_create_tui(primary_rpc, external_coin, external_coin+"_tether", 'Ihh')
+    oracle_txid = oracle_create_tui(primary_rpc, external_coin, external_coin+"_tether", 'IhhL')
     oracle_register_tui(primary_rpc, oracle_txid, '0.001')
     oracle_subscription_utxogen(primary_rpc, oracle_txid, primary_pubkey, '50', 10)
     tokensupply = str(primary_rpc.tokeninfo(token_txid)['supply'])
@@ -2429,10 +2429,10 @@ def spawn_oraclefeed(dest_chain, kmd_path, oracle_txid, pubkey, bind_txid):
     oraclefeed_log = str(dest_chain)+"_oraclefeed.log"
     oraclefeed_output = open(oraclefeed_log,'w+')
     print("running oraclefeed ")
-    subprocess.Popen([kmd_path+"/oraclefeed", dest_chain, oracle_txid, pubkey, "Ihh", bind_txid, kmd_path+"/komodo-cli"], stdout=oraclefeed_output, stderr=oraclefeed_output, universal_newlines=True)
+    subprocess.Popen([kmd_path+"/oraclefeed", dest_chain, oracle_txid, pubkey, "IhhL", bind_txid, kmd_path+"/komodo-cli"], stdout=oraclefeed_output, stderr=oraclefeed_output, universal_newlines=True)
     print(" Use tail -f "+kmd_path+"/"+oraclefeed_log+" for oraclefeed log console messages")
     print(colorize("IMPORTANT: The oraclefeed must be running at all times for the Pegs contract to work!", "red"))
-    oraclefeed_launch_str = str(kmd_path+"/oraclefeed "+dest_chain+" "+oracle_txid+" "+pubkey+" Ihh "+bind_txid+" "+kmd_path+"/komodo-cli")
+    oraclefeed_launch_str = str(kmd_path+"/oraclefeed "+dest_chain+" "+oracle_txid+" "+pubkey+" IhhL "+bind_txid+" "+kmd_path+"/komodo-cli")
     print(colorize("Launch it with "+oraclefeed_launch_str, "blue"))
     input("Press [Enter] to continue...")
     return oraclefeed_launch_str
@@ -2794,7 +2794,7 @@ def select_oracle_txid(rpc_connection):
 
 def select_oracleType():
     oracles_data_types = [
-        { "type":"Ihh", "desc":"height, blockhash, merkleroot (used by oraclefeed dapp)" },
+        { "type":"IhhL", "desc":"height, blockhash, merkleroot (used by oraclefeed dapp)" },
         { "type":"s", "desc":"String less than 256 bytes" },
         { "type":"S", "desc":"String, less than 65563 bytes" },
         { "type":"d", "desc":"Binary less than 256 bytes" },
