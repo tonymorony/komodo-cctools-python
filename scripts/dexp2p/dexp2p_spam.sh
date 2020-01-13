@@ -9,7 +9,7 @@ done
 
 # getting orderbooks
 i=0
-j=$(($$NODESAMOUNT-1))
+j=$(($NODESAMOUNT-1))
 while [ $i -le $j ]
 do
   TAG=$(( 7000 + $i ))
