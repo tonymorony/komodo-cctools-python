@@ -6,7 +6,7 @@ from slickrpc import Proxy, exc
 import random
 
 # init params, nodes amount can't be < than 5
-dexp2p_clients_to_start = 100
+dexp2p_clients_to_start = int(os.getenv('NODESAMOUNT'))
 ac_name = 'DEXTEST'
 node_ip = '127.0.0.1'
 

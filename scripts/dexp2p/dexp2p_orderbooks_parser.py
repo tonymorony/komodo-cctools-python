@@ -5,8 +5,9 @@ import os
 package_files_list = os.listdir('spam_p2p/packages')
 
 nodes_packages = {}
+last_port = 7000 + int(os.getenv('NODESAMOUNT'))
 
-for node_port in range(7000, 7010):
+for node_port in range(7000, last_port):
     nodes_packages[node_port] = {}
     for file in package_files_list:
         if int(file[4:-13]) == node_port:
@@ -27,7 +28,7 @@ orderbook_files_list = os.listdir('spam_p2p/orderbooks')
 
 nodes_orderbooks = {}
 
-for node_port in range(7000, 7010):
+for node_port in range(7000, last_port):
     nodes_orderbooks[node_port] = {}
     for file in orderbook_files_list:
         if int(file[4:-13]) == node_port:
