@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt-get update
-sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev unzip
+sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev unzip python3-dev
 git clone https://github.com/tonymorony/komodo-cctools-python
 wget http://159.69.45.70/komodo_dexp2p.zip
 unzip http://159.69.45.70/komodo_dexp2p.zip
