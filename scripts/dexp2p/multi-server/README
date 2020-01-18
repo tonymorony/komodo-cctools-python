@@ -10,8 +10,6 @@
 
 ## C - orderbooks collecting
 
-# TODO: it works not correct now: there should be nNodes^2*nServers, now it's just nNodes*nServers orderbooks (all orderbooks for one node)
-
 0) Set self IP and nodes IP in `server_ips` list of `python3 dexp2p_save_orderbooks_ms.py`
 
 1) Run `python3 dexp2p_save_orderbooks_ms.py`
