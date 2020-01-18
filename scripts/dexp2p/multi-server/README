@@ -6,8 +6,7 @@
 
 ## B - spamming (after all nodes started)
 
-1) Set servers IPs in dexp2p_spam_ms
-2) Start spam on each  node by `./dexp2p_start_spam_ms.sh <NODEWHITEIP>`
+1) Start spam on each  node by `./dexp2p_start_spam_ms.sh <NODEWHITEIP>`
 
 ## C - orderbooks collecting (TODO: implement me)
 
