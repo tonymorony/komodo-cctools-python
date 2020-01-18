@@ -8,7 +8,9 @@
 
 1) Start spam on each  node by `./dexp2p_start_spam_ms.sh <NODEWHITEIP>`
 
-## C - orderbooks collecting (TODO: implement me)
+## C - orderbooks collecting
+
+# TODO: it works not correct now: there should be nNodes^2*nServers, now it's just nNodes*nServers orderbooks (all orderbooks for one node)
 
 0) Set self IP and nodes IP in `server_ips` list of `python3 dexp2p_save_orderbooks_ms.py`
 
@@ -18,7 +20,7 @@ packages of server's nodes will be in `packages` directory
 orderbooks for each nodeip_port will be in `orderbooks` directory
 
 
-## D - orderbooks parsing (TODO: implement me)
+## D - orderbooks parsing
 
 1) run `python3 dexp2p_orderbooks_parser_ms.py` - it should parse files from step B into something human readable
 
