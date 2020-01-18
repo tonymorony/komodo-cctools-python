@@ -2,6 +2,8 @@
 
 sudo apt-get update
 sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev unzip python3-dev
+pip3 install setuptools 
+pip3 install wheel slick-bitcoinrpc
 git clone https://github.com/tonymorony/komodo-cctools-python
 wget http://159.69.45.70/komodo_dexp2p.zip
 unzip komodo_dexp2p.zip
