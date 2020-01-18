@@ -1,0 +1,23 @@
+## A - start nodes on multiply servers
+
+1) Set NODESAMOUNT env
+2) Set `is_first_server` in nodes spawn script for a frist server (TODO: why it's not env?)
+2.1) for each next server add new ip of previous server in ips array of spawn script
+
+## B - spamming (after all nodes started) and orderbooks collecting
+
+1) Set servers IPs in dexp2p_spam_ms
+2) Start spam on each  node by `./dexp2p_start_spam_ms.sh <NODEWHITEIP>`
+
+packages of server's nodes will be in `packages` directory
+orderbooks for each nodeip_port will be in `orderbooks` directory
+
+## C - orderbooks parsing
+
+1) run `python3 dexp2p_orderbooks_parser_ms.py` - it should parse files from step B into something human readable
+
+## D - re-run tests
+
+1) Kill all daemons (something like a `ps aux | grep DEX` and then `kill -9 {firstPID..lastPID}` or `pkill komodod` if you don't have another komodod daemons
+2) ./dexp2p_clean.sh
+3) return to A
