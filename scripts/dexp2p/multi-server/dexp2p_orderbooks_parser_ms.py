@@ -12,7 +12,7 @@ self_ip = "159.69.45.70"
 for node_port in range(7000, last_port):
     nodes_packages[node_port] = {}
     for file in package_files_list:
-        if int(file.split("_")[2]) == node_port:
+        if int(file.split("_")[1]) == node_port:
             with open('spam_p2p/packages/' + file) as json_file:
                 packages_counter = 0
                 list_of_pacakges = json_file.readlines()
