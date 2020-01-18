@@ -12,7 +12,6 @@ node_ip = '127.0.0.1'
 is_first_server = True
 ips_of_running_servers = ["159.0.0.1", "159.0.0.2"]
 
-
 # pre-creating separate folders
 for i in range(dexp2p_clients_to_start):
     os.mkdir("node_" + str(i))
@@ -38,7 +37,7 @@ for i in range(dexp2p_clients_to_start):
             subprocess.call(['./komodod', '-ac_name=' + ac_name,
                              '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                              '-rpcport=' + str(7000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                             '-ac_supply=10000000000', '-dexp2p=2', '-addnode=' + first_server_ip + ':6000', '-whitelist=127.0.0.1', '-daemon'])
+                             '-ac_supply=10000000000', '-dexp2p=2', '-addnode=127.0.0.1:6000', '-whitelist=127.0.0.1', '-daemon'])
             time.sleep(5)
     # not first server nodes connecting to the random nodes of already started server(s)
     else:
@@ -53,7 +52,7 @@ for i in range(dexp2p_clients_to_start):
             connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start)
             while True:
                 # to not connect to the same node twice
-                if connect_port in nodes_ports_to_connect:
+                if connect_port in already_choosen_ports:
                     connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start)
                 else:
                     already_choosen_ports.append(connect_port)
