@@ -1,6 +1,10 @@
+## 0 - Server preapration
+
+Run `prepare_dexp2p_node_ms.sh`
+
 ## A - start nodes on multiply servers
 
-1) Set NODESAMOUNT env
+1) Set NODESAMOUNT env variable 
 2) Set `is_first_server` in nodes spawn script for a frist server (TODO: why it's not env?)
 2.1) for each next server add new ip of previous server in ips array of spawn script
 
