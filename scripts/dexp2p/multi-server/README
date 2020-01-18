@@ -10,7 +10,9 @@
 
 ## C - orderbooks collecting (TODO: implement me)
 
-1) Run `python3 dexp2p_save_orderbooks_ms.py `
+0) Set self IP and nodes IP in `server_ips` list of `python3 dexp2p_save_orderbooks_ms.py`
+
+1) Run `python3 dexp2p_save_orderbooks_ms.py`
 
 packages of server's nodes will be in `packages` directory
 orderbooks for each nodeip_port will be in `orderbooks` directory
