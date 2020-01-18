@@ -11,3 +11,6 @@ wget https://raw.githubusercontent.com/KomodoPlatform/komodo/master/zcutil/fetch
 chmod u+x fetch-params.sh
 ./fetch-params.sh
 cp komodo-cctools-python/scripts/dexp2p/* .
+mkdir spam_p2p
+mkdir spam_p2p/orderbooks
+mkdir spam_p2p/packages
