@@ -10,7 +10,7 @@ unzip komodo_dexp2p.zip
 wget https://raw.githubusercontent.com/KomodoPlatform/komodo/master/zcutil/fetch-params.sh
 chmod u+x fetch-params.sh
 ./fetch-params.sh
-cp komodo-cctools-python/scripts/dexp2p/* .
+cp komodo-cctools-python/scripts/dexp2p/multi-server/* .
 mkdir spam_p2p
 mkdir spam_p2p/orderbooks
 mkdir spam_p2p/packages
