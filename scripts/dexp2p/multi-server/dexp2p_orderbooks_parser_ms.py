@@ -12,7 +12,7 @@ self_ip = "159.69.45.70"
 for node_port in range(7000, last_port):
     nodes_packages[node_port] = {}
     for file in package_files_list:
-        if int(file.split("_")[1]) == node_port:
+        if int(file.split("_")[2]) == node_port:
             with open('spam_p2p/packages/' + file) as json_file:
                 packages_counter = 0
                 list_of_pacakges = json_file.readlines()
@@ -36,5 +36,5 @@ for file in orderbook_files_list:
     with open('spam_p2p/orderbooks/' + file) as json_file:
         file_content = json.load(json_file)
     packages_amount = len(json.loads(file_content))
-    node_address = file.split("_")[0] + ":" +  file.split("_")[1][:-5]
-    print("Packages received from node " + node_address + " "  + str(packages_amount))
+    node_address = file.split("_")[1] + ":" +  file.split("_")[2][:-5]
+    print("Packages received from node " + node_address + " "  + str(packages_amount) + " by node " + self_ip + ":" + file.split("_")[0])

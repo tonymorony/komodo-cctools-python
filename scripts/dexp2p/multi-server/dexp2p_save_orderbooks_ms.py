@@ -20,7 +20,7 @@ for i in range(proxies_to_create):
             for match in dex_list["matches"]:
                 if server_ip in match["payload"]:
                     matches_for_ip.append(match)
-            file_name = server_ip + "_" + str(iter_port) + ".json"
+            file_name = str(rpcport) + '_' + server_ip + "_" + str(iter_port) + ".json"
             matches_json = json.dumps(matches_for_ip)
             with open('spam_p2p/orderbooks/' + file_name, "w+") as json_file:
                 json.dump(matches_json, json_file)
