@@ -49,7 +49,7 @@ print("Network setup completed. Starting to spam.")
 # 3 - Starting spam
 for host in hosts:
     non_parallel_client = SSHClient(host, user="root")
-    output = client.run_command("export NODESAMOUNT=" + str(amount_of_nodes_per_host) + " && ./dexp2p_start_spam_ms.sh " + host + " " + str(spam_duration_seconds), sudo=True)
+    output = non_parallel_client.run_command("export NODESAMOUNT=" + str(amount_of_nodes_per_host) + " && ./dexp2p_start_spam_ms.sh " + host + " " + str(spam_duration_seconds), sudo=True)
 time.sleep(spam_duration_seconds)
 
 # 4 - Collecting results
