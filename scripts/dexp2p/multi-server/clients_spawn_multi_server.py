@@ -10,7 +10,10 @@ dexp2p_clients_to_start = int(os.getenv('NODESAMOUNT'))
 ac_name = 'DEXTEST'
 node_ip = os.getenv('NODE_IP')
 is_first_server = os.getenv('IS_FIRST')
-ips_of_running_servers = ["159.0.0.1", "159.0.0.2"]
+ips_of_running_servers = []
+with open("ip_list", "r") as f:
+    for line in f:
+        ips_of_running_servers.append(line.rstrip('\n'))
 
 # pre-creating separate folders
 for i in range(dexp2p_clients_to_start):
