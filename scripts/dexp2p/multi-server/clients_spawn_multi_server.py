@@ -25,7 +25,7 @@ for i in range(dexp2p_clients_to_start):
 # start numnodes daemons, changing folder name and port
 for i in range(dexp2p_clients_to_start):
     # first server setup - first node shouldn't have any addnode, all other clients we caonnect to the firstnode
-    if is_first_server:
+    if is_first_server == "True":
         if i == 0:
             subprocess.call(['./komodod', '-ac_name=' + ac_name,
                              '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
