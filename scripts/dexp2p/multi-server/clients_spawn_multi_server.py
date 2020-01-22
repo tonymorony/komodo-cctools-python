@@ -49,18 +49,22 @@ for i in range(dexp2p_clients_to_start):
                          '-rpcport=' + str(7000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
                          '-ac_supply=10000000000', '-dexp2p=2', '-whitelist=127.0.0.1', '-daemon']
         already_choosen_ports = []
-        # choosing 4 random pre-determined already started nodes ports to connect
-        for j in range(4):
-            connect_ip = random.choice(ips_of_running_servers)
-            connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start - 1)
-            while True:
-                # to not connect to the same node twice
-                if connect_port in already_choosen_ports:
-                    connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start - 1)
-                else:
-                    already_choosen_ports.append(connect_port)
-                    break
-            daemon_args.append("-addnode=" + connect_ip + ":" + str(connect_port))
+        if dexp2p_clients_to_start > 4:
+            # choosing 4 random pre-determined already started nodes ports to connect
+            for j in range(4):
+                connect_ip = random.choice(ips_of_running_servers)
+                connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start - 1)
+                while True:
+                    # to not connect to the same node twice
+                    if connect_port in already_choosen_ports:
+                        connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start - 1)
+                    else:
+                        already_choosen_ports.append(connect_port)
+                        break
+                daemon_args.append("-addnode=" + connect_ip + ":" + str(connect_port))
+        # 1 node per server mode POC
+        else:
+            daemon_args.append("-addnode=" + ips_of_running_servers[0] + ":6000")
         subprocess.call(daemon_args)
         time.sleep(5)
 
