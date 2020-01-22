@@ -8,7 +8,7 @@ import random
 # init params, nodes amount can't be < than 5
 dexp2p_clients_to_start = int(os.getenv('NODESAMOUNT'))
 ac_name = 'DEXTEST'
-node_ip = '127.0.0.1'
+node_ip = os.getenv('NODE_IP')
 is_first_server = os.getenv('IS_FIRST')
 ips_of_running_servers = ["159.0.0.1", "159.0.0.2"]
 
