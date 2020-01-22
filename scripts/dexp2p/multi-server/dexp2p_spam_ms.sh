@@ -1,6 +1,6 @@
 #!/bin/bash
 
-end=$((SECONDS+180))
+end=$((SECONDS+$3))
 
 while [ $SECONDS -lt $end ]; do
   TEST="$2"_$(( ( RANDOM % 1000000 )  + 1 ))
