@@ -9,7 +9,7 @@ import random
 dexp2p_clients_to_start = int(os.getenv('NODESAMOUNT'))
 ac_name = 'DEXTEST'
 node_ip = '127.0.0.1'
-is_first_server = True
+is_first_server = int(os.getenv('IS_FIRST'))
 ips_of_running_servers = ["159.0.0.1", "159.0.0.2"]
 
 # pre-creating separate folders
