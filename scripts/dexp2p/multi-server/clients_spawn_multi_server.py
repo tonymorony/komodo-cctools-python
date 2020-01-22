@@ -52,11 +52,11 @@ for i in range(dexp2p_clients_to_start):
         # choosing 4 random pre-determined already started nodes ports to connect
         for j in range(4):
             connect_ip = random.choice(ips_of_running_servers)
-            connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start)
+            connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start - 1)
             while True:
                 # to not connect to the same node twice
                 if connect_port in already_choosen_ports:
-                    connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start)
+                    connect_port = random.randint(6000, 6000 + dexp2p_clients_to_start - 1)
                 else:
                     already_choosen_ports.append(connect_port)
                     break
