@@ -53,6 +53,7 @@ for host in hosts:
 time.sleep(spam_duration_seconds)
 
 # 4 - Collecting results
+client = ParallelSSHClient(hosts, user="root")
 output = client.run_command("python3 get_stats.py", sudo=True)
 for node in output:
     for line in output[node]['stdout']:
