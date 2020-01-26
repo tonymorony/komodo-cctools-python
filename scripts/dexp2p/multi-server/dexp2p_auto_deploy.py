@@ -36,6 +36,7 @@ print("Test nodes software prepared. Starting network.")
 # 3 - Starting network (need to do one by one)
 i = 0
 for host in hosts:
+    print("Starting network on node " + str(i+1))
     non_parallel_client = SSHClient(host, user="root")
     if i == 0:
         is_first_env = "export IS_FIRST=True"
