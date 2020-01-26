@@ -21,12 +21,15 @@ for node in output:
 # 2 - Preparing "started nodes" file on each server
 i = 0
 for host in hosts:
+    print("Preparing file on node " + str(i+1))
     non_parallel_client = SSHClient(host, user="root")
     if i == 0:
         non_parallel_client.run_command("touch ip_list")
     else:
+        line_with_hosts = ""
         for host in hosts[:i]:
-            non_parallel_client.run_command("echo " + host + " >> ip_list")
+            line_with_hosts += host + "\n"
+    non_parallel_client.run_command("echo -e " + line_with_hosts + " >> ip_list")
     i = i + 1
 print("Test nodes software prepared. Starting network.")
 
@@ -42,7 +45,7 @@ for host in hosts:
     network_start_command = "export NODESAMOUNT=" + str(amount_of_nodes_per_host) + " && " + is_first_env \
                             + " && " + ip_env + " && " + "python3 clients_spawn_multi_server.py"
     output = non_parallel_client.run_command(network_start_command, sudo=True)
-    time.sleep(5 * amount_of_nodes_per_host + 5)
+    time.sleep(3 * amount_of_nodes_per_host + 3)
     i = i + 1
 print("Network setup completed. Starting to spam.")
 
