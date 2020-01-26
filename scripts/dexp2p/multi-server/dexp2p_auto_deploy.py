@@ -59,7 +59,7 @@ time.sleep(spam_duration_seconds)
 # 4 - Collecting results
 print("Spam is finished. Collecting results")
 client = ParallelSSHClient(hosts, user="root")
-output = client.run_command("python3 get_stats.py", sudo=True)
+output = client.run_command("export NODESAMOUNT=" + str(amount_of_nodes_per_host) + " && python3 get_stats.py", sudo=True)
 for node in output:
     for line in output[node]['stdout']:
         print(line)
