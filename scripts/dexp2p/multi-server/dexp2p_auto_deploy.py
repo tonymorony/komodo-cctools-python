@@ -29,7 +29,7 @@ for host in hosts:
         line_with_hosts = ""
         for host in hosts[:i]:
             line_with_hosts += host + "\n"
-    non_parallel_client.run_command("echo -e " + line_with_hosts + " >> ip_list")
+        non_parallel_client.run_command("echo -e " + line_with_hosts + " >> ip_list")
     i = i + 1
 print("Test nodes software prepared. Starting network.")
 
