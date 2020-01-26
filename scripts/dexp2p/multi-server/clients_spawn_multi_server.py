@@ -34,14 +34,14 @@ for i in range(dexp2p_clients_to_start):
                              '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                              '-rpcport=' + str(7000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
                              '-ac_supply=10000000000', '-dexp2p=2', '-whitelist=127.0.0.1', '-daemon'])
-            time.sleep(5)
+            time.sleep(3)
         # let's connect first few nodes to the seed node to surely have a network
         else:
             subprocess.call(['./komodod', '-ac_name=' + ac_name,
                              '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                              '-rpcport=' + str(7000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
                              '-ac_supply=10000000000', '-dexp2p=2', '-addnode=127.0.0.1:6000', '-whitelist=127.0.0.1', '-daemon'])
-            time.sleep(5)
+            time.sleep(3)
     # not first server nodes connecting to the random nodes of already started server(s)
     else:
         daemon_args = ['./komodod', '-ac_name=' + ac_name,
@@ -66,7 +66,7 @@ for i in range(dexp2p_clients_to_start):
         else:
             daemon_args.append("-addnode=" + ips_of_running_servers[0] + ":6000")
         subprocess.call(daemon_args)
-        time.sleep(5)
+        time.sleep(3)
 
 # creating rpc proxies for all nodes
 for i in range(dexp2p_clients_to_start):
