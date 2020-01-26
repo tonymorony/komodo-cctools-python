@@ -2,7 +2,7 @@ from slickrpc import Proxy, exc
 import json
 import os
 
-proxies_to_create = 10
+proxies_to_create = int(os.getenv('NODESAMOUNT'))
 
 for i in range(proxies_to_create):
     rpcport = 7000 + i
