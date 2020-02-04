@@ -64,7 +64,18 @@ for i in range(dexp2p_clients_to_start):
                 daemon_args.append("-addnode=" + connect_ip + ":" + str(connect_port))
         # 1 node per server mode POC
         else:
-            daemon_args.append("-addnode=" + ips_of_running_servers[0] + ":6000")
+            if len(ips_of_running_servers) < 3:
+                daemon_args.append("-addnode=" + ips_of_running_servers[0] + ":6000")
+            else:
+                already_choosen_ips = []
+                for j in range(3):
+                    connect_ip = random.choice(ips_of_running_servers)
+                    if connect_ip in already_choosen_ips:
+                        connect_ip = random.choice(ips_of_running_servers)
+                    else:
+                        already_choosen_ips.append(connect_ip)
+                for ip in already_choosen_ips:
+                    daemon_args.append("-addnode=" + ip + ":6000")
         subprocess.call(daemon_args)
         time.sleep(3)
 
