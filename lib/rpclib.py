@@ -1,8 +1,50 @@
+import re
+import os
 import http
+import platform
 from slickrpc import Proxy
 
 
 # RPC connection
+def get_rpc_details(chain):
+    rpcport ='';
+    operating_system = platform.system()
+    if operating_system == 'Darwin':
+        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
+    elif operating_system == 'Linux':
+        ac_dir = os.environ['HOME'] + '/.komodo'
+    elif operating_system == 'Win64' or operating_system == 'Windows':
+        ac_dir = '%s/komodo/' % os.environ['APPDATA']
+    if chain == 'KMD':
+        coin_config_file = str(ac_dir + '/komodo.conf')
+    else:
+        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
+    with open(coin_config_file, 'r') as f:
+        for line in f:
+            l = line.rstrip()
+            if re.search('rpcuser', l):
+                rpcuser = l.replace('rpcuser=', '')
+            elif re.search('rpcpassword', l):
+                rpcpassword = l.replace('rpcpassword=', '')
+            elif re.search('rpcport', l):
+                rpcport = l.replace('rpcport=', '')
+    if len(rpcport) == 0:
+        if chain == 'KMD':
+            rpcport = 7771
+        else:
+            print("rpcport not in conf file, exiting")
+            print("check "+coin_config_file)
+            exit(1)
+    return rpcuser, rpcpassword, rpcport
+
+def def_credentials(chain):
+    rpc = get_rpc_details(chain)
+    try:
+        rpc_connection = Proxy("http://%s:%s@127.0.0.1:%d"%(rpc[0], rpc[1], int(rpc[2])))
+    except Exception:
+        raise Exception("Connection error! Probably no daemon on selected port.")
+    return rpc_connection
+
 def rpc_connect(rpc_user, rpc_password, port):
     try:
         rpc_connection = Proxy("http://%s:%s@127.0.0.1:%d"%(rpc_user, rpc_password, port))
@@ -73,6 +115,9 @@ def oracles_create(rpc_connection, name, description, data_type):
     oracles_hex = rpc_connection.oraclescreate(name, description, data_type)
     return oracles_hex
 
+def oracles_fund(rpc_connection, oracle_id):
+    oracles_fund_hex = rpc_connection.oraclesfund(oracle_id)
+    return oracles_fund_hex
 
 def oracles_register(rpc_connection, oracle_id, data_fee):
     oracles_register_hex = rpc_connection.oraclesregister(oracle_id, data_fee)
@@ -114,16 +159,28 @@ def gateways_bind(rpc_connection, *args):
 
 def gateways_deposit(rpc_connection, gateway_id, height, coin_name,\
                      coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount):
-    gateways_deposit_hex = rpc_connection.gatewaysdeposit(gateway_id, height, coin_name,\
-                     coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
+    gateways_deposit_hex = rpc_connection.gatewaysdeposit(gateway_id, str(height), coin_name,\
+                     coin_txid, str(claim_vout), deposit_hex, proof, dest_pub, str(amount))
     return gateways_deposit_hex
 
 
 def gateways_claim(rpc_connection, gateway_id, coin_name, deposit_txid, dest_pub, amount):
-    gateways_claim_hex = rpc_connection.gatewaysclaim(gateway_id, coin_name, deposit_txid, dest_pub, amount)
+    gateways_claim_hex = rpc_connection.gatewaysclaim(gateway_id, coin_name, deposit_txid, dest_pub, str(amount))
     return gateways_claim_hex
 
 
 def gateways_withdraw(rpc_connection, gateway_id, coin_name, withdraw_pub, amount):
     gateways_withdraw_hex = rpc_connection.gatewayswithdraw(gateway_id, coin_name, withdraw_pub, amount)
     return gateways_withdraw_hex
+
+def gateways_list(rpc_connection):
+    gateways_list = rpc_connection.gatewayslist()
+    return gateways_list
+
+def pegs_fund(rpc_connection, pegs_txid, token_txid, amount):
+    pegsfund_hex = rpc_connection.pegsfund(pegs_txid, token_txid, str(amount))
+    return pegsfund_hex
+
+def pegs_get(rpc_connection, pegs_txid, token_txid, amount):
+    pegsget_hex = rpc_connection.pegsget(pegs_txid, token_txid, str(amount))
+    return pegsget_hex

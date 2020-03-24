@@ -14,6 +14,8 @@ from binascii import unhexlify
 from functools import partial
 from shutil import copy
 
+home = os.environ['HOME']
+cwd = os.getcwd()
 
 operating_system = platform.system()
 if operating_system != 'Win64' and operating_system != 'Windows':
@@ -24,9 +26,14 @@ def colorize(string, color):
 
     colors = {
         'blue': '\033[94m',
+        'cyan': '\033[96m',
+        'yellow': '\033[93m',
         'magenta': '\033[95m',
         'green': '\033[92m',
-        'red': '\033[91m'
+        'red': '\033[91m',
+        'black': '\033[30m',
+        'grey': '\033[90m',
+        'pink': '\033[95m'        
     }
     if color not in colors:
         return string
@@ -37,67 +44,79 @@ def colorize(string, color):
 def rpc_connection_tui():
     # TODO: possible to save multiply entries from successfull sessions and ask user to choose then
     while True:
-        restore_choice = input("Do you want to use connection details from previous session? [y/n]: ")
-        if restore_choice == "y":
+        restore_choice = input("[U]se cached connection details, [S]elect smartchain, or [E]nter manually? [U/S/E]: ")
+        if restore_choice == "U" or restore_choice == "u":
             try:
                 with open("connection.json", "r") as file:
                     connection_json = json.load(file)
+                    chain = connection_json["chain"]
                     rpc_user = connection_json["rpc_user"]
                     rpc_password = connection_json["rpc_password"]
                     rpc_port = connection_json["rpc_port"]
                     rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
+                try:
+                    ac_name = rpc_connection.getinfo()['name']
+                    break
+                except:
+                    print("Connection failed! Is "+chain+" running?")
+                    pass
             except FileNotFoundError:
-                print(colorize("You do not have cached connection details. Please select n for connection setup", "red"))
-            break
-        elif restore_choice == "n":
+                print(colorize("You do not have cached connection details. Please select [E] for connection setup, or [S] to select a smartchain", "red"))
+        elif restore_choice == "S" or restore_choice == "s":
+            chain = select_ac()
+            rpc_info = rpclib.get_rpc_details(chain)
+            connection_details = {"chain": chain,
+                                  "rpc_user": rpc_info[0],
+                                  "rpc_password": rpc_info[1],
+                                  "rpc_port": rpc_info[2]}
+            connection_json = json.dumps(connection_details)
+            with open("connection.json", "w+") as file:
+                file.write(connection_json)
+            rpc_connection = rpclib.rpc_connect(rpc_info[0], rpc_info[1], int(rpc_info[2]))
+            try:
+                ac_name = rpc_connection.getinfo()['name']
+                break
+            except:
+                print("Connection failed! Is "+chain+" running?")
+                pass
+        elif restore_choice == "E" or restore_choice == "e":
+            chain = input("Input smartchain name: ")
             rpc_user = input("Input your rpc user: ")
             rpc_password = input("Input your rpc password: ")
             rpc_port = input("Input your rpc port: ")
-            connection_details = {"rpc_user": rpc_user,
+            connection_details = {"chain": chain,
+                                  "rpc_user": rpc_user,
                                   "rpc_password": rpc_password,
                                   "rpc_port": rpc_port}
             connection_json = json.dumps(connection_details)
             with open("connection.json", "w+") as file:
                 file.write(connection_json)
             rpc_connection = rpclib.rpc_connect(rpc_user, rpc_password, int(rpc_port))
-            break
+            try:
+                ac_name = rpc_connection.getinfo()['name']
+                break
+            except:
+                print("Connection failed! Is "+chain+" running?")
+                pass
         else:
-            print(colorize("Please input y or n", "red"))
+            print(colorize("Please input u/U, s/S or e/E ", "red"))
     return rpc_connection
 
 
-def def_credentials(chain):
-    rpcport ='';
-    operating_system = platform.system()
-    if operating_system == 'Darwin':
-        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
-    elif operating_system == 'Linux':
-        ac_dir = os.environ['HOME'] + '/.komodo'
-    elif operating_system == 'Win64' or operating_system == 'Windows':
-        ac_dir = '%s/komodo/' % os.environ['APPDATA']
-    if chain == 'KMD':
-        coin_config_file = str(ac_dir + '/komodo.conf')
-    else:
-        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
-    with open(coin_config_file, 'r') as f:
+def readme_tui(readme):
+    with open(readme, 'r') as f:
+        i = 0
         for line in f:
-            l = line.rstrip()
-            if re.search('rpcuser', l):
-                rpcuser = l.replace('rpcuser=', '')
-            elif re.search('rpcpassword', l):
-                rpcpassword = l.replace('rpcpassword=', '')
-            elif re.search('rpcport', l):
-                rpcport = l.replace('rpcport=', '')
-    if len(rpcport) == 0:
-        if chain == 'KMD':
-            rpcport = 7771
-        else:
-            print("rpcport not in conf file, exiting")
-            print("check "+coin_config_file)
-            exit(1)
-
-    return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
-
+            print(line)
+            i += 1
+            if i == 20:
+                userinput = input(colorize("\nPress [Enter] to continue, or [X] to exit\n", "blue"))
+                if userinput == 'x' or userinput == 'x':
+                    break
+                else:
+                    i = 0
+        input(colorize("\nPress [Enter] to return to the menu\n", "blue"))
+    f.close()
 
 def getinfo_tui(rpc_connection):
 
@@ -112,19 +131,21 @@ def getinfo_tui(rpc_connection):
         input("\nPress [Enter] to continue...")
 
 
-def token_create_tui(rpc_connection):
+def token_create_tui(rpc_connection, name='', supply='', description=''):
 
     while True:
         try:
-            name = input("Set your token name: ")
-            supply = input("Set your token supply: ")
-            description = input("Set your token description: ")
+            if name == '':
+                name = input("Set your token name: ")
+            if supply == '':
+                supply = input("Set your token supply: ")
+            if description == '':
+                description = input("Set your token description: ")
         except KeyboardInterrupt:
             break
-        else:
-            token_hex = rpclib.token_create(rpc_connection, name, supply, description)
+        token_hex = rpclib.token_create(rpc_connection, name, supply, description)
         if token_hex['result'] == "error":
-            print(colorize("\nSomething went wrong!\n", "pink"))
+            print(colorize("\nSomething went wrong!\n", "magenta"))
             print(token_hex)
             print("\n")
             input("Press [Enter] to continue...")
@@ -145,29 +166,32 @@ def token_create_tui(rpc_connection):
                 file.close()
                 print(colorize("Entry added to tokens_list file!\n", "green"))
                 input("Press [Enter] to continue...")
-                break
+                return token_txid
 
 
-def oracle_create_tui(rpc_connection):
+def oracles_info(rpc_connection):
+    oracle_txid = select_oracle_txid(rpc_connection)
+    if oracle_txid != 'back to menu':
+        info = rpc_connection.oraclesinfo(oracle_txid)
+        print(info)
+        input("Press [Enter] to continue...")
 
-    print(colorize("\nAvailiable data types:\n", "blue"))
-    oracles_data_types = ["Ihh -> height, blockhash, merkleroot\ns -> <256 char string\nS -> <65536 char string\nd -> <256 binary data\nD -> <65536 binary data",
-                "c -> 1 byte signed little endian number, C unsigned\nt -> 2 byte signed little endian number, T unsigned",
-                "i -> 4 byte signed little endian number, I unsigned\nl -> 8 byte signed little endian number, L unsigned",
-                "h -> 32 byte hash\n"]
-    for oracles_type in oracles_data_types:
-        print(str(oracles_type))
+
+def oracle_create_tui(rpc_connection, name='', description='', oracle_data_type=''):
     while True:
         try:
-            name = input("Set your oracle name: ")
-            description = input("Set your oracle description: ")
-            oracle_data_type = input("Set your oracle type (e.g. Ihh): ")
+            if name == '':
+                name = input("Set your oracle name: ")
+            if description == '':
+                description = input("Set your oracle description: ")
+            if oracle_data_type == '':
+                oracle_data_type = select_oracleType()
         except KeyboardInterrupt:
             break
         else:
             oracle_hex = rpclib.oracles_create(rpc_connection, name, description, oracle_data_type)
         if oracle_hex['result'] == "error":
-            print(colorize("\nSomething went wrong!\n", "pink"))
+            print(colorize("\nSomething went wrong!\n", "magenta"))
             print(oracle_hex)
             print("\n")
             input("Press [Enter] to continue...")
@@ -182,17 +206,23 @@ def oracle_create_tui(rpc_connection):
                 break
             finally:
                 print(colorize("Oracle creation transaction broadcasted: " + oracle_txid, "green"))
-                file = open("oracles_list", "a")
-                file.writelines(oracle_txid + "\n")
-                file.close()
-                print(colorize("Entry added to oracles_list file!\n", "green"))
+                print(colorize("Confirming oracle creation txid\n", "blue"))
+                check_if_tx_in_mempool(rpc_connection, oracle_txid)
+                try:
+                    print(colorize("Initializing with oraclesfund\n", "blue"))
+                    oraclesfund_hex = rpclib.oracles_fund(rpc_connection, oracle_txid)
+                except KeyError:
+                    print(oracle_txid)
+                    print("Error")
+                    input("Press [Enter] to continue...")
+                    break
+                finally:
+                    oraclesfund_txid = rpclib.sendrawtransaction(rpc_connection, oraclesfund_hex['hex'])
+                    check_if_tx_in_mempool(rpc_connection, oraclesfund_txid)
                 input("Press [Enter] to continue...")
-                break
+                return oracle_txid
 
-
-def oracle_register_tui(rpc_connection):
-    #TODO: have an idea since blackjoker new RPC call
-    #grab all list and printout only or which owner match with node pubkey
+def oracle_fund_tui(rpc_connection):
     try:
         print(colorize("Oracles created from this instance by TUI: \n", "blue"))
         with open("oracles_list", "r") as file:
@@ -205,16 +235,51 @@ def oracle_register_tui(rpc_connection):
         pass
     while True:
         try:
-            oracle_id = input("Input txid of oracle you want to register to: ")
-            data_fee = input("Set publisher datafee (in satoshis): ")
+            oracle_txid = input("Input txid of oracle you want to register to: ")
         except KeyboardInterrupt:
-            break
-        oracle_register_hex = rpclib.oracles_register(rpc_connection, oracle_id, data_fee)
-        if oracle_register_hex['result'] == "error":
-            print(colorize("\nSomething went wrong!\n", "pink"))
-            print(oracle_register_hex)
+            break   
+        oracle_fund_hex = rpclib.oracles_fund(rpc_connection, oracle_txid)
+        if oracle_fund_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "magenta"))
+            print(oracle_fund_hex)
             print("\n")
             input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                oracle_fund_txid = rpclib.sendrawtransaction(rpc_connection, oracle_fund_hex['hex'])
+            except KeyError:
+                print(oracle_fund_hex)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                print(colorize("Oracle fund transaction broadcasted: " + oracle_fund_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+
+def oracle_register_tui(rpc_connection, oracle_txid='', data_fee=''):
+    #TODO: have an idea since blackjoker new RPC call
+    #grab all list and printout only or which owner match with node pubkey
+    while True:
+        try:
+            if oracle_txid == '':
+                oracle_txid = select_oracle_txid(rpc_connection)
+            if data_fee == '':
+                data_fee = input("Set publisher datafee (e.g. 0.001): ")
+        except KeyboardInterrupt:
+            break
+        oracle_register_hex = rpclib.oracles_register(rpc_connection, oracle_txid, data_fee)
+        if oracle_register_hex['result'] == "error":
+            if oracle_register_hex['error'] == "error adding inputs from your Oracles CC address, please fund it first with oraclesfund rpc!":
+                oraclesfund_hex = rpclib.oracles_fund(rpc_connection, oracle_txid)
+                oraclesfund_txid = rpclib.sendrawtransaction(rpc_connection, oraclesfund_hex['hex'])
+                check_if_tx_in_mempool(rpc_connection, oraclesfund_txid)
+            else:
+                print(colorize("\nSomething went wrong!\n", "magenta"))
+                print(oracle_register_hex)
+                print("\n")
+                input("Press [Enter] to continue...")
             break
         else:
             try:
@@ -227,53 +292,27 @@ def oracle_register_tui(rpc_connection):
             else:
                 print(colorize("Oracle registration transaction broadcasted: " + oracle_register_txid, "green"))
                 input("Press [Enter] to continue...")
-                break
+                
 
 
-def oracle_subscription_utxogen(rpc_connection):
+def oracle_subscription_utxogen(rpc_connection, oracle_txid='', publisher_id='', data_fee='', utxo_num=''):
     # TODO: have an idea since blackjoker new RPC call
     # grab all list and printout only or which owner match with node pubkey
-    try:
-        print(colorize("Oracles created from this instance by TUI: \n", "blue"))
-        with open("oracles_list", "r") as file:
-            for oracle in file:
-                print(oracle)
-        print(colorize('_' * 65, "blue"))
-        print("\n")
-    except FileNotFoundError:
-        print("Seems like a no oracles created from this instance yet\n")
-        pass
+    if oracle_txid == '':
+        oracle_txid = select_oracle_txid(rpc_connection)
     while True:
         try:
-            oracle_id = input("Input oracle ID you want to subscribe to: ")
-            #printout to fast copypaste publisher id
-            oracle_info = rpclib.oracles_info(rpc_connection, oracle_id)
-            publishers = 0
-            print(colorize("\nPublishers registered for a selected oracle: \n", "blue"))
-            try:
-                for entry in oracle_info["registered"]:
-                    publisher = entry["publisher"]
-                    print(publisher + "\n")
-                    publishers = publishers + 1
-                print("Total publishers:{}".format(publishers))
-            except (KeyError, ConnectionResetError):
-                print(colorize("Please re-check your input. Oracle txid seems not valid.", "red"))
-                pass
-            print(colorize('_' * 65, "blue"))
-            print("\n")
-            if publishers == 0:
-                print(colorize("This oracle have no publishers to subscribe.\n"
-                               "Please register as an oracle publisher first and/or wait since registration transaciton mined!", "red"))
-                input("Press [Enter] to continue...")
-                break
-            publisher_id = input("Input oracle publisher id you want to subscribe to: ")
-            data_fee = input("Input subscription fee (in COINS!): ")
-            utxo_num = int(input("Input how many transactions you want to broadcast: "))
+            if publisher_id == '':
+                publisher_id = select_oracle_publisher(rpc_connection, oracle_txid)
+            if data_fee == '':
+                data_fee = input("Input subscription fee (in COINS!): ")
+            if utxo_num == '':
+                utxo_num = int(input("Input how many transactions you want to broadcast: "))
         except KeyboardInterrupt:
             break
         while utxo_num > 0:
             while True:
-                oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_id, publisher_id, data_fee)
+                oracle_subscription_hex = rpclib.oracles_subscribe(rpc_connection, oracle_txid, publisher_id, data_fee)
                 oracle_subscription_txid = rpclib.sendrawtransaction(rpc_connection, oracle_subscription_hex['hex'])
                 mempool = rpclib.get_rawmempool(rpc_connection)
                 if oracle_subscription_txid in mempool:
@@ -282,51 +321,38 @@ def oracle_subscription_utxogen(rpc_connection):
                     pass
             print(colorize("Oracle subscription transaction broadcasted: " + oracle_subscription_txid, "green"))
             utxo_num = utxo_num - 1
+            time.sleep(1)
+            check_if_tx_in_mempool(rpc_connection, oracle_subscription_txid)
         input("Press [Enter] to continue...")
         break
 
-def gateways_bind_tui(rpc_connection):
+def gateways_bind_tui(rpc_connection, token_id='', token_supply='', oracle_txid='',
+                     coin_name=''):
     # main loop with keyboard interrupt handling
     while True:
         try:
             while True:
-                try:
-                    print(colorize("Tokens created from this instance by TUI: \n", "blue"))
-                    with open("tokens_list", "r") as file:
-                        for oracle in file:
-                            print(oracle)
-                    print(colorize('_' * 65, "blue"))
-                    print("\n")
-                except FileNotFoundError:
-                    print("Seems like a no oracles created from this instance yet\n")
-                    pass
-                token_id = input("Input id of token you want to use in gw bind: ")
+                if token_id == '':
+                    token_id = select_tokenid(rpc_connection)                
                 try:
                     token_name = rpclib.token_info(rpc_connection, token_id)["name"]
                 except KeyError:
                     print(colorize("Not valid tokenid. Please try again.", "red"))
                     input("Press [Enter] to continue...")
-                token_info = rpclib.token_info(rpc_connection, token_id)
-                print(colorize("\n{} token total supply: {}\n".format(token_id, token_info["supply"]), "blue"))
-                token_supply = input("Input supply for token binding: ")
+                if token_supply == '':
+                    token_info = rpclib.token_info(rpc_connection, token_id)
+                    print(colorize("\n{} token total supply: {}\n".format(token_id, token_info["supply"]), "blue"))
+                    token_supply = input("Input supply for token binding: ")
+                if oracle_txid == '':
+                    oracle_txid = input("Input id of oracle you want to use in gw bind: ")
                 try:
-                    print(colorize("\nOracles created from this instance by TUI: \n", "blue"))
-                    with open("oracles_list", "r") as file:
-                        for oracle in file:
-                            print(oracle)
-                    print(colorize('_' * 65, "blue"))
-                    print("\n")
-                except FileNotFoundError:
-                    print("Seems like a no oracles created from this instance yet\n")
-                    pass
-                oracle_id = input("Input id of oracle you want to use in gw bind: ")
-                try:
-                    oracle_name = rpclib.oracles_info(rpc_connection, oracle_id)["name"]
+                    oracle_name = rpclib.oracles_info(rpc_connection, oracle_txid)["name"]
                 except KeyError:
-                    print(colorize("Not valid oracleid. Please try again.", "red"))
+                    print(colorize("Not valid oracle_txid. Please try again.", "red"))
                     input("Press [Enter] to continue...")
                 while True:
-                    coin_name = input("Input external coin ticker (binded oracle and token need to have same name!): ")
+                    if coin_name == '':
+                        coin_name = input("Input external coin ticker (binded oracle and token need to have same name!): ")
                     if token_name == oracle_name and token_name == coin_name:
                         break
                     else:
@@ -339,13 +365,16 @@ def gateways_bind_tui(rpc_connection):
                     else:
                         print("Maximal amount of pubkeys should be more or equal than minimal. Please try again.")
                 pubkeys = []
+                print("Your pubkey is "+rpc_connection.getinfo()['pubkey'])
                 for i in range(int(N)):
                     pubkeys.append(input("Input pubkey {}: ".format(i+1)))
-                pubtype = input("Input pubtype of external coin: ")
-                p2shtype = input("Input p2shtype of external coin: ")
-                wiftype = input("Input wiftype of external coin: ")
-                args = [rpc_connection, token_id, oracle_id, coin_name, token_supply, M, N]
-                new_args = [str(pubtype), str(p2shtype), wiftype]
+                print(colorize("pubtype, wiftype and p2shtype of many coins can be viewed at https://github.com/jl777/coins/blob/master/coins", "blue"))
+                # TODO: integrate coins repo to autofill these values if possible
+                pubtype = input("Input pubtype of external coin ("+coin_name+"): ")
+                p2shtype = input("Input p2shtype of external coin ("+coin_name+"): ")
+                wiftype = input("Input wiftype of external coin ("+coin_name+"): ")
+                args = [rpc_connection, token_id, oracle_txid, coin_name, str(token_supply), str(M), str(N)]
+                new_args = [str(pubtype), str(p2shtype), str(wiftype)]
                 args = args + pubkeys + new_args
                 # broadcasting block
                 try:
@@ -368,7 +397,7 @@ def gateways_bind_tui(rpc_connection):
                     file.close()
                     print(colorize("Entry added to gateways_list file!\n", "green"))
                     input("Press [Enter] to continue...")
-                    break
+                    return gateways_bind_txid
             break
         except KeyboardInterrupt:
             break
@@ -445,59 +474,95 @@ def operationstatus_to_txid(rpc_connection, zstatus):
     return txid
 
 
-def gateways_send_kmd(rpc_connection):
-     # TODO: have to handle CTRL+C on text input
-     print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "pink"))
-     print("Your addresses with balances: ")
-     list_address_groupings = rpc_connection.listaddressgroupings()
-     for address in list_address_groupings:
-         print(str(address) + "\n")
-     sendaddress = input("Input address from which you transfer KMD: ")
-     recepient1 = input("Input address which belongs to pubkey which will receive tokens: ")
-     amount1 = 0.0001
-     recepient2 = input("Input gateway deposit address: ")
-     file = open("deposits_list", "a")
-     #have to show here deposit addresses for gateways created by user
-     amount2 = input("Input how many KMD you want to deposit on this gateway: ")
-     operation = z_sendmany_twoaddresses(rpc_connection, sendaddress, recepient1, amount1, recepient2, amount2)
-     print("Operation proceed! " + str(operation) + " Let's wait 2 seconds to get txid")
-     # trying to avoid pending status of operation
-     time.sleep(2)
-     txid = operationstatus_to_txid(rpc_connection, operation)
-     file.writelines(txid + "\n")
-     file.close()
-     print(colorize("KMD Transaction ID: " + str(txid) + " Entry added to deposits_list file", "green"))
-     input("Press [Enter] to continue...")
-
-
-def gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo):
+def gateways_send_kmd(rpc_connection, gw_deposit_addr=''):
+    # TODO: have to handle CTRL+C on text input
+    print(colorize("Please be carefull when input wallet addresses and amounts since all transactions doing in real KMD!", "magenta"))
+    print("Your addresses with balances: ")
+    sendaddress = select_address(rpc_connection)
+    amount1 = 0.0001
+    if gw_deposit_addr == '':
+       gw_deposit_addr = input("Input gateway deposit address: ")
     while True:
-        bind_txid = input("Input your gateway bind txid: ")
-        coin_name = input("Input your external coin ticker (e.g. KMD): ")
-        coin_txid = input("Input your deposit txid: ")
-        dest_pub = input("Input pubkey which claim deposit: ")
-        amount = input("Input amount of your deposit: ")
-        height = rpc_connection_komodo.getrawtransaction(coin_txid, 1)["height"]
-        deposit_hex = rpc_connection_komodo.getrawtransaction(coin_txid, 1)["hex"]
+        gw_recipient_addr = input("Input Gateway recipient address (linked to pubkey which will receive tokens): ")
+        if gw_deposit_addr == gw_recipient_addr:
+            print("Gateway recipient address must be different to Gateway address! Try again.")
+        else:
+            break
+    file = open("deposits_list", "a")
+    #have to show here deposit addresses for gateways created by user
+    gw_deposit_amount = float(input("Input how many KMD you want to deposit on this gateway: "))
+    operation = z_sendmany_twoaddresses(rpc_connection, sendaddress, gw_recipient_addr,
+                                     amount1, gw_deposit_addr, gw_deposit_amount)
+    print("Operation proceed! " + str(operation) + " Let's wait 2 seconds to get txid")
+    # trying to avoid pending status of operation
+    time.sleep(2)
+    gw_sendmany_txid = operationstatus_to_txid(rpc_connection, operation)
+    file.writelines(gw_sendmany_txid + "\n")
+    file.close()
+    check_if_tx_in_mempool(rpc_connection, gw_sendmany_txid)
+    print(colorize("KMD Transaction ID: " + str(gw_sendmany_txid) + " Entry added to deposits_list file", "green"))
+    input("Press [Enter] to continue...")
+    return gw_sendmany_txid, gw_recipient_addr, gw_deposit_amount
+
+
+def gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo,
+                        bind_txid='', coin_name='', coin_txid='', amount='',
+                        recipient_addr=''):
+    while True:
+        if bind_txid == '':
+            bind_txid = input("Input your gateway bind txid: ")
+        if coin_name == '':
+            coin_name = input("Input your external coin ticker (e.g. KMD): ")
+        if coin_txid == '':
+            coin_txid = input("Input your deposit txid: ")
+        if recipient_addr == '':
+            dest_pub = input("Input pubkey of gateways deposit recipient address: ")
+        else:
+            dest_pub = input("Input pubkey of gateways deposit recipient address ("+recipient_addr+"): ")
+        if amount == '':
+            amount = input("Input amount of your deposit: ")
+        raw_tx_info = rpc_connection_komodo.getrawtransaction(coin_txid, 1)
+        height = raw_tx_info["height"]
+        last_ntx_height = raw_tx_info['last_notarized_height']
+        while last_ntx_height < height:
+            print("Waiting 60 sec for deposit txid to be notarized...")
+            print("Deposit txid height ["+str(height)+"] vs last notarization height ["+str(last_ntx_height)+"]")
+            time.sleep(60)
+            raw_tx_info = rpc_connection_komodo.getrawtransaction(coin_txid, 1)
+            height = raw_tx_info["height"]
+            last_ntx_height = raw_tx_info['last_notarized_height']
+        deposit_hex = raw_tx_info["hex"]
         claim_vout = "0"
         proof_sending_block = "[\"{}\"]".format(coin_txid)
         proof = rpc_connection_komodo.gettxoutproof(json.loads(proof_sending_block))
-        deposit_hex = rpclib.gateways_deposit(rpc_connection_assetchain, bind_txid, str(height), coin_name, \
+        deposit_hex = rpclib.gateways_deposit(rpc_connection_assetchain, bind_txid, height, coin_name, \
                          coin_txid, claim_vout, deposit_hex, proof, dest_pub, amount)
-        print(deposit_hex)
         deposit_txid = rpclib.sendrawtransaction(rpc_connection_assetchain, deposit_hex["hex"])
+        check_if_tx_in_mempool(rpc_connection_assetchain, deposit_txid)
         print("Done! Gateways deposit txid is: " + deposit_txid + " Please not forget to claim your deposit!")
         input("Press [Enter] to continue...")
-        break
-
-
-def gateways_claim_tui(rpc_connection):
+        return deposit_txid, dest_pub
+        
+def gateways_claim_tui(rpc_connection, bind_txid='', coin_name='', deposit_txid='',
+                       dest_pub='', amount=''):
     while True:
-        bind_txid = input("Input your gateway bind txid: ")
-        coin_name = input("Input your external coin ticker (e.g. KMD): ")
-        deposit_txid = input("Input your gatewaysdeposit txid: ")
-        dest_pub = input("Input pubkey which claim deposit: ")
-        amount = input("Input amount of your deposit: ")
+        if bind_txid == '':
+            bind_txid = input("Input your gateway bind txid: ")
+        if coin_name == '':
+            coin_name = input("Input your external coin ticker (e.g. KMD): ")
+        if deposit_txid == '':
+            deposit_txid = input("Input your gateways deposit txid: ")
+        if dest_pub == '':
+            dest_pub = input("Input pubkey which claim deposit: ")
+        ac_info = rpc_connection.getinfo()
+        if dest_pub != ac_info['pubkey']:
+            print("Error: Destination pubkey must be used to launch daemon!")
+            print("Destination pubkey: "+dest_pub)
+            print("Daemon pubkey: "+ac_info['pubkey'])
+            input("Press [Enter] to continue...")
+            break
+        if amount == '':
+            amount = input("Input amount of your deposit: ")
         claim_hex = rpclib.gateways_claim(rpc_connection, bind_txid, coin_name, deposit_txid, dest_pub, amount)
         try:
             claim_txid = rpclib.sendrawtransaction(rpc_connection, claim_hex["hex"])
@@ -507,8 +572,10 @@ def gateways_claim_tui(rpc_connection):
             input("Press [Enter] to continue...")
             break
         else:
+            check_if_tx_in_mempool(rpc_connection, claim_txid)
             print("Succesfully claimed! Claim transaction id: " + claim_txid)
             input("Press [Enter] to continue...")
+            return claim_txid
             break
 
 
@@ -795,15 +862,15 @@ def files_downloader(rpc_connection):
     while True:
         display_files_list(rpc_connection)
         print("\n")
-        oracle_id = input("Input oracle ID you want to download file from: ")
+        oracle_txid = input("Input oracle ID you want to download file from: ")
         output_path = input("Input output path for downloaded file (name included) e.g. /home/test.txt: ")
-        oracle_info = rpclib.oracles_info(rpc_connection, oracle_id)
+        oracle_info = rpclib.oracles_info(rpc_connection, oracle_txid)
         name = oracle_info['name']
         latest_baton_txid = oracle_info['registered'][0]['batontxid']
         if name[0:12] == 'tonyconvert_':
             # downloading process here
             chunks_amount = int(name[12:])
-            data = rpclib.oracles_samples(rpc_connection, oracle_id, latest_baton_txid, str(chunks_amount))["samples"]
+            data = rpclib.oracles_samples(rpc_connection, oracle_txid, latest_baton_txid, str(chunks_amount))["samples"]
             for chunk in reversed(data):
                 with open(output_path, 'ab+') as file:
                     file.write(unhexlify(chunk[0]))
@@ -1891,6 +1958,9 @@ def top_warriors_rating(rpc_connection):
 def exit():
     sys.exit()
 
+def exit_main():
+    return 'back to Antara modules menu'
+
 
 def warrior_trasnfer(rpc_connection):
     print(colorize("Your brave warriors: \n", "blue"))
@@ -1963,3 +2033,911 @@ def check_if_tx_in_mempool(rpc_connection, txid):
         else:
             print(colorize("Transaction is mined", "green"))
             break
+
+def gateway_info_tui(rpc_connection, gw_index=''):
+    if gw_index == '':
+        while True:
+            print(colorize("\nGateways created on this assetchain: \n", "blue"))
+            gateways_list = rpc_connection.gatewayslist()
+            if len(gateways_list) == 0:
+                print("Seems like a no gateways created on this assetchain yet!\n")
+                input("Press [Enter] to continue...")
+                break
+            else:
+                i = 1
+                for gateway in gateways_list:
+                    print("["+str(i)+"] "+gateway)
+                    i += 1
+                print(colorize('_' * 65, "blue"))
+                print("\n")
+                gw_selected = input("Select Gateway Bind TXID: ")
+                gw_index = int(gw_selected)-1
+                try:
+                    bind_txid = gateways_list[gw_index]
+                    break
+                except:
+                    print("Invalid selection, must be number between 1 and "+str(len(gateways_list)))
+                    pass
+    else:
+        while True:
+            try:
+                bind_txid = gateways_list[gw_index]
+                break
+            except:
+                print("Invalid gateway index, select manually...")
+                gateway_info_tui(rpc_connection)
+                pass
+    try:    
+        info = rpc_connection.gatewaysinfo(bind_txid)
+        print(colorize("Gateways Bind TXID         ["+str(bind_txid)+"]", 'green'))
+        print(colorize("Gateways Oracle TXID       ["+str(info['oracletxid'])+"]", 'green'))
+        print(colorize("Gateways Token TXID        ["+str(info['tokenid'])+"]", 'green'))
+        print(colorize("Gateways Coin              ["+str(info['coin'])+"]", 'green'))
+        print(colorize("Gateways Pubkeys           ["+str(info['pubkeys'])+"]", 'green'))
+        print(colorize("Gateways Deposit Address   ["+str(info['deposit'])+"]", 'green'))
+        print(colorize("Gateways Total Supply      ["+str(info['totalsupply'])+"]", 'green'))
+        print(colorize("Gateways Remaining Supply  ["+str(info['remaining'])+"]", 'green'))
+        print(colorize("Gateways Issued Supply     ["+str(info['issued'])+"]", 'green'))
+        input("Press [Enter] to continue...")
+        return gw_index
+    except Exception as e:
+        print(info)
+        print(e)
+        print("Something went wrong. Please check your input")
+        input("Press [Enter] to continue...")
+
+def gateways_deposit_claim_tokens(rpc_connection_assetchain, rpc_connection_komodo):
+    selected_gateway = gateway_info_tui(rpc_connection_assetchain)
+    gateways_list = rpc_connection_assetchain.gatewayslist()
+    bind_txid = gateways_list[selected_gateway]
+    gw_info = rpc_connection_assetchain.gatewaysinfo(bind_txid)
+    gw_sendmany = gateways_send_kmd(rpc_connection_komodo, gw_info['deposit'])
+    gw_sendmany_txid = gw_sendmany[0]
+    gw_recipient_addr = gw_sendmany[1]
+    gw_deposit_amount = gw_sendmany[2]
+    deposit_info = gateways_deposit_tui(rpc_connection_assetchain, rpc_connection_komodo,
+                        bind_txid, gw_info['coin'], gw_sendmany_txid, gw_deposit_amount,
+                        gw_recipient_addr)
+    deposit_txid = deposit_info[0]
+    dest_pub = deposit_info[1]
+    claim_txid = gateways_claim_tui(rpc_connection_assetchain, bind_txid, gw_info['coin'],
+                 deposit_txid, dest_pub, gw_deposit_amount)
+    tokenbalance = rpc_connection_assetchain.tokenbalance(gw_info['tokenid'])
+    print("Gateway transfer complete!")
+    print(colorize("Deposit TXID         ["+str(bind_txid)+"]", 'green'))
+    print(colorize("Claim TXID           ["+str(bind_txid)+"]", 'green'))
+    print(colorize("Token Balance        ["+str(bind_txid)+"]", 'green'))
+
+
+
+
+
+
+
+
+
+
+
+def pegs_fund_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            token_txid = select_tokenid(rpc_connection)
+            tokenbalance = rpc_connection.tokenbalance(token_txid)['balance']/100000000
+            amount = int(input("Set pegs funding amount ("+str(tokenbalance)+" available): "))
+        except KeyboardInterrupt:
+            break
+        else:
+            fund_hex = rpclib.pegs_fund(rpc_connection, pegs_txid, token_txid, amount)
+            print(fund_hex)
+        if fund_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "magenta"))
+            print(fund_hex)
+            print("\n")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                pegsfund_txid = rpclib.sendrawtransaction(rpc_connection,
+                                                       fund_hex['hex'])
+            except KeyError:
+                print(pegsfund_txid)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            finally:
+                print(colorize("Pegs Fund transaction broadcasted: " + pegsfund_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+
+
+def pegs_get_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            token_txid = select_tokenid(rpc_connection)
+            info = rpc_connection.pegsaccountinfo(pegs_txid)
+            if info['result'] == "success":
+                if len(info['account info']) > 0:
+                    for item in info['account info']:
+                        print("Token: "+item['token'])
+                        print("Deposit: "+str(item['deposit']))
+                        print("Debt: "+str(item['debt']))
+                        print("Ratio "+item['ratio'])
+            else:
+                print("Something went wrong.")
+                print(info)
+                input("Press [Enter] to continue...")
+                break
+            amount = input("Set pegs get amount: ")
+        except KeyboardInterrupt:
+            break
+        else:
+            pegsget_hex = rpclib.pegs_get(rpc_connection, pegs_txid, token_txid, amount)
+        if pegsget_hex['result'] == "error":
+            print(colorize("\nSomething went wrong!\n", "magenta"))
+            print(pegsget_hex)
+            print("\n")
+            input("Press [Enter] to continue...")
+            break
+        else:
+            try:
+                pegsget_txid = rpclib.sendrawtransaction(rpc_connection,
+                                                       pegsget_hex['hex'])
+            except KeyError:
+                print(pegsget_hex)
+                print("Error")
+                input("Press [Enter] to continue...")
+                break
+            finally:
+                print(colorize("Pegs Get transaction broadcasted: " +pegsget_txid, "green"))
+                input("Press [Enter] to continue...")
+                break
+
+# pegs_txid = 5ccdff0d29f2f47fb1e349c1ff9ae17977a58763abacf693cd27e98b38fad3f3
+def pegsinfo_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            info = rpc_connection.pegsinfo(pegs_txid)
+            if info['result'] == "success":
+                if len(info['info']) > 0:
+                    for item in info['info']:
+                        print("Token: "+item['token'])
+                        print("Total deposit: "+str(item['total deposit']))
+                        print("Total debt: "+str(item['total debt']))
+                        print("Ratio : "+str(item['total ratio']))
+                print("Global ratio: "+info['global ratio'])
+            else:
+                print("Something went wrong.")
+                print(info)
+                input("Press [Enter] to continue...")
+                break
+        except KeyError:
+            print(info)
+            print("Error")
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+def pegs_accounthistory_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            history = rpc_connection.pegsaccounthistory(pegs_txid)
+            if history['result'] == "success":
+                if len(history['account history']) > 0:
+                    for item in history['account history']:
+                        print("-----------------------")
+                        print("Action: "+item['action'])
+                        print("Amount: "+str(item['amount']))
+                        print("Account TXID: "+item['accounttxid'])
+                        print("Token: "+item['token'])
+                        print("Deposit: "+str(item['deposit']))
+                        print("Debt: "+str(item['debt']))
+                    print("-----------------------")
+
+#[{'action': 'fund', 'amount': 100000000, 'accounttxid': '1e9409af6e391f996de434a3f86d765df43251d61cc1e720fa9a6457078d0f61', 'token': 'KMD', 'deposit': 100000000, 'debt': 0}, {'action': 'get', 'amount': 50000000, 'accounttxid': '752ef21dfbe313f229a4a396554b3ee0630ea2b4cc3264bd1cbdbe22bbf190e8', 'token': 'KMD', 'deposit': 100000000, 'debt': 50000000}]}
+
+        except KeyError:
+            print(history)
+            print("Key Error: "+str(KeyError))
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+
+def pegs_accountinfo_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            info = rpc_connection.pegsaccountinfo(pegs_txid)
+            if info['result'] == "success":
+                if len(info['account info']) > 0:
+                    for item in info['account info']:
+                        print("Token: "+item['token'])
+                        print("Deposit: "+str(item['deposit']))
+                        print("Debt: "+str(item['debt']))
+                        print("Ratio "+item['ratio'])
+            else:
+                print("Something went wrong.")
+                print(info)
+                input("Press [Enter] to continue...")
+                break
+        except KeyError:
+            print(info)
+            print("Error")
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+def pegs_addresses_tui(rpc_connection):
+    while True:
+        try:
+            address = rpc_connection.pegsaddress()
+            if address['result'] == "success":
+                print("PegsCCAddress: "+address['PegsCCAddress'])
+                print("PegsCCBalance: "+str(address['PegsCCBalance']))
+                print("PegsNormalAddress: "+address['PegsNormalAddress'])
+                print("PegsNormalBalance: "+address['PegsNormalBalance'])
+                print("PegsCCTokensAddress: "+address['PegsCCTokensAddress'])
+                print("myCCAddress(Pegs): "+address['myCCAddress(Pegs)'])
+                print("myCCbalance(Pegs): "+str(address['myCCbalance(Pegs)']))
+                print("myaddress: "+address['myaddress'])
+                print("mybalance: "+str(address['mybalance']))
+            else:
+                print("Something went wrong.")
+                print(address)
+                input("Press [Enter] to continue...")
+                break
+        except KeyError:
+            print(address)
+            print("Error")
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+
+
+def pegs_worstaccounts_tui(rpc_connection):
+    while True:
+        try:
+            pegs_txid = input("Enter Pegs TXID: ")
+            worst = rpc_connection.pegsworstaccounts(pegs_txid)
+            if worst['result'] == "success":
+                if 'KMD' in worst:
+                    if len(worst['KMD']) > 0:
+                        for item in worst['KMD']:
+                            print("Account TXID: "+item['accounttxid'])
+                            print("Deposit: "+str(item['deposit']))
+                            print("Debt: "+str(item['debt']))
+                            print("Ratio "+item['ratio'])
+                else:
+                    print("No accounts at risk of liquidation at the moment.")
+                    info = rpc_connection.pegsinfo(pegs_txid)
+                    if info['result'] == "success":
+                        if len(info['info']) > 0:
+                            for item in info['info']:
+                                print("Token: "+item['token'])
+                                print("Total deposit: "+str(item['total deposit']))
+                                print("Total debt: "+str(item['total debt']))
+                                print("Ratio : "+str(item['total ratio']))
+                        print("Global ratio: "+info['global ratio'])
+        except KeyError:
+            print(worst)
+            print("Key Error: "+str(KeyError))
+            input("Press [Enter] to continue...")
+            break
+        finally:
+            input("Press [Enter] to continue...")
+            break
+
+
+def pegs_create_tui():
+    paramlist = ["-ac_supply=5000", "-ac_reward=800000000",
+                 "-ac_sapling=1", "-addnode=localhost", "-ac_snapshot=1440",
+                 "-ac_cc=2", "-ac_import=PEGSCC", "-debug=gatewayscc-2",
+                 "-ac_end=1", "-ac_perc=0", "-ac_cbopret=7"
+                ]
+    while True:
+        kmd_path = input("Input komodod path (e.g. /home/user/komodo/src): ")
+        if not os.path.isfile(kmd_path+'/komodod'):
+            print("komodod not found in "+kmd_path+"! Try again.")
+        else:
+            break
+    # check if komodod exists in path
+    coin = input("Enter name of Pegs chain to create: ")
+    #check for bad chars
+    external_coin = input("Enter ticker of external coin to Peg (e.g. KMD): ")
+    #check for bad chars
+    token_supply = input("How many tokens to create?: ")
+    paramlist.append("-ac_name="+coin)
+    # launch chains, get rpcs
+    rpcs = spawn_chain_pair(coin, kmd_path, paramlist)
+    primary_rpc = rpcs[0]
+    secondary_rpc = rpcs[1]
+    secondary_rpc.setgenerate(True, 1)
+    # get address, wif and pubkeys
+    primary_addr = primary_rpc.getnewaddress()
+    primary_wif = primary_rpc.dumpprivkey(primary_addr)
+    primary_pubkey = primary_rpc.validateaddress(primary_addr)['pubkey']
+    primary_rpc.setpubkey(primary_pubkey)
+    # selfsend to avoid coinbase errors
+    balance = primary_rpc.getbalance()
+    selfsend_txid = primary_rpc.sendtoaddress(primary_addr, int(balance)/2)
+    check_if_tx_in_mempool(primary_rpc, selfsend_txid)
+    token_txid = token_create_tui(primary_rpc, external_coin, token_supply, external_coin+"_tether")
+    oracle_txid = oracle_create_tui(primary_rpc, external_coin, external_coin+"_tether", 'IhhL')
+    oracle_register_tui(primary_rpc, oracle_txid, '0.001')
+    oracle_subscription_utxogen(primary_rpc, oracle_txid, primary_pubkey, '50', 10)
+    tokensupply = str(primary_rpc.tokeninfo(token_txid)['supply'])
+    bind_txid = gateways_bind_tui(primary_rpc, token_txid, tokensupply, oracle_txid, external_coin)
+    oraclefeed_launch_str = spawn_oraclefeed(coin, kmd_path, oracle_txid, primary_pubkey, bind_txid)
+    # Create the Peg
+    pegs_funding = input("Enter amount of Pegs funding (e.g. 100): ")
+    num_binds = 1
+    resp = primary_rpc.pegscreate(str(pegs_funding), str(num_binds), bind_txid)
+    print(resp)
+    if 'hex' in resp:
+        pegs_txid = primary_rpc.sendrawtransaction(resp['hex'])
+        check_if_tx_in_mempool(primary_rpc, pegs_txid)
+        print(colorize("Pegs TXID                ["+str(pegs_txid)+"]", 'green'))
+        paramlist.append("-earlytxid="+pegs_txid)
+        print(colorize("The Pegs Contract has been created successfully!", 'green'))
+        info = primary_rpc.gatewaysinfo(bind_txid)
+        with open(cwd+"/"+coin+"_pegsinfo.json", "w+") as file:
+            file.write('{\n"Pegs_Launch_Parameters":"'+" ".join(paramlist)+'",\n')
+            file.write('"Oraclefeed_Launch_Parameters":"'+oraclefeed_launch_str+'",\n')
+            file.write('"Pegs_Creation_TXID":"'+str(pegs_txid)+'",\n')
+            file.write('"Gateways_Bind_TXID":"'+str(bind_txid)+'",\n')
+            file.write('"Oracle_TXID":"'+str(info['oracle_txid'])+'",\n')
+            file.write('"Token_TXID":"'+str(info['tokenid'])+'",\n')
+            file.write('"Coin":"'+str(info['coin'])+'",\n')
+            file.write('"Pubkeys":"'+str(info['pubkeys'])+'",\n')
+            file.write('"Gateways_Deposit_Address":"'+str(info['deposit'])+'"\n}')
+
+        print("Pegs Launch Parameters: "+' '.join(paramlist))
+        print("Pegs Creation TXID         ["+str(bind_txid)+"]")
+        print("Gateways Bind TXID         ["+str(bind_txid)+"]")
+        print("Oracle TXID                ["+str(info['oracle_txid'])+"]")
+        print("Token TXID                 ["+str(info['tokenid'])+"]")
+        print("Coin                       ["+str(info['coin'])+"]")
+        print("Pubkeys                    ["+str(info['pubkeys'])+"]")
+        print("Gateways Deposit Address   ["+str(info['deposit'])+"]")
+            
+        print(colorize("Details have been written to "+coin+"_pegsinfo.json", 'blue'))
+        input("Press [Enter] to continue...")
+        return pegs_txid
+    else:
+        print(colorize("Pegs TXID failed!        ["+str(result)+"]", 'red'))
+        input("Press [Enter] to continue...")
+        return 'back to menu'
+    
+def spawn_oraclefeed(dest_chain, kmd_path, oracle_txid, pubkey, bind_txid):
+    oraclefeed_build_log = str(dest_chain)+"_oraclefeed_build.log"
+    oraclefeed_build = open(oraclefeed_build_log,'w+')
+    print("Building oraclefeed ")
+    subprocess.Popen(["gcc", kmd_path+"/cc/dapps/oraclefeed.c", "-lm", "-o", kmd_path+"/oraclefeed"], stdout=oraclefeed_build, stderr=oraclefeed_build, universal_newlines=True)
+    oraclefeed_log = str(dest_chain)+"_oraclefeed.log"
+    oraclefeed_output = open(oraclefeed_log,'w+')
+    print("running oraclefeed ")
+    subprocess.Popen([kmd_path+"/oraclefeed", dest_chain, oracle_txid, pubkey, "IhhL", bind_txid, kmd_path+"/komodo-cli"], stdout=oraclefeed_output, stderr=oraclefeed_output, universal_newlines=True)
+    print(" Use tail -f "+kmd_path+"/"+oraclefeed_log+" for oraclefeed log console messages")
+    print(colorize("IMPORTANT: The oraclefeed must be running at all times for the Pegs contract to work!", "red"))
+    oraclefeed_launch_str = str(kmd_path+"/oraclefeed "+dest_chain+" "+oracle_txid+" "+pubkey+" IhhL "+bind_txid+" "+kmd_path+"/komodo-cli")
+    print(colorize("Launch it with "+oraclefeed_launch_str, "blue"))
+    input("Press [Enter] to continue...")
+    return oraclefeed_launch_str
+
+def oraclefeed_tui(jsonfile=''):
+    if jsonfile == '':
+        choice = input("select json file from list? (y/n)")
+        if choice == 'y' or choice == 'Y':
+            jsonfile = select_file(cwd, 'json')
+    if jsonfile == '':
+        while True:
+            try:
+                dest_chain = input('Enter name of Pegs chain')
+                rpc = rpclib.def_credentials(dest_chain)
+            except:
+                print(colorize(dest_chain+" conf file does not exist! Try again.", "red"))
+                break
+        while True:
+            kmd_path = input("Input komodod path (e.g. /home/user/komodo/src): ")
+            if not os.path.isfile(kmd_path+'/komodod'):
+                print("komodod not found in "+kmd_path+"! Try again.")
+            else:
+                break
+        oracle_txid = select_oracle_txid(rpc)
+        pubkey = rpc.getinfo()['pubkey']
+        bind_txid = select_gateway(rpc)
+    else:
+        try:
+            with open(jsonfile, 'r') as f:
+                oraclefeed_json = json.loads(f.read())
+            oraclefeed_params = oraclefeed_json['Oraclefeed_Launch_Parameters'].split(" ")
+            kmd_path = oraclefeed_params[0].replace("oraclefeed","")
+            dest_chain = oraclefeed_params[1]
+            oracle_txid = oraclefeed_params[2]
+            pubkey = oraclefeed_params[3]
+            bind_txid = oraclefeed_params[5]
+        except Exception as e:
+            print("Something wrong with json file.")
+            print(e)
+    spawn_oraclefeed(dest_chain, kmd_path, oracle_txid, pubkey, bind_txid)
+
+def get_commit_hash(repo_path):
+    os.chdir(repo_path)
+    proc = subprocess.run(['git', 'log', '-n', '1'], check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    output = proc.stdout
+    return output.split()[1]
+
+def launch_chain(coin, kmd_path, params, pubkey=''):
+    if pubkey != '':
+        params.append("-pubkey="+pubkey)
+    print(params)
+    commit = get_commit_hash(kmd_path)
+    test_log = coin+"_"+commit+".log"
+    test_output = open(test_log,'w+')
+    print("Launching "+coin+" daemon")
+    print(colorize("Launch Params: ["+str(' '.join([kmd_path+"/komodod"]+params))+"]", "green"))
+    subprocess.Popen([kmd_path+"/komodod"]+params, stdout=test_output, stderr=test_output, universal_newlines=True)
+    print(" Use `tail -f "+kmd_path+"/"+test_log+"` for "+coin+" console messages")
+    loop = 0
+    started = 0
+    print("Waiting for "+coin+" to start...")
+    while started == 0:
+        time.sleep(30)
+        print("Waiting for "+coin+" to start...")
+        loop += 1
+        try:
+            pegs_rpc = rpclib.def_credentials(coin)
+            coin_info = pegs_rpc.getinfo()
+            print(coin_info)
+            started = 1
+            break
+        except:
+            print("Waiting for "+coin+" to start...")
+            pass
+        if started == 1:
+            break
+        if loop > 10:
+            print("Something went wrong. Check "+test_log)
+            break
+
+def spawn_chain_pair(coin, kmd_path, paramlist):
+    secondary_params = paramlist[:]
+    launch_chain(coin, kmd_path, paramlist)
+    primary_conf = home+'/.komodo/'+coin+"/"+coin+".conf"
+    conf_lines = []
+    with open(primary_conf, 'r') as f:
+        for line in f:
+            l = line.rstrip()
+            if re.search('rpcuser', l):
+                rpcuser = l.replace('rpcuser=', '')
+                conf_lines.append(l+'_secondary')
+            elif re.search('rpcpassword', l):
+                rpcpassword = l.replace('rpcpassword=', '')
+                conf_lines.append(l+'_secondary')
+            elif re.search('rpcport', l):
+                rpcport = int(l.replace('rpcport=', ''))
+                conf_lines.append('rpcport='+str(rpcport+7))
+            else:
+                conf_lines.append(l)
+        primary_rpc=Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport)))
+    f.close()
+    secondary_datadir = home+'/.komodo2/'+coin
+    if not os.path.exists(home+'/.komodo2'):
+        os.mkdir(home+'/.komodo2')
+    if not os.path.exists(secondary_datadir):
+        os.mkdir(secondary_datadir)
+    secondary_conf = home+'/.komodo2/'+coin+"/"+coin+".conf"
+    rpcport2 = rpcport+7
+    p2pport2 = rpcport+6
+    conf_lines.append("port="+str(p2pport2))
+    with open(secondary_conf, 'w+') as f2:
+        for line in conf_lines:
+            f2.write(line+"\r\n")
+    f2.close() 
+    secondary_rpc=Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser+'_secondary', rpcpassword+'_secondary', int(rpcport2)))
+    # read primary conf file, update rpcuser/pass and port
+    secondary_params.append('-datadir='+secondary_datadir)
+    secondary_params.append('-addnode=localhost')
+    launch_chain(coin, kmd_path, secondary_params)
+    # create addresses, set pubkeys, start mining.
+    primary_rpc.setgenerate(True, 1)
+    height = primary_rpc.getblockcount()
+    while height < 3:
+        height = primary_rpc.getblockcount()
+        print("Premining first 3 blocks... ("+str(height)+"/3)")
+        time.sleep(20)
+    balance = primary_rpc.getbalance()
+    balance2 = secondary_rpc.getbalance()
+    print("Premine complete!")
+    print("Primary balance: "+str(balance))
+    print("Secondary balance: "+str(balance2))
+    return primary_rpc, secondary_rpc
+
+# Payments Module
+
+def payments_info(rpc_connection):
+    payments_txid = select_payments(rpc_connection)
+    if payments_txid != 'back to menu':
+        info = rpc_connection.paymentsinfo('[\"{}\"]'.format(payments_txid))
+        print(info)
+        input("Press [Enter] to continue...")
+
+def payments_create(rpc_connection, locked_blocks='', min_release='', opret_list=[]):
+    if locked_blocks == '':
+        locked_blocks = int(input("How many blocks to lock before release possible?"))
+    if min_release == '':
+        min_release = int(input("Minimum release amount?"))
+    # Get txidopret list
+    if len(opret_list) == 0:
+        num_recipients = int(input("How many recipients?"))
+        for i in range(num_recipients):
+            opret_txid = payments_txidopret(rpc_connection)
+            opret_list.append(opret_txid)
+    opret_params = str(opret_list).strip('[]')
+    params = "[{},{},{}]".format(locked_blocks, min_release, opret_params)
+    raw_hex = rpc_connection.paymentscreate(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Create Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+def payments_fund(rpc_connection, createtxid='', amount='', useopret=0):
+    if createtxid == '':
+        createtxid = select_payments(rpc_connection)
+    if amount == '':
+        amount = float(input("Amount of funds to send: "))
+    if useopret == 1:
+        params = "[\"{}\",{},{}]".format(createtxid, amount, useopret)
+    else:
+        params = "[\"{}\",{}]".format(createtxid, amount)
+    raw_hex = rpc_connection.paymentsfund(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Fund Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+def payments_merge(rpc_connection, createtxid=''):
+    if createtxid == '':
+        createtxid = select_payments(rpc_connection)
+    params = "[\"{}\"]".format(createtxid)
+    raw_hex = rpc_connection.paymentsmerge(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Merge Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+
+def payments_release(rpc_connection, createtxid='', amount='', skip_min=0):
+    if createtxid == '':
+        createtxid = select_payments(rpc_connection)
+    if amount == '':
+        amount = float(input("Amount of funds to release: "))
+    if skip_min == 1:
+        params = "[\"{}\",{},{}]".format(createtxid, amount, skip_min)
+    else:
+        params = "[\"{}\",{}]".format(createtxid, amount)
+    raw_hex = rpc_connection.paymentsrelease(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("Payments Release Txid: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+
+def payments_txidopret(rpc_connection, allocation='', pubkey='', destopret=''):
+    if pubkey == '':
+        pubkey = input("Recipient pubkey: ")
+    scriptPubKey = "21"+pubkey+"ac"
+    if allocation == '':
+        allocation = input("Allocation: ")
+    if destopret == '':
+        add_destopret = input("Do you want to add destination OPRET data? (y/n): ")
+        if add_destopret == 'y' or add_destopret == 'Y':
+            destopret = input("Enter destination OPRET data: ")
+            params = "[{},\"{}\",\"{}\"]".format(allocation, scriptPubKey, destopret)
+        else:
+            params = "[{},\"{}\"]".format(allocation, scriptPubKey)
+    elif destopret is False:
+        params = "[{},\"{}\"]".format(allocation, scriptPubKey)
+    else:
+        params = "[{},\"{}\",\"{}\"]".format(allocation, scriptPubKey, destopret)
+    raw_hex = rpc_connection.paymentstxidopret(str(params))
+    try:
+        txid = rpc_connection.sendrawtransaction(raw_hex['hex'])
+        print(colorize("OPRET TXID: "+txid, 'green'))
+        print(colorize("Confirming transaction\n", "blue"))
+        check_if_tx_in_mempool(rpc_connection, txid)
+        input("Press [Enter] to continue...")
+        return txid
+    except Exception as e:
+        print("Something went wrong!")
+        print(e)
+        print(raw_hex)
+        input("Press [Enter] to continue...")
+
+# Selection menus and validation
+
+def validate_selection(interrogative, selection_list):
+    while True:
+        index = int(input(interrogative))-1
+        try:
+            selected = selection_list[index]
+            return selected
+        except:
+            print("Invalid selection, must be number between 1 and "+str(len(selection_list)))
+            pass
+
+def select_ac():
+    while True:
+        dir_list = next(os.walk(home+"/.komodo"))[1]
+        ac_list = []
+        row = ''
+        i = 1
+        for folder in dir_list:
+            if folder not in ['notarisations', 'blocks', 'database', 'chainstate']:
+                ac_list.append(folder)
+                if i < 10:
+                    row += " ["+str(i)+"] "+'{:^14}'.format(folder)
+                else:
+                    row += "["+str(i)+"] "+'{:^14}'.format(folder)
+                if len(row) > 64:
+                    print(row)
+                    row = ''
+                i += 1
+        selection = validate_selection("Select Smart Chain: ", ac_list)
+        return selection
+
+def select_address(rpc_connection):
+    list_address_groupings = rpc_connection.listaddressgroupings()
+    addresses = []
+    for address_list in list_address_groupings:
+        for address in address_list:
+            if address[1] > 0:
+                addresses.append([address[0],address[1]])
+    i = 1
+    for address in addresses:
+        print("["+str(i)+"] "+address[0]+" (balance: "+str(address[1])+")")
+        i +=1
+    while True:
+        address_index = int(input("Select Address: "))-1
+        try:
+            sendaddress = addresses[address_index][0]
+            return sendaddress
+        except:
+            print("Invalid selection, must be number between 1 and "+str(len(gateways_list)))
+            pass
+    
+def select_tokenid(rpc_connection):
+    token_list = rpc_connection.tokenlist()
+    tokenids = []
+    i = 1
+    for tokenid in token_list:
+        token_info = rpc_connection.tokeninfo(tokenid)
+        print("["+str(i)+"] "+token_info['tokenid']+" | "+token_info['name'] \
+             +" | "+token_info['description']+" | Supply: "+str(token_info['supply'])+" |")
+        i +=1
+    selection = validate_selection("Select Token Contract: ", token_list)
+    return selection
+
+def select_oracle_txid(rpc_connection):
+    oracle_list = rpc_connection.oracleslist()
+    if len(oracle_list) == 0:
+        print(colorize("No oracles on this smart chain!", "red"))
+        input("Press [Enter] to continue...")
+        return 'back to menu'
+    i = 1
+    header = "|"+'{:^6}'.format("[#]")+"|" \
+            +'{:^66}'.format("ORACLE TXID")+"|" \
+            +'{:^32}'.format("NAME")+"|" \
+            +'{:^75}'.format("DESCRIPTION")+"|" \
+            +'{:^6}'.format("TYPE")+"|" 
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
+    for oracle_txid in oracle_list:
+        info = rpc_connection.oraclesinfo(oracle_txid)
+        row = "|"+'{:^6}'.format("["+str(i)+"]")+"|" \
+            +'{:^66}'.format(info['txid'])+"|" \
+            +'{:^32}'.format(info['name'])+"|" \
+            +'{:^75}'.format(info['description'])+"|" \
+            +'{:^6}'.format(info['format'])+"|" 
+        print(" "+row)
+        i +=1
+    print(" "+table_dash)
+    selection = validate_selection("Select Oracle: ", oracle_list)
+    return selection
+
+def select_oracleType():
+    oracles_data_types = [
+        { "type":"IhhL", "desc":"height, blockhash, merkleroot (used by oraclefeed dapp)" },
+        { "type":"s", "desc":"String less than 256 bytes" },
+        { "type":"S", "desc":"String, less than 65563 bytes" },
+        { "type":"d", "desc":"Binary less than 256 bytes" },
+        { "type":"D", "desc":"Binary, less than 65563 bytes" },
+        { "type":"c", "desc":"1 byte little endian number (signed)" },
+        { "type":"C", "desc":"1 byte little endian number (unsigned)" },
+        { "type":"t", "desc":"2 byte little endian number (signed)" },
+        { "type":"T", "desc":"2 byte little endian number (unsigned)" },
+        { "type":"i", "desc":"4 byte little endian number (signed)" },
+        { "type":"I", "desc":"4 byte little endian number (unsigned)" },
+        { "type":"l", "desc":"8 byte little endian number (signed)" },
+        { "type":"L", "desc":"8 byte little endian number (unsigned)" },
+        { "type":"h", "desc":"32 byte hash" }
+    ]
+    i = 1
+    type_list = []
+    header = "|"+'{:^6}'.format("[#]")+"|" \
+            +'{:^6}'.format("TYPE")+"|" \
+            +'{:^57}'.format("DESCRIPTION")+"|" 
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
+    for option in oracles_data_types:
+        type_list.append(option['type'])
+        row = "|"+'{:^6}'.format("["+str(i)+"]")+"|" \
+            +'{:^6}'.format(option['type'])+"|" \
+            +'{:^57}'.format(option['desc'])+"|" 
+        print(" "+row)
+        i += 1
+    print(" "+table_dash)
+    selection = validate_selection("Select Oracle Data Type: ", type_list)
+    return selection
+        
+
+def select_gateway(rpc_connection):
+    gw_list = rpc_connection.gatewayslist()
+    if len(gw_list) == 0:
+        print(colorize("No gateways on this smart chain!", "red"))
+        input("Press [Enter] to continue...")
+        return 'back to menu'
+    i = 1
+    for gw in gw_list:
+        info = rpc_connection.gatewaysinfo(gw)
+        print("["+str(i)+"] "+info['txid']+" | "+info['coin']+" |")
+        i +=1
+    selection = validate_selection("Select Gateway: ", gw_list)
+    return selection
+
+def select_payments(rpc_connection):
+    payments_list = rpc_connection.paymentslist()['createtxids']
+    if len(payments_list) == 0:
+        print(colorize("No Payments contracts on this smart chain!", "red"))
+        input("Press [Enter] to continue...")
+        return 'back to menu'
+    i = 1
+    header = "|"+'{:^5}'.format("[#]")+"|" \
+            +'{:^66}'.format("Transaction Hash")+"|" \
+            +'{:^16}'.format("Eligible Funds")+"|" \
+            +'{:^13}'.format("Total Funds")+"|" \
+            +'{:^20}'.format("Min Release Amount")+"|" \
+            +'{:^20}'.format("Min Release Height")+"|" \
+            +'{:^23}'.format("Blocks Until Eligible")+"|" \
+            +'{:^7}'.format("UTXOs")+"|"
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
+    block_height = rpc_connection.getblockcount()
+    for txid in payments_list:
+        info = rpc_connection.paymentsinfo('[\"{}\"]'.format(txid))
+        blocks_until_eligible = info['min_release_height'] - block_height
+        if blocks_until_eligible < 1:
+            blocks_until_eligible = colorize('{:^23}'.format("Eligible"), 'green')
+        row = "|"+'{:^5}'.format("["+str(i)+"]")+"|" \
+             +'{:^66}'.format(txid)+"|" \
+             +'{:^16}'.format(str(info['elegiblefunds']))+"|" \
+             +'{:^13}'.format(str(info['totalfunds']))+"|" \
+             +'{:^20}'.format(str(info['minrelease']))+"|" \
+             +'{:^20}'.format(str(info['min_release_height']))+"|" \
+             +'{:^23}'.format(str(blocks_until_eligible))+"|" \
+             +'{:^7}'.format(str(info['utxos']))+"|"
+        print(" "+row)
+        i += 1
+    print(" "+table_dash)
+    selection = validate_selection("Select Payments contract: ", payments_list)
+    return selection
+
+
+def select_oracle_publisher(rpc_connection, oracle_txid):
+    info = rpc_connection.oraclesinfo(oracle_txid)
+    publisher_list = []
+    i = 1
+    if len(info['registered']) == 0:
+        print(colorize("No publishers registered on this oracle!", "red"))
+        input("Press [Enter] to continue...")
+        return 'back to menu'
+    i = 1
+    header = "|"+'{:^5}'.format("[#]")+"|" \
+            +'{:^68}'.format("PUBLISHER (green = your pubkey")+"|" \
+            +'{:^36}'.format("BATON ADDRESS")+"|" \
+            +'{:^14}'.format("FUNDS")+"|" \
+            +'{:^14}'.format("DATAFEE")+"|" 
+    table_dash = "-"*len(header)
+    print(" "+table_dash)
+    print(" "+header)
+    print(" "+table_dash)
+    for publisher in info['registered']:
+        publisher_list.append(publisher['publisher'])
+        info = rpc_connection.oraclesinfo(oracle_txid)
+        if publisher['publisher'] == rpc_connection.getinfo()['pubkey']:
+            row = "|"+'{:^5}'.format("["+str(i)+"]")+"|" \
+                    +'{:^68}'.format(publisher['publisher'])+"|" \
+                    +'{:^36}'.format(publisher['baton'])+"|" \
+                    +'{:^14}'.format(str(publisher['funds'])[:12])+"|" \
+                    +'{:^14}'.format(str(publisher['datafee'])[:12])+"|" 
+            print(colorize(" "+row, "green"))
+        else: 
+            row = "|"+'{:^5}'.format("["+str(i)+"]")+"|" \
+                    +'{:^68}'.format(publisher['publisher'])+"|" \
+                    +'{:^36}'.format(publisher['baton'])+"|" \
+                    +'{:^14}'.format(str(publisher['funds'])[:12])+"|" \
+                    +'{:^14}'.format(str(publisher['datafee'])[:12])+"|" 
+            print(colorize(" "+row, "blue"))
+        i +=1
+    selected = validate_selection("Select Oracle Publisher to subscribe to: ", publisher_list)
+    return selected
+
+def select_file(path, ext=''):
+    file_list = []
+    with os.scandir(path) as ls:
+        for item in ls:
+            if item.is_file():
+                filename = str(item.name)
+                if ext == '':
+                    file_list.append(filename)
+                    interrogative = "Select a file: "
+                elif filename.endswith(ext):
+                    file_list.append(filename)
+                    interrogative = "Select "+ext+" file: "
+    i = 1
+    for file in file_list:
+        print("["+str(i)+"] "+file)
+        i += 1
+    selected = validate_selection(interrogative, file_list)
+    return selected
