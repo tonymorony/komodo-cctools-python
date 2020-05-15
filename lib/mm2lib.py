@@ -1,6 +1,5 @@
 from bitcoin.core.script import *
 from bitcoin.core import Hash160
-from bitcoin.wallet import P2PKHBitcoinAddress
 import bitcoin.base58
 import struct
 import unittest
