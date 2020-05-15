@@ -7,6 +7,10 @@ from hashlib import sha256
 
 
 def payment_script(time_lock, secret_hash, pub_0, pub_1):
+    """
+    this function making payment script for mm2 atomic swap 
+    ported from mm2 rust code
+    """
     return CScript([OP_IF, struct.pack('<I', time_lock), OP_NOP2 , OP_DROP, pub_0, OP_CHECKSIG,
              OP_ELSE, OP_SIZE,  b'\x20', OP_EQUALVERIFY, OP_HASH160, secret_hash, OP_EQUALVERIFY, pub_1, OP_CHECKSIG, OP_ENDIF])
 
