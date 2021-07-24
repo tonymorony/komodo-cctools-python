@@ -78,7 +78,7 @@ if __name__ == "__main__":
         try:
             print(tuilib.colorize("Welcome to the RogueCC TUI!\n"
                                   "Please provide asset chain RPC connection details for initialization", "blue"))
-            rpc_connection = tuilib.def_credentials(chain)
+            rpc_connection = rpclib.def_credentials(chain)
             rpclib.getinfo(rpc_connection)
             # waiting until chain is in sync
             while True:
