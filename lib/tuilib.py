@@ -1259,6 +1259,7 @@ def rogue_newgame_singleplayer(rpc_connection, is_game_a_rogue=True):
         bailout_txid = bailout_info["txid"]
         input("Press [Enter] to continue...")
     except Exception as e:
+        print(new_game_txid)
         print("Something went wrong.")
         print(e)
         input("Press [Enter] to continue...")
