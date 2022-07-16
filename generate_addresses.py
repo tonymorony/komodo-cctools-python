@@ -5,8 +5,8 @@ import json
 import time
 
 # settings
-amount_of_addresses = 10000
-amount_of_funding = 2
+amount_of_addresses = 2
+amount_of_funding = 1
 
 # generate addresses to fund
 kmd_rpc_proxy_auth = rpclib.get_rpc_details("KMD")
@@ -33,8 +33,7 @@ rick_txs_count = 0
 rpc_proxy_rick = Proxy("http://%s:%s@127.0.0.1:%d"%(rick_rpc_proxy_auth[0], rick_rpc_proxy_auth[1], int(rick_rpc_proxy_auth[2])))
 for address in addresses_to_fund:
     if not addresses_to_fund[address]["is_funded_rick"]:
-        fund_addy = list(addresses_to_fund.keys())[0]
-        rick_funding_txid = rpc_proxy_rick.sendtoaddress(fund_addy, amount_of_funding)
+        rick_funding_txid = rpc_proxy_rick.sendtoaddress(address, amount_of_funding)
         print(rick_funding_txid)
         # TODO: confirm that its really mined
         addresses_to_fund[address]["is_funded_rick"] = True
@@ -52,8 +51,7 @@ morty_txs_count = 0
 rpc_proxy_morty = Proxy("http://%s:%s@127.0.0.1:%d"%(morty_rpc_proxy_auth[0], morty_rpc_proxy_auth[1], int(morty_rpc_proxy_auth[2])))
 for address in addresses_to_fund:
     if not addresses_to_fund[address]["is_funded_morty"]:
-        fund_addy = list(addresses_to_fund.keys())[0]
-        morty_funding_txid = rpc_proxy_morty.sendtoaddress(fund_addy, amount_of_funding)
+        morty_funding_txid = rpc_proxy_morty.sendtoaddress(address, amount_of_funding)
         print(morty_funding_txid)
         # TODO: confirm that its really mined
         addresses_to_fund[address]["is_funded_morty"] = True
